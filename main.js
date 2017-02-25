@@ -20,9 +20,10 @@ var t_linear; // transition percent
 var t_ease;
 var t_steps = 10;
 
-var grid_size = 40;
+var grid_size = 20;
 
 var tool = "cursor";
+var selected;
 
 window.requestAnimFrame = function() {
     return (
@@ -107,7 +108,7 @@ function ease_in_out(x) {
 }
 
 function Text(text, pos) {
-    this.text = text;
+    this.texts = {1: text};
     this.positions = {1: pos};
     this.dragging = false;
 
@@ -129,11 +130,43 @@ function Text(text, pos) {
         return pos;
     }
 
+    this.cur_text = function() {
+        let text = this.texts[frame];
+
+        if (text == null) {
+            text = this.texts[loop_frame(frame-1)];
+            this.texts[frame] = text;
+        }
+
+        return text;
+    }
+
+    this.onkeydown = function(evt) {
+        let text = this.cur_text();
+
+        let key = evt.key;
+        if (key == 'Backspace') {
+            text = text.slice(0, text.length-1);
+        } else if (key.length == 1) {
+            text = text + key;
+        }
+
+        this.texts[frame] = text;
+    }
+
     this.mouse_down = function(evt) {
         let pos = this.cur_pos();
         if (Math.abs(mouse.x - pos.x) < 20 && Math.abs(mouse.y - pos.y) < 20) {
             this.dragging = true;
+            selected = this;
+            return true;
         }
+
+        if (selected == this) {
+            selected = null;
+        }
+
+        return false;
     }
 
     this.mouse_drag = function(evt) {
@@ -154,7 +187,11 @@ function Text(text, pos) {
 
     this.render = function(ctx) {
         let pos = this.cur_pos();
-        ctx.fillText(this.text, pos.x, pos.y);
+        ctx.fillText(this.cur_text(), pos.x, pos.y);
+        if (selected == this) {
+            ctx.strokeStyle = dark;
+            ctx.strokeRect(pos.x-grid_size, pos.y-grid_size, grid_size*2, grid_size*2);
+        }
     }
 }
 
@@ -245,6 +282,11 @@ function Shape(pos, style, path) {
 
     this.mouse_down = function(evt) {
         this.drag_idx = this.closest_point_idx();
+        if (this.drag_idx != -1) {
+            return true;
+        }
+
+        return false;
     }
 
     this.mouse_drag = function(evt) {
@@ -350,10 +392,15 @@ function Menu(pos) {
     });
     this.buttons.push(cb);
 
-    let nb = new Button("num", {x: 0, y: 0}, function(b) {
-        tool = "num";
+    let nb = new Button("text", {x: 0, y: 0}, function(b) {
+        tool = "text";
     });
     this.buttons.push(nb);
+
+    let lb = new Button("line", {x: 0, y: 0}, function(b) {
+        tool = "line";
+    });
+    this.buttons.push(lb);
 
     let db = new Button("del", {x: 0, y: 0}, function(b) {
         tool = "del";
@@ -372,7 +419,7 @@ function Menu(pos) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -496,17 +543,16 @@ window.onload = function() {
 
     menu = new Menu({x: 150, y: 50});
 
-    let shape1 = new Shape({x: 200, y: 200}, dark, [[0, 0], [20, 20], [-20, 20], [0, 0]]);
-    objs.push(shape1);
-
-    let shape2 = new Shape({x: 300, y: 200}, gray, [[0, 0], [20, 20], [-20, 20], [0, 0]]);
-    objs.push(shape2);
-
-    let shape3 = new Shape({x: 600, y: 200}, dark, [[0, 0], [20, 20], [-20, 20], [0, 0]]);
-    objs.push(shape3);
-
     window.onkeydown = function(evt) {
         let key = evt.key;
+
+        if (selected != null ) {
+            if (typeof selected.onkeydown === 'function') {
+                selected.onkeydown(evt);
+                return;
+            }
+        }
+
         if (key == "ArrowRight") {
             frame = loop_frame(frame + 1);
         } else if (key == "ArrowLeft") {
@@ -535,10 +581,14 @@ window.onload = function() {
                     obj.mouse_click(evt);
                 }
             }
-        } else if (tool == "num") {
+        } else if (tool == "text") {
             // add a num obj at mouse pos
-            let n = new Text("23", mouse_grid);
+            let n = new Text("0", mouse_grid);
             objs.push(n);
+        } else if (tool == "line") {
+            // add a num obj at mouse pos
+            let l = new Shape({x: 0, y: 0}, dark, [[mouse_grid.x, mouse_grid.y], [mouse_grid.x + grid_size * 1, mouse_grid.y]]);
+            objs.push(l);
         }
     }
 
@@ -548,7 +598,9 @@ window.onload = function() {
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
             if (typeof obj.mouse_down === 'function') {
-                obj.mouse_down(evt);
+                if (obj.mouse_down(evt)) {
+                    break;
+                }
             }
         }
     };
@@ -588,9 +640,7 @@ window.onload = function() {
 
         ctx.clearRect(0, 0, c.width, c.height);
 
-        if (mouse_down) {
-            draw_grid();
-        }
+        draw_grid();
 
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
