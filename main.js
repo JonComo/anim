@@ -11,14 +11,18 @@ var mouse = {x: 0, y: 0};
 var mouse_grid = {x: 0, y: 0};
 var mouse_down = false;
 var frames;
+var menu;
 var num_frames = 10;
 var frame; // current frame
 var next_frame;
 
 var t_linear; // transition percent
 var t_ease;
+var t_steps = 10;
 
 var grid_size = 40;
+
+var tool = "cursor";
 
 window.requestAnimFrame = function() {
     return (
@@ -104,10 +108,53 @@ function ease_in_out(x) {
 
 function Text(text, pos) {
     this.text = text;
-    this.pos = pos;
+    this.positions = {1: pos};
+    this.dragging = false;
+
+    this.cur_pos = function() {
+        let pos = this.positions[frame];
+        let next_pos = this.positions[next_frame];
+
+        if (pos == undefined) {
+            pos = this.positions[loop_frame(frame-1)];
+            this.positions[frame] = pos;
+        }
+
+        if (pos && next_pos) {
+            let blended = {x: (1-t_ease) * pos.x + t_ease * next_pos.x, 
+                           y: (1-t_ease) * pos.y + t_ease * next_pos.y};
+            return blended;
+        }
+
+        return pos;
+    }
+
+    this.mouse_down = function(evt) {
+        let pos = this.cur_pos();
+        if (Math.abs(mouse.x - pos.x) < 20 && Math.abs(mouse.y - pos.y) < 20) {
+            this.dragging = true;
+        }
+    }
+
+    this.mouse_drag = function(evt) {
+        let pos = this.cur_pos();
+        if (this.dragging) {
+            // drag it
+            this.positions[frame] = {x: mouse_grid.x, y: mouse_grid.y};
+        }
+    }
+
+    this.mouse_up = function(evt) {
+        if (tool == "del" && this.dragging) {
+            this.deleted = true;
+        }
+
+        this.dragging = false;
+    }
 
     this.render = function(ctx) {
-        ctx.fillText(this.text, this.pos.x, this.pos.y);
+        let pos = this.cur_pos();
+        ctx.fillText(this.text, pos.x, pos.y);
     }
 }
 
@@ -143,7 +190,7 @@ function Button(text, pos, callback) {
 
 function Shape(pos, style, path) {
     this.pos = pos;
-    this.paths = {0: path};
+    this.paths = {1: path};
     this.style = style;
     this.drag_idx = -1;
 
@@ -209,6 +256,10 @@ function Shape(pos, style, path) {
     }
 
     this.mouse_up = function(evt) {
+        if (tool == "del" && this.drag_idx != -1) {
+            // delete this
+            this.deleted = true;
+        }
         this.drag_idx = -1;
     }
 
@@ -255,11 +306,11 @@ function Frames(num, pos) {
     this.size = 32;
 
     this.frame_pos = function(i) {
-        return {x: this.pos.x, y: this.pos.y + i * (this.size + this.pad)};
+        return {x: this.pos.x, y: this.pos.y + (i) * (this.size + this.pad)};
     }
 
     this.buttons = [];
-    for (let i = 0; i < this.num; i++) {
+    for (let i = 1; i <= this.num; i++) {
         let newb = new Button(i, this.frame_pos(i), null);
         this.buttons.push(newb);
     }
@@ -268,15 +319,15 @@ function Frames(num, pos) {
         for (let i = 0; i < this.num; i++) {
             let btn = this.buttons[i];
             if (btn.mouse_click(evt)) {
-                this.on_click(i);
+                this.on_click(i+1);
             }
         }
     }
 
     this.render = function(ctx) {
-        ctx.fillText('frames', this.pos.x, this.pos.y - 32);
+        ctx.fillText('frames', this.pos.x, this.pos.y);
 
-        for (let i = 0; i < this.num; i++) {
+        for (let i = 1; i <= this.num; i++) {
             ctx.strokeStyle = gray;
             if (i == frame) {
                 ctx.strokeStyle = dark;
@@ -284,10 +335,62 @@ function Frames(num, pos) {
             let rectp = this.frame_pos(i);
             ctx.strokeRect(rectp.x - this.size/2, rectp.y - this.size/2, this.size, this.size);
 
-            let btn = this.buttons[i];
+            let btn = this.buttons[i-1];
             btn.render(ctx);
         }
     }
+}
+
+function Menu(pos) {
+    this.pos = pos;
+    this.buttons = [];
+
+    let cb = new Button("cursor", {x: 0, y: 0}, function(b) {
+        tool = "cursor";
+    });
+    this.buttons.push(cb);
+
+    let nb = new Button("num", {x: 0, y: 0}, function(b) {
+        tool = "num";
+    });
+    this.buttons.push(nb);
+
+    let db = new Button("del", {x: 0, y: 0}, function(b) {
+        tool = "del";
+    });
+    this.buttons.push(db);
+
+    for (let i = 0; i < this.buttons.length; i++) {
+        let b = this.buttons[i];
+        b.pos = {x: this.pos.x, y: this.pos.y + 40 + i * 40};
+    }
+
+    this.mouse_click = function(evt) {
+        for (let i = 0; i < this.buttons.length; i++) {
+            let btn = this.buttons[i];
+            if (btn.mouse_click(evt)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    this.render = function(ctx) {
+        ctx.fillText("menu", this.pos.x, this.pos.y);
+
+        for (let i = 0; i < this.buttons.length; i++) {
+            let b = this.buttons[i];
+            b.render(ctx);
+            if (b.text == tool) {
+                ctx.beginPath();
+                ctx.strokeStyle = gray;
+                ctx.moveTo(b.pos.x - 10, b.pos.y + 10);
+                ctx.lineTo(b.pos.x + 10, b.pos.y + 10);
+                ctx.stroke();
+            }
+        }
+    };
 }
 
 function Transition() {
@@ -327,14 +430,14 @@ function Transition() {
 }
 
 function constrain_frame(f) {
-    return Math.max(0, Math.min(num_frames-1, f));
+    return Math.max(1, Math.min(num_frames, f));
 }
 
 function loop_frame(f) {
     if (f >= num_frames) {
-        return 0;
-    } else if (f < 0) {
-        return num_frames-1;
+        return 1;
+    } else if (f < 1) {
+        return num_frames;
     }
 
     return f;
@@ -381,15 +484,17 @@ window.onload = function() {
     var objs = [];
 
     transition = new Transition();
-    frame = 0;
-    frames = new Frames(num_frames, {x: 50, y: 55});
+    frame = 1;
+    frames = new Frames(num_frames, {x: 50, y: 50});
     frames.on_click = function(idx) {
         next_frame = idx;
-        transition.run(20, idx, function(targ) {
+        transition.run(t_steps, idx, function(targ) {
             frame = targ;
         });
         //frame = idx;
     };
+
+    menu = new Menu({x: 150, y: 50});
 
     let shape1 = new Shape({x: 200, y: 200}, dark, [[0, 0], [20, 20], [-20, 20], [0, 0]]);
     objs.push(shape1);
@@ -406,17 +511,34 @@ window.onload = function() {
             frame = loop_frame(frame + 1);
         } else if (key == "ArrowLeft") {
             frame = loop_frame(frame - 1);
+        } else if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) != -1) {
+            if (!transition.transitioning) {
+                next_frame = Number(key);
+                transition.run(t_steps, next_frame, function(targ) {
+                    frame = targ;
+                });
+            }
         }
     };
     
     window.onclick = function(evt) {
         frames.mouse_click(evt);
 
-        for (let i = 0; i < objs.length; i++) {
-            let obj = objs[i];
-            if (typeof obj.mouse_click === 'function') {
-                obj.mouse_click(evt);
+        if (menu.mouse_click(evt)) {
+            return;
+        }
+
+        if (tool == "cursor") {
+            for (let i = 0; i < objs.length; i++) {
+                let obj = objs[i];
+                if (typeof obj.mouse_click === 'function') {
+                    obj.mouse_click(evt);
+                }
             }
+        } else if (tool == "num") {
+            // add a num obj at mouse pos
+            let n = new Text("23", mouse_grid);
+            objs.push(n);
         }
     }
 
@@ -475,7 +597,15 @@ window.onload = function() {
             obj.render(ctx);
         }
 
+        for (let i = objs.length-1; i >= 0; i--) {
+            let obj = objs[i];
+            if (obj.deleted) {
+                objs.splice(i, 1);
+            }
+        }
+
         frames.render(ctx);
+        menu.render(ctx);
         transition.update();
     }
 }
