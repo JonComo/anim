@@ -134,7 +134,232 @@ function change_frames() {
     }
 }
 
+function rgbToHex(c) {
+    return "#" + ((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1);
+}
+
+function interpolate(a, b) {
+    if (b == null) {
+        return a;
+    }
+
+    let interp = {};
+    for (key in a) {
+        if (key == "p") {
+            // interpolate position
+            let ap = a[key];
+            let bp = b[key];
+
+            interp[key] = {x: (1-t_ease) * ap.x + t_ease * bp.x,
+                           y: (1-t_ease) * ap.y + t_ease * bp.y};
+        } else if (key == "c") {
+            // interpolate colors
+            let ac = a[key];
+            let bc = b[key];
+            let ic = [];
+            let constrain = Math.min(1, Math.max(0, t_ease));
+            for (let i = 0; i < ac.length; i++) {
+                ic.push((1-constrain) * ac[i] + constrain * bc[i]);
+            }
+
+            interp[key] = ic;
+        } else if (key == "path") {
+            // interpolate paths
+            let ap = a[key];
+            let bp = b[key];
+            
+            ip = [];
+            for (let i = 0; i < ap.length; i ++) {
+                let newp = [(1-t_ease) * ap[i][0] + t_ease * bp[i][0],
+                            (1-t_ease) * ap[i][1] + t_ease * bp[i][1]];
+                ip.push(newp);
+            }
+
+            interp[key] = ip;
+        } else if (key == "t") {
+            if (t_ease < .5) {
+                interp[key] = a[key];
+            } else {
+                interp[key] = b[key];
+            }
+        } else {
+            interp[key] = a[key];
+        }
+    }
+
+    return interp;
+}
+
+function Button(text, pos, callback) {
+    this.text = text;
+    this.pos = pos;
+    this.callback = callback;
+    this.radius = 20;
+    
+    this.hovering = function() {
+        return distance(this.pos, mouse) < this.radius;
+    }
+
+    this.mouse_click = function(evt) {
+        if (this.hovering()) {
+            // clicked
+            if (this.callback) {
+                this.callback(this);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    this.render = function(ctx) {
+        ctx.fillText(this.text, this.pos.x, this.pos.y);
+        if (this.hovering()) {
+            ctx.fillRect(this.pos.x - this.radius/2, this.pos.y + 10, this.radius, 2);
+        }
+    }
+}
+
+function Shape(color, path) {
+    this.type = "Shape";
+    this.properties = {};
+    this.properties[frame] = {c: color, path: path};
+
+    this.drag_idx = -1;
+
+    this.add_point = function(p) {
+        let props = this.properties[frame];
+        let path = props.path;
+        path.push(p);
+    }
+
+    this.closest_point_idx = function() {
+        let props = this.properties[frame];
+        let path = props.path;
+        for (let i = 0; i < path.length; i++) {
+            let parr = path[i];
+            let p = {x: parr[0], y: parr[1]};
+
+            if (distance(p, mouse) < 10) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    this.mouse_down = function(evt) {
+        this.drag_idx = this.closest_point_idx();
+        if (this.drag_idx != -1) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    this.mouse_drag = function(evt) {
+        let props = this.properties[frame];
+        let path = props.path;
+
+        if (this.drag_idx != -1) {
+            if (tool == "move") {
+                let offset = {x: mouse_grid.x - mouse_grid_last.x,
+                          y: mouse_grid.y - mouse_grid_last.y};
+                for (let i = 0; i < path.length; i++) {
+                    let p = path[i];
+                    path[i] = [p[0] + offset.x, p[1] + offset.y];
+                }
+            } else {
+                // drag that
+                path[this.drag_idx] = [mouse_grid.x, mouse_grid.y];
+            }
+        }
+    }
+
+    this.mouse_up = function(evt) {
+        if (this.drag_idx != -1) {
+            if (tool == "del") {
+                // delete this
+                this.deleted = true;
+            } else if (tool == "opaque") {
+                this.properties[frame].c = [0, 0, 0, 1];
+            } else if (tool == "transparent") {
+                this.properties[frame].c = [0, 0, 0, 0];
+            }
+        }
+        
+        this.drag_idx = -1;
+    }
+
+    this.draw_path = function(path) {
+        for (let i = 0; i < path.length; i++) {
+            let parr = path[i];
+            let p = {x: parr[0], y: parr[1]};
+            
+            if (i == 0) {
+                ctx.moveTo(parr[0], parr[1]);
+            } else {
+                ctx.lineTo(parr[0], parr[1]);
+            }
+        }
+    }
+
+    this.render = function(ctx) {
+
+        let a = this.properties[frame];
+        let b = this.properties[next_frame];
+
+        if (onion) {
+            let p_before = this.properties[loop_frame(frame-1)];
+            if (p_before) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = gray;
+                this.draw_path(p_before.path);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        let props = interpolate(a, b);
+        var path = props.path;
+
+        ctx.beginPath();
+        this.draw_path(path);
+
+        let idx;
+        if (this.drag_idx != -1) {
+            idx = this.drag_idx;
+        } else {
+            idx = this.closest_point_idx();
+        }
+
+        if (path.length == 1) {
+            idx = 0;
+        }
+
+        if (idx != -1) {
+            let parr = path[idx];
+            let p = {x: parr[0], y: parr[1]};
+            ctx.strokeStyle = dark;
+            ctx.strokeRect(p.x - 10, p.y - 10, 20, 20);
+        }
+
+        ctx.save();
+        ctx.globalAlpha = props.c[3];
+
+        if (props.c[3] == 0 && menu_time > 0) {
+            ctx.globalAlpha = .2;
+        }
+
+        ctx.strokeStyle = rgbToHex(props.c);
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
 function Text(text, pos) {
+    this.type = "Text";
     this.properties = {};
     this.properties[frame] = {t: text, p: pos, c: [0, 0, 0, 1]};
 
@@ -243,230 +468,35 @@ function Text(text, pos) {
     }
 }
 
-function rgbToHex(c) {
-    return "#" + ((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1);
+function save(objs) {
+    let str = JSON.stringify({"num_frames": num_frames, "objs": objs});
+    var blob = new Blob([str], {type: "text/plain;charset=utf-8"});
+    let name = document.getElementById("name").value;
+    saveAs(blob, name);
 }
 
-function interpolate(a, b) {
-    if (b == null) {
-        return a;
-    }
+function load(string) {
+    let dict = JSON.parse(string);
+    let arr = dict["objs"];
 
-    let interp = {};
-    for (key in a) {
-        if (key == "p") {
-            // interpolate position
-            let ap = a[key];
-            let bp = b[key];
+    num_frames = dict["num_frames"];
+    frames.create_buttons();
 
-            interp[key] = {x: (1-t_ease) * ap.x + t_ease * bp.x,
-                           y: (1-t_ease) * ap.y + t_ease * bp.y};
-        } else if (key == "c") {
-            // interpolate colors
-            let ac = a[key];
-            let bc = b[key];
-            let ic = [];
-            let constrain = Math.min(1, Math.max(0, t_ease));
-            for (let i = 0; i < ac.length; i++) {
-                ic.push((1-constrain) * ac[i] + constrain * bc[i]);
-            }
-
-            interp[key] = ic;
-        } else if (key == "path") {
-            // interpolate paths
-            let ap = a[key];
-            let bp = b[key];
-            
-            ip = [];
-            for (let i = 0; i < ap.length; i ++) {
-                let newp = [(1-t_ease) * ap[i][0] + t_ease * bp[i][0],
-                            (1-t_ease) * ap[i][1] + t_ease * bp[i][1]];
-                ip.push(newp);
-            }
-
-            interp[key] = ip;
-        } else if (key == "t") {
-            if (t_ease < .5) {
-                interp[key] = a[key];
-            } else {
-                interp[key] = b[key];
-            }
-        } else {
-            interp[key] = a[key];
+    let newobjs = [];
+    for (let i = 0; i < arr.length; i++) {
+        let o = arr[i];
+        if (o.type == "Shape") {
+            let new_shape = new Shape(null, null, null);
+            new_shape.properties = o.properties;
+            newobjs.push(new_shape);
+        } else if (o.type == "Text") {
+            let new_txt = new Text(null, null);
+            new_txt.properties = o.properties;
+            newobjs.push(new_txt);
         }
     }
 
-    return interp;
-}
-
-function Button(text, pos, callback) {
-    this.text = text;
-    this.pos = pos;
-    this.callback = callback;
-    this.radius = 20;
-    
-    this.hovering = function() {
-        return distance(this.pos, mouse) < this.radius;
-    }
-
-    this.mouse_click = function(evt) {
-        if (this.hovering()) {
-            // clicked
-            if (this.callback) {
-                this.callback(this);
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    this.render = function(ctx) {
-        ctx.fillText(this.text, this.pos.x, this.pos.y);
-        if (this.hovering()) {
-            ctx.fillRect(this.pos.x - this.radius/2, this.pos.y + 10, this.radius, 2);
-        }
-    }
-}
-
-function Shape(pos, color, path) {
-    this.properties = {};
-    this.properties[frame] = {p: pos, c: color, path: path};
-
-    this.drag_idx = -1;
-
-    this.add_point = function(p) {
-        let props = this.properties[frame];
-        let path = props.path;
-        path.push(p);
-    }
-
-    this.closest_point_idx = function() {
-        let props = this.properties[frame];
-        let path = props.path;
-        let pos = props.p;
-        for (let i = 0; i < path.length; i++) {
-            let parr = path[i];
-            let p = {x: parr[0] + pos.x, y: parr[1] + pos.y};
-
-            if (distance(p, mouse) < 10) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    this.mouse_down = function(evt) {
-        this.drag_idx = this.closest_point_idx();
-        if (this.drag_idx != -1) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    this.mouse_drag = function(evt) {
-        let props = this.properties[frame];
-        let path = props.path;
-
-        if (this.drag_idx != -1) {
-            if (tool == "move") {
-                let offset = {x: mouse_grid.x - mouse_grid_last.x,
-                          y: mouse_grid.y - mouse_grid_last.y};
-                for (let i = 0; i < path.length; i++) {
-                    let p = path[i];
-                    path[i] = [p[0] + offset.x, p[1] + offset.y];
-                }
-            } else {
-                // drag that
-                let pos = props.p;
-                path[this.drag_idx] = [mouse_grid.x - pos.x, mouse_grid.y - pos.y];
-            }
-        }
-    }
-
-    this.mouse_up = function(evt) {
-        if (this.drag_idx != -1) {
-            if (tool == "del") {
-                // delete this
-                this.deleted = true;
-            } else if (tool == "opaque") {
-                this.properties[frame].c = [0, 0, 0, 1];
-            } else if (tool == "transparent") {
-                this.properties[frame].c = [0, 0, 0, 0];
-            }
-        }
-        
-        this.drag_idx = -1;
-    }
-
-    this.draw_path = function(path) {
-        for (let i = 0; i < path.length; i++) {
-            let parr = path[i];
-            let p = {x: parr[0] + pos.x, y: parr[1] + pos.y};
-            
-            if (i == 0) {
-                ctx.moveTo(p.x, p.y);
-            } else {
-                ctx.lineTo(p.x, p.y);
-            }
-        }
-    }
-
-    this.render = function(ctx) {
-
-        let a = this.properties[frame];
-        let b = this.properties[next_frame];
-
-        if (onion) {
-            let p_before = this.properties[loop_frame(frame-1)];
-            if (p_before) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = gray;
-                this.draw_path(p_before.path);
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
-
-        let props = interpolate(a, b);
-        let pos = props.p;
-        var path = props.path;
-
-        ctx.beginPath();
-        this.draw_path(path);
-
-        let idx;
-        if (this.drag_idx != -1) {
-            idx = this.drag_idx;
-        } else {
-            idx = this.closest_point_idx();
-        }
-
-        if (path.length == 1) {
-            idx = 0;
-        }
-
-        if (idx != -1) {
-            let parr = path[idx];
-            let p = {x: parr[0] + pos.x, y: parr[1] + pos.y};
-            ctx.strokeStyle = dark;
-            ctx.strokeRect(p.x - 10, p.y - 10, 20, 20);
-        }
-
-        ctx.save();
-        ctx.globalAlpha = props.c[3];
-
-        if (props.c[3] == 0 && menu_time > 0) {
-            ctx.globalAlpha = .2;
-        }
-
-        ctx.strokeStyle = rgbToHex(props.c);
-        ctx.stroke();
-        ctx.restore();
-    }
+    return newobjs;
 }
 
 function Frames(pos) {
@@ -574,6 +604,15 @@ function Menu(pos) {
         // render
         menu_time = 0;
         playing = !playing;
+    }));
+
+    this.buttons.push(new Button("save", {x: 0, y: 0}, function(b) {
+        save(objs);
+    }));
+
+    this.buttons.push(new Button("restore", {x: 0, y: 0}, function(b) {
+        let string = save(objs);
+        objs = restore(string);
     }));
 
     for (let i = 0; i < this.buttons.length; i++) {
@@ -707,6 +746,29 @@ window.onload = function() {
     var content = document.getElementById("content");
     content.appendChild(c);
 
+    document.getElementById("save").onclick = function(evt) {
+        save(objs);
+        return false;
+    };
+
+    document.getElementById("file").onchange = function(evt) {
+        let files = evt.target.files; // FileList object
+        let f = files[0];
+
+        var reader = new FileReader();
+
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+            return function(e) {
+                objs = load(e.target.result);
+            };
+        }
+        )(f);
+
+        // Read in the image file as a data URL.
+        reader.readAsText(f);
+    };
+
     objs = [];
 
     transition = new Transition();
@@ -770,7 +832,7 @@ window.onload = function() {
                 // add a point
                 new_line.add_point([mouse_grid.x, mouse_grid.y]);
             } else {
-                let l = new Shape({x: 0, y: 0}, [0, 0, 0, 1], [[mouse_grid.x, mouse_grid.y]]);
+                let l = new Shape([0, 0, 0, 1], [[mouse_grid.x, mouse_grid.y]]);
                 objs.push(l);
                 new_line = l
             }
