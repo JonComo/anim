@@ -15,11 +15,11 @@ var num_frames = 3;
 var frame; // current frame
 var next_frame;
 var playing;
+var onion = false;
 var rendering = false;
 
-var t_linear; // transition percent
 var t_ease;
-var t_steps = 30;
+var t_steps = 40;
 
 var grid_size = 20;
 var menu_time = 0;
@@ -201,6 +201,16 @@ function Text(text, pos) {
 
     this.render = function(ctx) {
 
+        if (onion) {
+            let p_before = this.properties[loop_frame(frame-1)];
+            if (p_before) {
+                ctx.save();
+                ctx.fillStyle = gray;
+                ctx.fillText(p_before.t, p_before.p.x, p_before.p.y);
+                ctx.restore();
+            }
+        }
+
         let a = this.properties[frame];
         let b = this.properties[next_frame];
         let i = interpolate(a, b);
@@ -209,6 +219,19 @@ function Text(text, pos) {
 
         ctx.save();
         ctx.globalAlpha = i.c[3];
+
+        if (i.c[3] == 0 && menu_time > 0) {
+            ctx.globalAlpha = .2;
+        }
+
+        // text change
+        if (b && b.c[3] != 0) {
+            // if not fading out, but text changing, fade in and out for smoother text change
+            if (a.t != b.t ) {
+                ctx.globalAlpha = sigmoid(Math.pow(t_ease * 5.0 - 2.5, 2.0), 2.0, 0.0, 1.0) - 1;
+            }
+        }
+
         ctx.fillStyle = rgbToHex(i.c);
         ctx.fillText(i.t, pos.x, pos.y);
         ctx.restore();
@@ -262,6 +285,12 @@ function interpolate(a, b) {
             }
 
             interp[key] = ip;
+        } else if (key == "t") {
+            if (t_ease < .5) {
+                interp[key] = a[key];
+            } else {
+                interp[key] = b[key];
+            }
         } else {
             interp[key] = a[key];
         }
@@ -372,16 +401,7 @@ function Shape(pos, color, path) {
         this.drag_idx = -1;
     }
 
-    this.render = function(ctx) {
-
-        let a = this.properties[frame];
-        let b = this.properties[next_frame];
-
-        let props = interpolate(a, b);
-        let pos = props.p;
-        var path = props.path;
-
-        ctx.beginPath();
+    this.draw_path = function(path) {
         for (let i = 0; i < path.length; i++) {
             let parr = path[i];
             let p = {x: parr[0] + pos.x, y: parr[1] + pos.y};
@@ -392,6 +412,31 @@ function Shape(pos, color, path) {
                 ctx.lineTo(p.x, p.y);
             }
         }
+    }
+
+    this.render = function(ctx) {
+
+        let a = this.properties[frame];
+        let b = this.properties[next_frame];
+
+        if (onion) {
+            let p_before = this.properties[loop_frame(frame-1)];
+            if (p_before) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = gray;
+                this.draw_path(p_before.path);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        let props = interpolate(a, b);
+        let pos = props.p;
+        var path = props.path;
+
+        ctx.beginPath();
+        this.draw_path(path);
 
         let idx;
         if (this.drag_idx != -1) {
@@ -413,14 +458,18 @@ function Shape(pos, color, path) {
 
         ctx.save();
         ctx.globalAlpha = props.c[3];
+
+        if (props.c[3] == 0 && menu_time > 0) {
+            ctx.globalAlpha = .2;
+        }
+
         ctx.strokeStyle = rgbToHex(props.c);
         ctx.stroke();
         ctx.restore();
     }
 }
 
-function Frames(num, pos) {
-    this.num = num;
+function Frames(pos) {
     this.pos = pos;
     this.pad = 8;
     this.size = 32;
@@ -429,17 +478,41 @@ function Frames(num, pos) {
         return {x: this.pos.x, y: this.pos.y + (i) * (this.size + this.pad)};
     }
 
-    this.buttons = [];
-    for (let i = 1; i <= this.num; i++) {
-        let newb = new Button(i, this.frame_pos(i), null);
-        this.buttons.push(newb);
-    }
+    this.create_buttons = function() {
+        this.buttons = [];
+        for (let i = 1; i <= num_frames; i++) {
+            let newb = new Button(i, this.frame_pos(i), null);
+            this.buttons.push(newb);
+        }
+        this.buttons.push(new Button("-", this.frame_pos(num_frames+1), null));
+        this.buttons.push(new Button("+", this.frame_pos(num_frames+2), null));
+    };
+
+    this.create_buttons();
 
     this.mouse_click = function(evt) {
-        for (let i = 0; i < this.num; i++) {
+        for (let i = 0; i < this.buttons.length; i++) {
             let btn = this.buttons[i];
             if (btn.mouse_click(evt)) {
-                this.on_click(i+1);
+                if (i == this.buttons.length - 2) {
+                    if (num_frames == 1) {
+                        break;
+                    }
+
+                    num_frames -= 1;
+                    this.create_buttons();
+                    break;
+                } else if (i == this.buttons.length - 1) {
+                    if (num_frames >= 10) {
+                        break;
+                    }
+
+                    num_frames += 1;
+                    this.create_buttons();
+                    break;
+                } else {
+                    this.on_click(i+1);
+                }
             }
         }
     }
@@ -447,7 +520,7 @@ function Frames(num, pos) {
     this.render = function(ctx) {
         ctx.fillText('frames', this.pos.x, this.pos.y);
 
-        for (let i = 1; i <= this.num; i++) {
+        for (let i = 1; i <= this.buttons.length; i++) {
             ctx.strokeStyle = gray;
             if (i == frame) {
                 ctx.strokeStyle = dark;
@@ -491,6 +564,10 @@ function Menu(pos) {
 
     this.buttons.push(new Button("opaque", {x: 0, y: 0}, function(b) {
         tool = "opaque";
+    }));
+
+    this.buttons.push(new Button("onion", {x: 0, y: 0}, function(b) {
+        onion = !onion;
     }));
 
     this.buttons.push(new Button("render", {x: 0, y: 0}, function(b) {
@@ -634,7 +711,7 @@ window.onload = function() {
 
     transition = new Transition();
     frame = 1;
-    frames = new Frames(num_frames, {x: 50, y: 50});
+    frames = new Frames({x: 50, y: 50});
     frames.on_click = function(idx) {
         transition_with_next(idx);
     };
