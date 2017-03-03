@@ -1,6 +1,7 @@
 // colors
 var gray = "#cccccc";
 var grid = "#dddddd";
+var grid_guide = "#bbbbbb";
 var dark = "#000000";
 var light = "#ffffff";
 
@@ -104,13 +105,18 @@ function get_mouse_pos(canvas, evt) {
 }
 
 function get_mouse_grid_pos() {
-    return {x: Math.floor((mouse.x + grid_size/2) / grid_size) * grid_size, y: Math.floor((mouse.y + grid_size/2) / grid_size) * grid_size};
+    let gs = grid_size / 3;
+    return {x: Math.floor((mouse.x + gs/2) / gs) * gs, y: Math.floor((mouse.y + gs/2) / gs) * gs};
 }
 
 function distance(a, b) {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
+}
+
+function between(a, b) {
+    return {x: (a.x + b.x)/2, y: (a.y + b.y)/2};
 }
 
 function sigmoid(x, num, offset, width) {
@@ -170,8 +176,8 @@ function interpolate(a, b) {
             
             ip = [];
             for (let i = 0; i < ap.length; i ++) {
-                let newp = [(1-t_ease) * ap[i][0] + t_ease * bp[i][0],
-                            (1-t_ease) * ap[i][1] + t_ease * bp[i][1]];
+                let newp = {x: (1-t_ease) * ap[i].x + t_ease * bp[i].x,
+                            y: (1-t_ease) * ap[i].y + t_ease * bp[i].y};
                 ip.push(newp);
             }
 
@@ -237,8 +243,7 @@ function Shape(color, path) {
         let props = this.properties[frame];
         let path = props.path;
         for (let i = 0; i < path.length; i++) {
-            let parr = path[i];
-            let p = {x: parr[0], y: parr[1]};
+            let p = path[i];
 
             if (distance(p, mouse) < 10) {
                 return i;
@@ -267,11 +272,11 @@ function Shape(color, path) {
                           y: mouse_grid.y - mouse_grid_last.y};
                 for (let i = 0; i < path.length; i++) {
                     let p = path[i];
-                    path[i] = [p[0] + offset.x, p[1] + offset.y];
+                    path[i] = {x: p.x + offset.x, y: p.y + offset.y};
                 }
             } else {
                 // drag that
-                path[this.drag_idx] = [mouse_grid.x, mouse_grid.y];
+                path[this.drag_idx] = {x: mouse_grid.x, y: mouse_grid.y};
             }
         }
     }
@@ -293,13 +298,12 @@ function Shape(color, path) {
 
     this.draw_path = function(path) {
         for (let i = 0; i < path.length; i++) {
-            let parr = path[i];
-            let p = {x: parr[0], y: parr[1]};
+            let p = path[i];
             
             if (i == 0) {
-                ctx.moveTo(parr[0], parr[1]);
+                ctx.moveTo(p.x, p.y);
             } else {
-                ctx.lineTo(parr[0], parr[1]);
+                ctx.lineTo(p.x, p.y);
             }
         }
     }
@@ -339,8 +343,7 @@ function Shape(color, path) {
         }
 
         if (idx != -1) {
-            let parr = path[idx];
-            let p = {x: parr[0], y: parr[1]};
+            let p = path[idx];
             ctx.strokeStyle = dark;
             ctx.strokeRect(p.x - 10, p.y - 10, 20, 20);
         }
@@ -354,6 +357,19 @@ function Shape(color, path) {
 
         ctx.strokeStyle = rgbToHex(props.c);
         ctx.stroke();
+
+        if (this.drag_idx != -1) {
+            // render side lengths while dragging
+            for (let i = 0; i < path.length - 1; i++) {
+                let p1 = path[i];
+                let p2 = path[i+1];
+                let b = between(p1, p2);
+                let d = distance(p1, p2) / grid_size;
+                d = Math.round(d * 10) / 10;
+                ctx.fillText(d, b.x, b.y);
+            }
+        }
+
         ctx.restore();
     }
 }
@@ -718,6 +734,14 @@ function draw_grid() {
         ctx.lineTo(x, c.height);
     }
     ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle = grid_guide;
+    ctx.moveTo(mouse_grid.x, 0);
+    ctx.lineTo(mouse_grid.x, c.height);
+    ctx.moveTo(0, mouse_grid.y);
+    ctx.lineTo(c.width, mouse_grid.y);
+    ctx.stroke();
 }
 
 function transition_with_next(next) {
@@ -830,9 +854,9 @@ window.onload = function() {
             // add a num obj at mouse pos
             if (new_line) {
                 // add a point
-                new_line.add_point([mouse_grid.x, mouse_grid.y]);
+                new_line.add_point({x: mouse_grid.x, y: mouse_grid.y});
             } else {
-                let l = new Shape([0, 0, 0, 1], [[mouse_grid.x, mouse_grid.y]]);
+                let l = new Shape([0, 0, 0, 1], [{x: mouse_grid.x, y: mouse_grid.y}]);
                 objs.push(l);
                 new_line = l
             }
