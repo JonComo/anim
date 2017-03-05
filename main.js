@@ -5,6 +5,8 @@ var grid_guide = "#bbbbbb";
 var dark = "#000000";
 var light = "#ffffff";
 
+var colors = ["#2C3E50", "#E74C3C", "#ECF0F1", "#3498DB", "#2980B9"];
+
 var font_menu = "20px Courier";
 var font_anim = "30px Courier";
 
@@ -23,13 +25,13 @@ var onion = false;
 var rendering = false;
 
 var t_ease;
-var t_steps = 40;
+var t_steps = 60;
 
-var grid_size = 20;
+var grid_size = 40;
 var menu_time = 0;
 var menu_duration = 60;
 
-var tool = "cursor";
+var tool = "select";
 var selected = false;
 var selecting = false;
 var new_line;
@@ -148,6 +150,15 @@ function rgbToHex(c) {
     return "#" + ((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1);
 }
 
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+     ] : null;
+}
+
 function interpolate(a, b) {
     if (b == null) {
         return a;
@@ -205,12 +216,13 @@ function Button(text, pos, callback) {
     this.pos = pos;
     this.callback = callback;
     this.radius = 20;
+    this.color = "";
     
     this.hovering = function() {
         return distance(this.pos, mouse) < this.radius;
     }
 
-    this.mouse_click = function(evt) {
+    this.mouse_up = function(evt) {
         if (this.hovering()) {
             // clicked
             if (this.callback) {
@@ -223,8 +235,15 @@ function Button(text, pos, callback) {
     }
 
     this.render = function(ctx) {
+        if (this.color.length) {
+            ctx.save();
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.pos.x - this.radius/2, this.pos.y - this.radius/2, this.radius, this.radius);
+            ctx.restore();
+        }
+
         ctx.fillText(this.text, this.pos.x, this.pos.y);
-        if (this.hovering()) {
+        if (this.hovering() || tool == this.color) {
             ctx.fillRect(this.pos.x - this.radius/2, this.pos.y + 10, this.radius, 2);
         }
     }
@@ -233,9 +252,34 @@ function Button(text, pos, callback) {
 function Shape(color, path) {
     this.type = "Shape";
     this.properties = {};
-    this.properties[frame] = {c: color, path: path};
+    this.properties[frame] = {c: color, path: path, v: false};
 
     this.selected_indices = [];
+
+    this.copy_properties = function(f, n) {
+        this.properties[n] = this.properties[f];
+    }
+
+    this.toggle_hide = function() {
+        if (this.selected_indices.length != 0) {
+            let c = this.properties[frame].c;
+            if (c[3] == 0) {
+                c[3] = 1;
+            } else {
+                c[3] = 0;
+            }
+
+            this.properties[frame].c = c;
+        }
+    }
+
+    this.set_color = function(rgb) {
+        if (this.selected_indices.length != 0) {
+            let c = this.properties[frame].c;
+            rgb.push(c[3]); // alpha
+            this.properties[frame].c = rgb;
+        }
+    }
 
     this.clear_props = function(f) {
         delete this.properties[f];
@@ -281,6 +325,14 @@ function Shape(color, path) {
         return found;
     }
 
+    this.onkeydown = function(evt) {
+        let key = evt.key;
+        if (this == new_line) {
+            tool = "select";
+            new_shape = null;
+        }
+    }
+
     this.mouse_down = function(evt) {
         // try to selected one
         let idx = this.closest_point_idx();
@@ -298,7 +350,7 @@ function Shape(color, path) {
             let props = this.properties[frame];
             let path = props.path;
 
-            if (tool == "move") {
+            if (tool == "select") {
                 // move all
                 let offset = {x: mouse_grid.x - mouse_grid_last.x,
                           y: mouse_grid.y - mouse_grid_last.y};
@@ -316,10 +368,8 @@ function Shape(color, path) {
             if (tool == "del") {
                 // delete this
                 this.deleted = true;
-            } else if (tool == "opaque") {
-                this.properties[frame].c = [0, 0, 0, 1];
-            } else if (tool == "transparent") {
-                this.properties[frame].c = [0, 0, 0, 0];
+            } else if (tool == "hide") {
+                this.toggle_hide();
             }
         }
 
@@ -338,10 +388,23 @@ function Shape(color, path) {
                 ctx.lineTo(p.x, p.y);
             }
 
+            // show selected indices
             if (this.selected_indices.indexOf(i) != -1 || i == idx) {
                 ctx.strokeStyle = dark;
                 ctx.strokeRect(p.x-grid_size/2, p.y-grid_size/2, grid_size, grid_size);
             }
+        }
+
+        if (this.properties[frame].v && path.length >= 2) {
+            // vector
+            let b = path[path.length-2];
+            let a = path[path.length-1];
+
+            let theta = Math.atan2(a.y - b.y, a.x - b.x);
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(a.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(a.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
         }
     }
 
@@ -376,6 +439,7 @@ function Shape(color, path) {
         }
 
         ctx.strokeStyle = rgbToHex(props.c);
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         if (this.selected_indices.length > 0) {
@@ -401,6 +465,31 @@ function Text(text, pos) {
 
     this.edited = false;
     this.selected = false;
+
+    this.copy_properties = function(f, n) {
+        this.properties[n] = this.properties[f];
+    }
+
+    this.set_color = function(rgb) {
+        if (this.selected_indices.length != 0) {
+            let c = this.properties[frame].c;
+            rgb.push(c[3]); // alpha
+            this.properties[frame].c = rgb;
+        }
+    }
+
+    this.toggle_hide = function() {
+        if (this.selected) {
+            let c = this.properties[frame].c;
+            if (c[3] == 0) {
+                c[3] = 1;
+            } else {
+                c[3] = 0;
+            }
+
+            this.properties[frame].c = c;
+        }
+    }
 
     this.clear_props = function(f) {
         delete this.properties[f];
@@ -458,7 +547,7 @@ function Text(text, pos) {
 
     this.mouse_drag = function(evt) {
         let pos = this.properties[frame].p;
-        if (tool == "move" && this.selected) {
+        if (tool == "select" && this.selected) {
             // shift it
             let p = this.properties[frame].p;
             let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
@@ -470,10 +559,9 @@ function Text(text, pos) {
         if (this.selected) {
             if (tool == "del") {
                 this.deleted = true;
-            } else if (tool == "opaque") {
-                this.properties[frame].c = [0, 0, 0, 1];
-            } else if (tool == "transparent") {
-                this.properties[frame].c = [0, 0, 0, 0];
+            } else if (tool == "hide") {
+                this.toggle_hide();
+                this.selected = false;
             }
 
             if (!this.near_mouse()) {
@@ -579,10 +667,10 @@ function Frames(pos) {
 
     this.create_buttons();
 
-    this.mouse_click = function(evt) {
+    this.mouse_up = function(evt) {
         for (let i = 0; i < this.buttons.length; i++) {
             let btn = this.buttons[i];
-            if (btn.mouse_click(evt)) {
+            if (btn.mouse_up(evt)) {
                 if (i == this.buttons.length - 2) {
                     if (num_frames == 1) {
                         break;
@@ -639,12 +727,12 @@ function Menu(pos) {
     this.pos = pos;
     this.buttons = [];
 
-    this.buttons.push(new Button("cursor", {x: 0, y: 0}, function(b) {
-        tool = "cursor";
+    this.buttons.push(new Button("menu", {x: 0, y: 0}, function(b) {
+        menu_time = 0;
     }));
 
-    this.buttons.push(new Button("move", {x: 0, y: 0}, function(b) {
-        tool = "move";
+    this.buttons.push(new Button("select", {x: 0, y: 0}, function(b) {
+        tool = "select";
     }));
 
     this.buttons.push(new Button("text", {x: 0, y: 0}, function(b) {
@@ -655,16 +743,27 @@ function Menu(pos) {
         tool = "shape";
     }));
 
+    this.buttons.push(new Button("vector", {x: 0, y: 0}, function(b) {
+        tool = "vector";
+    }));
+
     this.buttons.push(new Button("del", {x: 0, y: 0}, function(b) {
         tool = "del";
     }));
 
-    this.buttons.push(new Button("transparent", {x: 0, y: 0}, function(b) {
-        tool = "transparent";
+    this.buttons.push(new Button("copy frame", {x: 0, y: 0}, function(b) {
+        tool = "copy frame";
     }));
 
-    this.buttons.push(new Button("opaque", {x: 0, y: 0}, function(b) {
-        tool = "opaque";
+    this.buttons.push(new Button("hide", {x: 0, y: 0}, function(b) {
+        tool = "hide";
+
+        for (let i = 0; i < objs.length; i++) {
+            let obj = objs[i];
+            if (typeof obj.toggle_hide === "function") {
+                obj.toggle_hide();
+            }
+        }
     }));
 
     this.buttons.push(new Button("onion", {x: 0, y: 0}, function(b) {
@@ -677,15 +776,31 @@ function Menu(pos) {
         playing = !playing;
     }));
 
-    for (let i = 0; i < this.buttons.length; i++) {
-        let b = this.buttons[i];
-        b.pos = {x: this.pos.x, y: this.pos.y + 40 + i * 40};
+    for (let i = 0; i < colors.length; i++) {
+
+        let b = new Button("", {x: 0, y: 0}, function(b) {
+            let rgb = hexToRgb(colors[i]);
+
+            for (let i = 0; i < objs.length; i++) {
+                let obj = objs[i];
+                if (typeof obj.set_color === "function") {
+                    obj.set_color(rgb);
+                }
+            }
+        });
+        b.color = colors[i];
+        this.buttons.push(b);
     }
 
-    this.mouse_click = function(evt) {
+    for (let i = 0; i < this.buttons.length; i++) {
+        let b = this.buttons[i];
+        b.pos = {x: this.pos.x, y: this.pos.y + i * 40};
+    }
+
+    this.mouse_up = function(evt) {
         for (let i = 0; i < this.buttons.length; i++) {
             let btn = this.buttons[i];
-            if (btn.mouse_click(evt)) {
+            if (btn.mouse_up(evt)) {
                 return true;
             }
         }
@@ -694,8 +809,6 @@ function Menu(pos) {
     }
 
     this.render = function(ctx) {
-        ctx.fillText("menu", this.pos.x, this.pos.y);
-
         for (let i = 0; i < this.buttons.length; i++) {
             let b = this.buttons[i];
             b.render(ctx);
@@ -735,7 +848,7 @@ function Transition() {
             this.step += 1;
             t_percent = this.step / this.steps;
             t_ease = ease_in_out(t_percent);
-            t_ease = sigmoid(t_percent, 1.2, -.4, 14) - sigmoid(t_percent, .2, -.6, 10);
+            //t_ease = sigmoid(t_percent, 1.2, -.4, 14) - sigmoid(t_percent, .2, -.6, 10);
             if (this.step >= this.steps) {
                 t_percent = 1.0;
                 t_ease = 1.0;
@@ -800,10 +913,29 @@ function draw_grid() {
 }
 
 function transition_with_next(next) {
+    if (tool == "copy frame") {
+        tool = "select";
+        // copy properties
+        for (let i = 0; i < objs.length; i ++) {
+            let obj = objs[i];
+            if (typeof obj.copy_properties === "function") {
+                obj.copy_properties(frame, next);
+            }
+        }
+
+        return;
+    }
+
     new_line = null;
     next_frame = next;
     change_frames();
-    transition.run(t_steps, next, function(targ) {
+    let steps = t_steps;
+    if (menu_time > 0) {
+        // make it instant when menu open
+        steps = 0;
+    }
+
+    transition.run(steps, next, function(targ) {
         frame = targ;
     });
 }
@@ -892,38 +1024,6 @@ window.onload = function() {
             }
         }
     };
-    
-    window.onclick = function(evt) {
-        frames.mouse_click(evt);
-
-        if (menu.mouse_click(evt)) {
-            new_line = null;
-            return;
-        }
-
-        if (tool == "cursor") {
-            for (let i = 0; i < objs.length; i++) {
-                let obj = objs[i];
-                if (typeof obj.mouse_click === 'function') {
-                    obj.mouse_click(evt);
-                }
-            }
-        } else if (tool == "text") {
-            // add a num obj at mouse pos
-            let n = new Text("0", mouse_grid);
-            objs.push(n);
-        } else if (tool == "shape") {
-            // add a num obj at mouse pos
-            if (new_line) {
-                // add a point
-                new_line.add_point({x: mouse_grid.x, y: mouse_grid.y});
-            } else {
-                let l = new Shape([0, 0, 0, 1], [{x: mouse_grid.x, y: mouse_grid.y}]);
-                objs.push(l);
-                new_line = l
-            }
-        }
-    }
 
     window.onmousedown = function(evt) {
         mouse_down = true;
@@ -939,7 +1039,7 @@ window.onload = function() {
         }
 
         // didn't touch an obj, if tool is move start a rect
-        if (tool == "move" && selected == false) {
+        if (tool == "select" && selected == false) {
             selecting = true;
         }
     };
@@ -966,6 +1066,42 @@ window.onload = function() {
 
     window.onmouseup = function(evt) {
         mouse_down = false;
+
+        frames.mouse_up(evt);
+
+        if (menu.mouse_up(evt)) {
+            new_line = null;
+            selecting = false;
+            return;
+        }
+
+        if (tool == "select") {
+            for (let i = 0; i < objs.length; i++) {
+                let obj = objs[i];
+                if (typeof obj.mouse_up === 'function') {
+                    obj.mouse_up(evt);
+                }
+            }
+        } else if (tool == "text") {
+            // add a num obj at mouse pos
+            let n = new Text("0", mouse_grid);
+            objs.push(n);
+        } else if (tool == "shape" || tool == "vector") {
+            // add a num obj at mouse pos
+            if (new_line) {
+                // add a point
+                new_line.add_point({x: mouse_grid.x, y: mouse_grid.y});
+            } else {
+                let l = new Shape([0, 0, 0, 1], [{x: mouse_grid.x, y: mouse_grid.y}]);
+
+                if (tool == "vector") {
+                    l.properties[frame].v = true;
+                }
+
+                objs.push(l);
+                new_line = l
+            }
+        }
 
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
@@ -1007,8 +1143,9 @@ window.onload = function() {
 
         ctx.clearRect(0, 0, c.width, c.height);
 
+        draw_grid();
+        
         if (menu_time > 0) {
-            draw_grid();
             menu_time -= 1;
         }
 
