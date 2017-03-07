@@ -1,7 +1,7 @@
 // colors
 var gray = "#cccccc";
-var grid = "#dddddd";
-var grid_guide = "#bbbbbb";
+var grid = "#eeeeee";
+var grid_guide = "#dddddd";
 var dark = "#000000";
 var light = "#ffffff";
 
@@ -140,8 +140,12 @@ function copy(d) {
 function change_frames() {
     for (let i = 0; i < objs.length; i++) {
         obj = objs[i];
-        if (obj.properties[next_frame] == null) {
+        if (obj.properties[frame] && obj.properties[next_frame] == null) {
             obj.properties[next_frame] = copy(obj.properties[frame]);
+            if (next_frame < frame) {
+                // make that shit transparent?
+                obj.properties[next_frame].c[3] = 0.0;
+            }
         }
     }
 }
@@ -256,33 +260,42 @@ function Shape(color, path) {
 
     this.selected_indices = [];
 
-    this.copy_properties = function(f, n) {
-        this.properties[n] = this.properties[f];
+    this.hidden = function() {
+        return this.properties[frame].c[3] == 0;
     }
 
-    this.toggle_hide = function() {
-        if (this.selected_indices.length != 0) {
-            let c = this.properties[frame].c;
-            if (c[3] == 0) {
-                c[3] = 1;
-            } else {
-                c[3] = 0;
-            }
+    this.copy_properties = function(f, n) {
+        this.properties[n] = copy(this.properties[f]);
+    }
 
-            this.properties[frame].c = c;
+    this.hide = function() {
+        if (this.selected_indices.length != 0) {
+            this.properties[frame].c[3] = 0;
+            this.selected_indices = [];
         }
     }
 
-    this.set_color = function(rgb) {
+    this.set_color = function(rgba) {
         if (this.selected_indices.length != 0) {
-            let c = this.properties[frame].c;
-            rgb.push(c[3]); // alpha
-            this.properties[frame].c = rgb;
+            rgba[3] = this.properties[frame].c[3];
+            this.properties[frame].c = rgba;
         }
     }
 
     this.clear_props = function(f) {
         delete this.properties[f];
+    }
+
+    this.clear_all_props = function() {
+        if (this.selected_indices.length == 0) {
+            return;
+        }
+
+        for (var key in this.properties) {
+            if (key != frame) {
+                delete this.properties[key];
+            }
+        }
     }
 
     this.add_point = function(p) {
@@ -297,7 +310,7 @@ function Shape(color, path) {
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
 
-            if (distance(p, mouse) < grid_size) {
+            if (distance(p, mouse) < grid_size/2) {
                 return i;
             }
         }
@@ -308,6 +321,11 @@ function Shape(color, path) {
     this.in_rect = function(x, y, x2, y2) {
         // select individual points
         let props = this.properties[frame];
+
+        if (this.hidden()) {
+            return;
+        }
+
         let path = props.path;
         this.selected_indices = [];
         let found = false;
@@ -334,6 +352,10 @@ function Shape(color, path) {
     }
 
     this.mouse_down = function(evt) {
+        if (this.hidden()) {
+            return false;
+        }
+
         // try to selected one
         let idx = this.closest_point_idx();
         if (idx != -1) {
@@ -365,11 +387,11 @@ function Shape(color, path) {
 
     this.mouse_up = function(evt) {
         if (this.selected_indices.length > 0) {
-            if (tool == "del") {
+            if (tool == "delete") {
                 // delete this
                 this.deleted = true;
             } else if (tool == "hide") {
-                this.toggle_hide();
+                this.hide();
             }
         }
 
@@ -413,6 +435,10 @@ function Shape(color, path) {
         let a = this.properties[frame];
         let b = this.properties[next_frame];
 
+        if (!a) {
+            return;
+        }
+
         if (onion) {
             let p_before = this.properties[loop_frame(frame-1)];
             if (p_before) {
@@ -433,10 +459,6 @@ function Shape(color, path) {
 
         ctx.save();
         ctx.globalAlpha = props.c[3];
-
-        if (props.c[3] == 0 && menu_time > 0) {
-            ctx.globalAlpha = .2;
-        }
 
         ctx.strokeStyle = rgbToHex(props.c);
         ctx.lineWidth = 2;
@@ -467,27 +489,20 @@ function Text(text, pos) {
     this.selected = false;
 
     this.copy_properties = function(f, n) {
-        this.properties[n] = this.properties[f];
+        this.properties[n] = copy(this.properties[f]);
     }
 
-    this.set_color = function(rgb) {
-        if (this.selected_indices.length != 0) {
-            let c = this.properties[frame].c;
-            rgb.push(c[3]); // alpha
-            this.properties[frame].c = rgb;
+    this.set_color = function(rgba) {
+        if (this.selected) {
+            rgba[3] = this.properties[frame].c[3];
+            this.properties[frame].c = rgba;
         }
     }
 
-    this.toggle_hide = function() {
+    this.hide = function() {
         if (this.selected) {
-            let c = this.properties[frame].c;
-            if (c[3] == 0) {
-                c[3] = 1;
-            } else {
-                c[3] = 0;
-            }
-
-            this.properties[frame].c = c;
+            this.properties[frame].c[3] = 0;
+            this.selected = false;
         }
     }
 
@@ -495,7 +510,27 @@ function Text(text, pos) {
         delete this.properties[f];
     }
 
+    this.clear_all_props = function() {
+        if (!this.selected) {
+            return;
+        }
+
+        for (var key in this.properties) {
+            if (key != frame) {
+                delete this.properties[key];
+            }
+        }
+    }
+
+    this.hidden = function() {
+        return this.properties[frame].c[3] == 0.0;
+    }
+
     this.in_rect = function(x, y, x2, y2) {
+        if (this.hidden()) {
+            return false;
+        }
+
         let p = this.properties[frame].p;
         if (p.x > x && p.y > y && p.x < x2 && p.y < y2) {
             this.selected = true;
@@ -508,7 +543,7 @@ function Text(text, pos) {
 
     this.near_mouse = function () {
         let p = this.properties[frame].p;
-        return (Math.abs(mouse.x - p.x) < grid_size && Math.abs(mouse.y - p.y) < grid_size);
+        return distance(p, mouse) < grid_size/4;
     }
 
     this.onkeydown = function(evt) {
@@ -535,7 +570,11 @@ function Text(text, pos) {
         return true;
     }
 
-    this.mouse_down = function(evt) {        
+    this.mouse_down = function(evt) {
+        if (this.hidden()) {
+            return false;
+        } 
+
         if (this.near_mouse()) {
             this.selected = true;
             selected = true;
@@ -557,10 +596,10 @@ function Text(text, pos) {
 
     this.mouse_up = function(evt) {
         if (this.selected) {
-            if (tool == "del") {
+            if (tool == "delete") {
                 this.deleted = true;
             } else if (tool == "hide") {
-                this.toggle_hide();
+                this.hide();
                 this.selected = false;
             }
 
@@ -582,18 +621,19 @@ function Text(text, pos) {
         }
 
         let a = this.properties[frame];
+
+        if (!a) {
+            return;
+        }
+
         let b = this.properties[next_frame];
         let i = interpolate(a, b);
 
         let pos = i.p;
 
         ctx.save();
-        
-        ctx.globalAlpha = i.c[3];
 
-        if (i.c[3] == 0 && menu_time > 0) {
-            ctx.globalAlpha = .2;
-        }
+        ctx.globalAlpha = i.c[3];
 
         // text change
         if (b && b.c[3] != 0) {
@@ -608,7 +648,7 @@ function Text(text, pos) {
 
         if (this.selected || this.near_mouse()) {
             ctx.strokeStyle = dark;
-            ctx.strokeRect(pos.x-grid_size, pos.y-grid_size, grid_size*2, grid_size*2);
+            ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
         }
 
         ctx.restore();
@@ -652,7 +692,15 @@ function Frames(pos) {
     this.size = 32;
 
     this.frame_pos = function(i) {
-        return {x: this.pos.x, y: this.pos.y + (i) * (this.size + this.pad)};
+        let size =  (this.size + this.pad);
+        let yoffset = (i) * size;
+        let xoff = 0;
+        let hcon = size * 15;
+        while (yoffset > hcon) {
+            yoffset -= hcon;
+            xoff ++;
+        }
+        return {x: this.pos.x + xoff * 50, y: this.pos.y + yoffset};
     }
 
     this.create_buttons = function() {
@@ -692,10 +740,6 @@ function Frames(pos) {
                     this.create_buttons();
                     break;
                 } else if (i == this.buttons.length - 1) {
-                    if (num_frames >= 10) {
-                        break;
-                    }
-
                     num_frames += 1;
                     this.create_buttons();
                     break;
@@ -743,12 +787,25 @@ function Menu(pos) {
         tool = "shape";
     }));
 
+    this.buttons.push(new Button("circle", {x: 0, y: 0}, function(b) {
+        tool = "circle";
+    }));
+
     this.buttons.push(new Button("vector", {x: 0, y: 0}, function(b) {
         tool = "vector";
     }));
 
-    this.buttons.push(new Button("del", {x: 0, y: 0}, function(b) {
-        tool = "del";
+    this.buttons.push(new Button("delete", {x: 0, y: 0}, function(b) {
+        tool = "delete";
+    }));
+
+    this.buttons.push(new Button("clear props", {x: 0, y: 0}, function(b) {
+        for (let i = 0; i < objs.length; i++) {
+            let obj = objs[i];
+            if (typeof obj.clear_all_props == "function") {
+                obj.clear_all_props();
+            }
+        }
     }));
 
     this.buttons.push(new Button("copy frame", {x: 0, y: 0}, function(b) {
@@ -760,8 +817,8 @@ function Menu(pos) {
 
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
-            if (typeof obj.toggle_hide === "function") {
-                obj.toggle_hide();
+            if (typeof obj.hide == "function") {
+                obj.hide();
             }
         }
     }));
@@ -903,13 +960,15 @@ function draw_grid() {
     ctx.lineTo(c.width, c.height/2.0);
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.strokeStyle = grid_guide;
-    ctx.moveTo(mouse_grid.x, 0);
-    ctx.lineTo(mouse_grid.x, c.height);
-    ctx.moveTo(0, mouse_grid.y);
-    ctx.lineTo(c.width, mouse_grid.y);
-    ctx.stroke();
+    if (menu_time > 0) {
+        ctx.beginPath();
+        ctx.strokeStyle = grid_guide;
+        ctx.moveTo(mouse_grid.x, 0);
+        ctx.lineTo(mouse_grid.x, c.height);
+        ctx.moveTo(0, mouse_grid.y);
+        ctx.lineTo(c.width, mouse_grid.y);
+        ctx.stroke();
+    }
 }
 
 function transition_with_next(next) {
@@ -983,12 +1042,12 @@ window.onload = function() {
 
     transition = new Transition();
     frame = 1;
-    frames = new Frames({x: 50, y: 50});
+    frames = new Frames({x: c.width - 150, y: 50});
     frames.on_click = function(idx) {
         transition_with_next(idx);
     };
 
-    menu = new Menu({x: 150, y: 50});
+    menu = new Menu({x: 100, y: 50});
 
     window.onkeydown = function(evt) {
         let key = evt.key;
@@ -1086,7 +1145,7 @@ window.onload = function() {
             // add a num obj at mouse pos
             let n = new Text("0", mouse_grid);
             objs.push(n);
-        } else if (tool == "shape" || tool == "vector") {
+        } else if (tool == "shape" || tool == "vector" || tool == "circle") {
             // add a num obj at mouse pos
             if (new_line) {
                 // add a point
@@ -1096,6 +1155,8 @@ window.onload = function() {
 
                 if (tool == "vector") {
                     l.properties[frame].v = true;
+                } else if (tool == "circle") {
+                    l.properties[frame].circle = true;
                 }
 
                 objs.push(l);
@@ -1144,7 +1205,7 @@ window.onload = function() {
         ctx.clearRect(0, 0, c.width, c.height);
 
         draw_grid();
-        
+
         if (menu_time > 0) {
             menu_time -= 1;
         }
