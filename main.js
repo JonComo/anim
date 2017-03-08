@@ -37,6 +37,7 @@ var selecting = false;
 var new_line;
 
 var mouse_down = false;
+var ctrl = false;
 var mouse = {x: 0, y: 0};
 var mouse_last = {x: 0, y: 0};
 var mouse_start = {x: 0, y: 0};
@@ -164,10 +165,6 @@ function hexToRgb(hex) {
 }
 
 function transform_props(key, props) {
-    if (tool != "transform") {
-        return props;
-    }
-
     let step = .2;
 
     if (key == "l") {
@@ -289,6 +286,18 @@ function Shape(color, path) {
 
     this.selected_indices = [];
 
+    this.duplicate = function() {
+        if (this.selected_indices.length == 0) {
+            return;
+        }
+
+        let newc = new Shape(null, null);
+        newc.properties[frame] = copy(this.properties[frame]);
+        newc.selected = true;
+        this.selected_indices = [];
+        objs.push(newc);
+    }
+
     this.hidden = function() {
         return this.properties[frame].c[3] == 0;
     }
@@ -380,10 +389,7 @@ function Shape(color, path) {
             return true;
         }
 
-        if (tool == "transform") {
-            this.properties[frame] = transform_props(key, this.properties[frame]);
-            return false;
-        }
+        this.properties[frame] = transform_props(key, this.properties[frame]);
 
         return false;
     }
@@ -448,12 +454,9 @@ function Shape(color, path) {
         c.y /= path.length;
 
         ctx.save();
-        console.log(c);
         ctx.translate(c.x, c.y);
-        if (menu_time == 0) {
-            ctx.rotate(props.r);
-            ctx.scale(props.w, props.h);
-        }
+        ctx.rotate(props.r);
+        ctx.scale(props.w, props.h);
 
         let idx = this.closest_point_idx();
 
@@ -549,6 +552,18 @@ function Circle(color, pos) {
 
     this.copy_properties = function(f, n) {
         this.properties[n] = copy(this.properties[f]);
+    }
+
+    this.duplicate = function() {
+        if (!this.selected) {
+            return;
+        }
+
+        let newc = new Circle(null, null);
+        newc.properties[frame] = copy(this.properties[frame]);
+        newc.selected = true;
+        this.selected = false;
+        objs.push(newc);
     }
 
     this.hide = function() {
@@ -659,10 +674,8 @@ function Circle(color, pos) {
         let p = props.p;
         ctx.save();
         ctx.translate(p.x, p.y);
-        if (menu_time == 0) {
-            ctx.rotate(props.r);
-            ctx.scale(props.w, props.h);
-        }
+        ctx.rotate(props.r);
+        ctx.scale(props.w, props.h);
         ctx.arc(0, 0, 20, 0, 2 * Math.PI, false);
         ctx.restore();
     }
@@ -717,6 +730,18 @@ function Text(text, pos) {
 
     this.edited = false;
     this.selected = false;
+
+    this.duplicate = function() {
+        if (!this.selected) {
+            return;
+        }
+
+        let newc = new Text(null, null);
+        newc.properties[frame] = copy(this.properties[frame]);
+        newc.selected = true;
+        this.selected = false;
+        objs.push(newc);
+    }
 
     this.copy_properties = function(f, n) {
         this.properties[n] = copy(this.properties[f]);
@@ -781,8 +806,10 @@ function Text(text, pos) {
             return false;
         }
 
-        if (tool == "transform") {
-            this.properties[frame] = transform_props(evt.key, this.properties[frame]);
+        let key = evt.key;
+
+        if (ctrl) {
+            this.properties[frame] = transform_props(key, this.properties[frame]);
             return false;
         }
 
@@ -793,7 +820,6 @@ function Text(text, pos) {
             text = "";
         }
 
-        let key = evt.key;
         if (key == 'Backspace') {
             text = text.slice(0, text.length-1);
         } else if (key.length == 1) {
@@ -846,10 +872,8 @@ function Text(text, pos) {
 
     this.draw_text = function(ctx, props) {
         ctx.translate(props.p.x, props.p.y);
-        if (menu_time == 0) {
-            ctx.rotate(props.r);
-            ctx.scale(props.w, props.h);
-        }
+        ctx.rotate(props.r);
+        ctx.scale(props.w, props.h);
         ctx.fillText(props.t, 0, 0);
     }
 
@@ -1027,10 +1051,6 @@ function Menu(pos) {
         tool = "select";
     }));
 
-    this.buttons.push(new Button("transform", {x: 0, y: 0}, function(b) {
-        tool = "transform";
-    }));
-
     this.buttons.push(new Button("text", {x: 0, y: 0}, function(b) {
         tool = "text";
     }));
@@ -1056,6 +1076,15 @@ function Menu(pos) {
             let obj = objs[i];
             if (typeof obj.clear_all_props == "function") {
                 obj.clear_all_props();
+            }
+        }
+    }));
+
+    this.buttons.push(new Button("duplicate", {x: 0, y: 0}, function(b) {
+        for (let i = objs.length-1; i >= 0; i--) {
+            let obj = objs[i];
+            if (typeof obj.duplicate == "function") {
+                obj.duplicate();
             }
         }
     }));
@@ -1304,6 +1333,10 @@ window.onload = function() {
     window.onkeydown = function(evt) {
         let key = evt.key;
 
+        if (key == "Control") {
+            ctrl = true;
+        }
+
         let captured = false;
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
@@ -1335,6 +1368,13 @@ window.onload = function() {
             }
         }
     };
+
+    window.onkeyup = function(evt) {
+        let key = evt.key;
+        if (key == "ctrl") {
+            ctrl = false;
+        }
+    }
 
     window.onmousedown = function(evt) {
         mouse_down = true;
