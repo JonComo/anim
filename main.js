@@ -5,7 +5,7 @@ var grid_guide = "#dddddd";
 var dark = "#000000";
 var light = "#ffffff";
 
-var colors = ["#2C3E50", "#E74C3C", "#ECF0F1", "#3498DB", "#2980B9"];
+var colors = ["#000000", "#E74C3C", "#2980B9"];
 
 var font_menu = "20px Courier";
 var font_anim = "30px Courier";
@@ -177,6 +177,11 @@ function interpolate(a, b) {
 
             interp[key] = {x: (1-t_ease) * ap.x + t_ease * bp.x,
                            y: (1-t_ease) * ap.y + t_ease * bp.y};
+        } else if (key == "w" || key == "h" || key == "t") {
+            // interpolate width, height, or rotation
+            let aw = a[key];
+            let bw = b[key];
+            interp[key] = (1-t_ease) * aw + t_ease * bw;
         } else if (key == "c") {
             // interpolate colors
             let ac = a[key];
@@ -483,7 +488,7 @@ function Shape(color, path) {
 function Circle(color, pos) {
     this.type = "Circle";
     this.properties = {};
-    this.properties[frame] = {p: pos, c: color, w: 20, h: 20, t: 0.0};
+    this.properties[frame] = {p: pos, c: color, w: 1, h: 1, t: 0.0};
     this.selected = false;
 
     this.hidden = function() {
@@ -548,6 +553,27 @@ function Circle(color, pos) {
         return false;
     }
 
+    this.onkeydown = function(evt) {
+        if (!this.selected) {
+            return false;
+        }
+        let step = .2;
+        let key = evt.key;
+        if (key == "l") {
+            this.properties[frame].w += step;
+        } else if (key == "j") {
+            this.properties[frame].w -= step;
+        } else if (key == "i") {
+            this.properties[frame].h += step;
+        } else if (key == "k") {
+            this.properties[frame].h -= step;
+        } else if (key == "u") {
+            this.properties[frame].t -= Math.PI/8;
+        } else if (key == "o") {
+            this.properties[frame].t += Math.PI/8;
+        }
+    }
+
     this.mouse_down = function(evt) {
         if (this.hidden()) {
             return false;
@@ -589,7 +615,12 @@ function Circle(color, pos) {
 
     this.draw_ellipse = function(props, ctx) {
         let p = props.p;
-        ctx.arc(p.x, p.y, 20, 0, 2 * Math.PI, false);
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(props.t);
+        ctx.scale(props.w, props.h);
+        ctx.arc(0, 0, 20, 0, 2 * Math.PI, false);
+        ctx.restore();
     }
 
     this.render = function(ctx) {
@@ -624,13 +655,14 @@ function Circle(color, pos) {
         ctx.lineWidth = 2;
         ctx.stroke();
 
+        ctx.restore();
+
         if (this.selected || this.near_mouse()) {
+            ctx.beginPath();
             ctx.strokeStyle = dark;
             ctx.strokeRect(props.p.x - grid_size/4, props.p.y - grid_size/4, grid_size/2, grid_size/2);
             ctx.stroke();
         }
-
-        ctx.restore();
     }
 }
 
