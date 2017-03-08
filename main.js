@@ -480,6 +480,160 @@ function Shape(color, path) {
     }
 }
 
+function Circle(color, pos) {
+    this.type = "Circle";
+    this.properties = {};
+    this.properties[frame] = {p: pos, c: color, w: 20, h: 20, t: 0.0};
+    this.selected = false;
+
+    this.hidden = function() {
+        return this.properties[frame].c[3] == 0;
+    }
+
+    this.copy_properties = function(f, n) {
+        this.properties[n] = copy(this.properties[f]);
+    }
+
+    this.hide = function() {
+        if (this.selected) {
+            this.properties[frame].c[3] = 0;
+            this.selected = false;
+        }
+    }
+
+    this.set_color = function(rgba) {
+        if (this.selected) {
+            rgba[3] = this.properties[frame].c[3];
+            this.properties[frame].c = rgba;
+        }
+    }
+
+    this.clear_props = function(f) {
+        delete this.properties[f];
+    }
+
+    this.clear_all_props = function() {
+        if (!this.selected) {
+            return;
+        }
+
+        for (var key in this.properties) {
+            if (key != frame) {
+                delete this.properties[key];
+            }
+        }
+    }
+
+    this.near_mouse = function () {
+        let props = this.properties[frame];
+        let p = props.p;
+        
+        return distance(p, mouse) < grid_size/2
+    }
+
+    this.in_rect = function(x, y, x2, y2) {
+        if (this.hidden()) {
+            return false;
+        }
+
+        let props = this.properties[frame];
+        let p = props.p;
+
+        if (p.x > x && p.x < x2 && p.y > y && p.y < y2) {
+            this.selected = true;
+            selected = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    this.mouse_down = function(evt) {
+        if (this.hidden()) {
+            return false;
+        }
+
+        // try to selected one
+        if (this.near_mouse()) {
+            this.selected = true;
+            selected = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    this.mouse_drag = function(evt) {
+        if (this.selected && tool == "select") {
+            // move
+            let props = this.properties[frame];
+            let offset = {x: mouse_grid.x - mouse_grid_last.x,
+                        y: mouse_grid.y - mouse_grid_last.y};
+            let p = props.p;
+            this.properties[frame].p = {x: p.x + offset.x, y: p.y + offset.y};
+        }
+    }
+
+    this.mouse_up = function(evt) {
+        if (this.selected) {
+            if (tool == "delete") {
+                // delete this
+                this.deleted = true;
+            } else if (tool == "hide") {
+                this.hide();
+            }
+        }
+
+        this.selected = false;
+    }
+
+    this.draw_ellipse = function(props, ctx) {
+        let p = props.p;
+        ctx.arc(p.x, p.y, 20, 0, 2 * Math.PI, false);
+    }
+
+    this.render = function(ctx) {
+
+        let a = this.properties[frame];
+        let b = this.properties[next_frame];
+
+        if (!a) {
+            return;
+        }
+
+        if (onion) {
+            let p_before = this.properties[loop_frame(frame-1)];
+            if (p_before) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = gray;
+                this.draw_ellipse(p_before, ctx);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        let props = interpolate(a, b);
+
+        ctx.save();
+
+        ctx.beginPath();
+        this.draw_ellipse(props, ctx);
+        ctx.globalAlpha = props.c[3];
+        ctx.strokeStyle = rgbToHex(props.c);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        if (this.selected || this.near_mouse()) {
+            ctx.strokeStyle = dark;
+            ctx.strokeRect(props.p.x - grid_size/4, props.p.y - grid_size/4, grid_size/2, grid_size/2);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+}
+
 function Text(text, pos) {
     this.type = "Text";
     this.properties = {};
@@ -676,6 +830,10 @@ function load(string) {
             let new_shape = new Shape(null, null, null);
             new_shape.properties = o.properties;
             newobjs.push(new_shape);
+        } else if (o.type == "Circle") {
+            let new_circle = new Circle(null);
+            new_circle.properties = o.properties;
+            newobjs.push(new_circle);
         } else if (o.type == "Text") {
             let new_txt = new Text(null, null);
             new_txt.properties = o.properties;
@@ -1145,7 +1303,7 @@ window.onload = function() {
             // add a num obj at mouse pos
             let n = new Text("0", mouse_grid);
             objs.push(n);
-        } else if (tool == "shape" || tool == "vector" || tool == "circle") {
+        } else if (tool == "shape" || tool == "vector") {
             // add a num obj at mouse pos
             if (new_line) {
                 // add a point
@@ -1162,6 +1320,9 @@ window.onload = function() {
                 objs.push(l);
                 new_line = l
             }
+        } else if (tool == "circle") {
+            let new_circle = new Circle([0, 0, 0, 1], mouse_grid);
+            objs.push(new_circle);
         }
 
         for (let i = 0; i < objs.length; i++) {
