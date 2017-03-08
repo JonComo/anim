@@ -163,6 +163,30 @@ function hexToRgb(hex) {
      ] : null;
 }
 
+function transform_props(key, props) {
+    if (tool != "transform") {
+        return props;
+    }
+
+    let step = .2;
+
+    if (key == "l") {
+        props.w += step;
+    } else if (key == "j") {
+        props.w -= step;
+    } else if (key == "i") {
+        props.h += step;
+    } else if (key == "k") {
+        props.h -= step;
+    } else if (key == "u") {
+        props.r -= Math.PI/8;
+    } else if (key == "o") {
+        props.r += Math.PI/8;
+    }
+
+    return props;
+}
+
 function interpolate(a, b) {
     if (b == null) {
         return a;
@@ -177,7 +201,7 @@ function interpolate(a, b) {
 
             interp[key] = {x: (1-t_ease) * ap.x + t_ease * bp.x,
                            y: (1-t_ease) * ap.y + t_ease * bp.y};
-        } else if (key == "w" || key == "h" || key == "t") {
+        } else if (key == "w" || key == "h" || key == "r") {
             // interpolate width, height, or rotation
             let aw = a[key];
             let bw = b[key];
@@ -261,7 +285,7 @@ function Button(text, pos, callback) {
 function Shape(color, path) {
     this.type = "Shape";
     this.properties = {};
-    this.properties[frame] = {c: color, path: path, v: false};
+    this.properties[frame] = {c: color, path: path, v: false, w: 1, h: 1, r: 0};
 
     this.selected_indices = [];
 
@@ -353,7 +377,15 @@ function Shape(color, path) {
         if (this == new_line) {
             tool = "select";
             new_shape = null;
+            return true;
         }
+
+        if (tool == "transform") {
+            this.properties[frame] = transform_props(key, this.properties[frame]);
+            return false;
+        }
+
+        return false;
     }
 
     this.mouse_down = function(evt) {
@@ -403,22 +435,53 @@ function Shape(color, path) {
         this.selected_indices = [];
     }
 
-    this.draw_path = function(path) {
+    this.draw_path = function(props) {
+        let path = props.path;
+        let c = {x: 0, y: 0};
+
+        for (let i = 0; i < path.length; i++) {
+            c.x += path[i].x;
+            c.y += path[i].y;
+        }
+
+        c.x /= path.length;
+        c.y /= path.length;
+
+        ctx.save();
+        console.log(c);
+        ctx.translate(c.x, c.y);
+        if (menu_time == 0) {
+            ctx.rotate(props.r);
+            ctx.scale(props.w, props.h);
+        }
+
         let idx = this.closest_point_idx();
 
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
             
             if (i == 0) {
-                ctx.moveTo(p.x, p.y);
+                ctx.moveTo(p.x - c.x, p.y - c.y);
             } else {
-                ctx.lineTo(p.x, p.y);
+                ctx.lineTo(p.x - c.x, p.y - c.y);
             }
 
             // show selected indices
             if (this.selected_indices.indexOf(i) != -1 || i == idx) {
                 ctx.strokeStyle = dark;
-                ctx.strokeRect(p.x-grid_size/2, p.y-grid_size/2, grid_size, grid_size);
+                ctx.strokeRect(p.x- c.x -grid_size/2, p.y - c.y - grid_size/2, grid_size, grid_size);
+            }
+        }
+
+        if (this.selected_indices.length > 0) {
+            // render side lengths while dragging
+            for (let i = 0; i < path.length - 1; i++) {
+                let p1 = path[i];
+                let p2 = path[i+1];
+                let b = between(p1, p2);
+                let d = distance(p1, p2) / grid_size;
+                d = Math.round(d * 10) / 10;
+                ctx.fillText(d, b.x - c.x, b.y - c.y);
             }
         }
 
@@ -428,11 +491,13 @@ function Shape(color, path) {
             let a = path[path.length-1];
 
             let theta = Math.atan2(a.y - b.y, a.x - b.x);
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(a.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(a.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
+            ctx.moveTo(a.x - c.x, a.y - c.y);
+            ctx.lineTo(a.x - c.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y - c.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
+            ctx.moveTo(a.x - c.x, a.y - c.y);
+            ctx.lineTo(a.x - c.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y - c.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
         }
+
+        ctx.restore();
     }
 
     this.render = function(ctx) {
@@ -450,17 +515,16 @@ function Shape(color, path) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.strokeStyle = gray;
-                this.draw_path(p_before.path);
+                this.draw_path(p_before);
                 ctx.stroke();
                 ctx.restore();
             }
         }
 
         let props = interpolate(a, b);
-        var path = props.path;
 
         ctx.beginPath();
-        this.draw_path(path);
+        this.draw_path(props);
 
         ctx.save();
         ctx.globalAlpha = props.c[3];
@@ -469,18 +533,6 @@ function Shape(color, path) {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        if (this.selected_indices.length > 0) {
-            // render side lengths while dragging
-            for (let i = 0; i < path.length - 1; i++) {
-                let p1 = path[i];
-                let p2 = path[i+1];
-                let b = between(p1, p2);
-                let d = distance(p1, p2) / grid_size;
-                d = Math.round(d * 10) / 10;
-                ctx.fillText(d, b.x, b.y);
-            }
-        }
-
         ctx.restore();
     }
 }
@@ -488,7 +540,7 @@ function Shape(color, path) {
 function Circle(color, pos) {
     this.type = "Circle";
     this.properties = {};
-    this.properties[frame] = {p: pos, c: color, w: 1, h: 1, t: 0.0};
+    this.properties[frame] = {p: pos, c: color, w: 1, h: 1, r: 0};
     this.selected = false;
 
     this.hidden = function() {
@@ -557,21 +609,11 @@ function Circle(color, pos) {
         if (!this.selected) {
             return false;
         }
-        let step = .2;
+
         let key = evt.key;
-        if (key == "l") {
-            this.properties[frame].w += step;
-        } else if (key == "j") {
-            this.properties[frame].w -= step;
-        } else if (key == "i") {
-            this.properties[frame].h += step;
-        } else if (key == "k") {
-            this.properties[frame].h -= step;
-        } else if (key == "u") {
-            this.properties[frame].t -= Math.PI/8;
-        } else if (key == "o") {
-            this.properties[frame].t += Math.PI/8;
-        }
+        this.properties[frame] = transform_props(key, this.properties[frame]);
+
+        return false;
     }
 
     this.mouse_down = function(evt) {
@@ -617,8 +659,10 @@ function Circle(color, pos) {
         let p = props.p;
         ctx.save();
         ctx.translate(p.x, p.y);
-        ctx.rotate(props.t);
-        ctx.scale(props.w, props.h);
+        if (menu_time == 0) {
+            ctx.rotate(props.r);
+            ctx.scale(props.w, props.h);
+        }
         ctx.arc(0, 0, 20, 0, 2 * Math.PI, false);
         ctx.restore();
     }
@@ -669,7 +713,7 @@ function Circle(color, pos) {
 function Text(text, pos) {
     this.type = "Text";
     this.properties = {};
-    this.properties[frame] = {t: text, p: pos, c: [0, 0, 0, 1]};
+    this.properties[frame] = {t: text, p: pos, c: [0, 0, 0, 1], w: 1, h: 1, r: 0};
 
     this.edited = false;
     this.selected = false;
@@ -737,6 +781,11 @@ function Text(text, pos) {
             return false;
         }
 
+        if (tool == "transform") {
+            this.properties[frame] = transform_props(evt.key, this.properties[frame]);
+            return false;
+        }
+
         let text = this.properties[frame].t;
 
         if (!this.edited) {
@@ -795,13 +844,22 @@ function Text(text, pos) {
         }
     }
 
+    this.draw_text = function(ctx, props) {
+        ctx.translate(props.p.x, props.p.y);
+        if (menu_time == 0) {
+            ctx.rotate(props.r);
+            ctx.scale(props.w, props.h);
+        }
+        ctx.fillText(props.t, 0, 0);
+    }
+
     this.render = function(ctx) {
         if (onion) {
             let p_before = this.properties[loop_frame(frame-1)];
             if (p_before) {
                 ctx.save();
                 ctx.fillStyle = gray;
-                ctx.fillText(p_before.t, p_before.p.x, p_before.p.y);
+                this.draw_text(ctx, p_before);
                 ctx.restore();
             }
         }
@@ -830,14 +888,14 @@ function Text(text, pos) {
         }
 
         ctx.fillStyle = rgbToHex(i.c);
-        ctx.fillText(i.t, pos.x, pos.y);
+        this.draw_text(ctx, i);
+
+        ctx.restore();
 
         if (this.selected || this.near_mouse()) {
             ctx.strokeStyle = dark;
             ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
         }
-
-        ctx.restore();
     }
 }
 
@@ -967,6 +1025,10 @@ function Menu(pos) {
 
     this.buttons.push(new Button("select", {x: 0, y: 0}, function(b) {
         tool = "select";
+    }));
+
+    this.buttons.push(new Button("transform", {x: 0, y: 0}, function(b) {
+        tool = "transform";
     }));
 
     this.buttons.push(new Button("text", {x: 0, y: 0}, function(b) {
