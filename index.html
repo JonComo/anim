@@ -9,8 +9,16 @@
     <body>
         <div id="content">
         </div>
-        <input type="text" id="name" />
-        <a id="save" href="">Save</a><br />
+        <h3>Save file</h3>
+        <input type="text" id="name" placeholder="filename" />
+        <a id="save" href="">Save</a>
+        <h3>Load file</h3>
         <input type="file" id="file" name="files" />
+        <h3>Import to frame (without animations)</h3>
+        <input type="file" id="import" name="files" />
+        <h3>Selected objects:</h3>
+        <textarea rows="4" cols="50" id="selected_objects_text"></textarea>
+        <input type="submit" id="load_to_frame" value="Load to frame">
+        
     </body>
 </html>

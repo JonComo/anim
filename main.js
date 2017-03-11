@@ -23,12 +23,14 @@ var next_frame;
 var playing;
 var onion = false;
 var rendering = false;
+var presenting = false;
 
 var t_ease;
 var t_steps = 60;
 
 var grid_size = 40;
 var menu_time = 0;
+var mouse_time = 0;
 var menu_duration = 60;
 
 var tool = "select";
@@ -112,7 +114,7 @@ function get_mouse_pos(canvas, evt) {
 }
 
 function constrain_to_grid(p) {
-    let gs = grid_size / 2;
+    let gs = grid_size / 4;
     return {x: Math.floor((p.x + gs/2) / gs) * gs, y: Math.floor((p.y + gs/2) / gs) * gs};
 }
 
@@ -176,9 +178,9 @@ function transform_props(key, props) {
     } else if (key == "k") {
         props.h -= step;
     } else if (key == "u") {
-        props.r -= Math.PI/8;
+        props.r -= Math.PI/12;
     } else if (key == "o") {
-        props.r += Math.PI/8;
+        props.r += Math.PI/12;
     }
 
     return props;
@@ -198,7 +200,7 @@ function interpolate(a, b) {
 
             interp[key] = {x: (1-t_ease) * ap.x + t_ease * bp.x,
                            y: (1-t_ease) * ap.y + t_ease * bp.y};
-        } else if (key == "w" || key == "h" || key == "r") {
+        } else if (key == "w" || key == "h" || key == "r" || key == "a_s" || key == "a_e") {
             // interpolate width, height, or rotation
             let aw = a[key];
             let bw = b[key];
@@ -293,12 +295,20 @@ function Shape(color, path) {
 
         let newc = new Shape(null, null);
         newc.properties[frame] = copy(this.properties[frame]);
-        newc.selected = true;
+        // select all indices for next one
+        for (let i = 0; i < newc.properties[frame].path.length; i++) {
+            newc.selected_indices.push(i);
+        }
+
         this.selected_indices = [];
         objs.push(newc);
     }
 
     this.hidden = function() {
+        if (!this.properties[frame]) {
+            return true;
+        }
+
         return this.properties[frame].c[3] == 0;
     }
 
@@ -311,6 +321,17 @@ function Shape(color, path) {
             this.properties[frame].c[3] = 0;
             this.selected_indices = [];
         }
+    }
+
+    this.select = function() {
+        this.selected_indices = [];
+        for (let i = 0; i < this.properties[frame].path.length; i++) {
+            this.selected_indices.push(i);
+        }
+    }
+
+    this.is_selected = function() {
+        return this.selected_indices.length > 0;
     }
 
     this.set_color = function(rgba) {
@@ -389,7 +410,9 @@ function Shape(color, path) {
             return true;
         }
 
-        this.properties[frame] = transform_props(key, this.properties[frame]);
+        if (this.selected_indices.length != 0) {
+            this.properties[frame] = transform_props(key, this.properties[frame]);
+        }
 
         return false;
     }
@@ -460,6 +483,8 @@ function Shape(color, path) {
 
         let idx = this.closest_point_idx();
 
+        let hidden = this.hidden();
+
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
             
@@ -470,7 +495,7 @@ function Shape(color, path) {
             }
 
             // show selected indices
-            if (this.selected_indices.indexOf(i) != -1 || i == idx) {
+            if (!presenting && !hidden && (this.selected_indices.indexOf(i) != -1 || i == idx)) {
                 ctx.strokeStyle = dark;
                 ctx.strokeRect(p.x- c.x -grid_size/2, p.y - c.y - grid_size/2, grid_size, grid_size);
             }
@@ -543,10 +568,22 @@ function Shape(color, path) {
 function Circle(color, pos) {
     this.type = "Circle";
     this.properties = {};
-    this.properties[frame] = {p: pos, c: color, w: 1, h: 1, r: 0};
+    this.properties[frame] = {p: pos, c: color, a_s:0, a_e: Math.PI*2.0, w: 1, h: 1, r: 0};
     this.selected = false;
 
+    this.select = function() {
+        this.selected = true;
+    }
+
+    this.is_selected = function() {
+        return this.selected;
+    }
+
     this.hidden = function() {
+        if (!this.properties[frame]) {
+            return true;
+        }
+        
         return this.properties[frame].c[3] == 0;
     }
 
@@ -626,7 +663,22 @@ function Circle(color, pos) {
         }
 
         let key = evt.key;
-        this.properties[frame] = transform_props(key, this.properties[frame]);
+
+        if (ctrl) {
+            let p = this.properties[frame];
+            let step = Math.PI/12;
+            if (key == "u") {
+                p.a_s += step;
+            } else if (key == "o") {
+                p.a_s -= step;
+            } else if (key == "j") {
+                p.a_e -= step;
+            } else if (key == "l") {
+                p.a_e += step;
+            }
+        } else {
+            this.properties[frame] = transform_props(key, this.properties[frame]);
+        }
 
         return false;
     }
@@ -676,7 +728,7 @@ function Circle(color, pos) {
         ctx.translate(p.x, p.y);
         ctx.rotate(props.r);
         ctx.scale(props.w, props.h);
-        ctx.arc(0, 0, 20, 0, 2 * Math.PI, false);
+        ctx.arc(0, 0, 20, props.a_s, props.a_e, false);
         ctx.restore();
     }
 
@@ -714,7 +766,7 @@ function Circle(color, pos) {
 
         ctx.restore();
 
-        if (this.selected || this.near_mouse()) {
+        if (!presenting && props.c[3] != 0 && (this.selected || this.near_mouse())) {
             ctx.beginPath();
             ctx.strokeStyle = dark;
             ctx.strokeRect(props.p.x - grid_size/4, props.p.y - grid_size/4, grid_size/2, grid_size/2);
@@ -730,6 +782,14 @@ function Text(text, pos) {
 
     this.edited = false;
     this.selected = false;
+
+    this.select = function() {
+        this.selected = true;
+    }
+
+    this.is_selected = function() {
+        return this.selected;
+    }
 
     this.duplicate = function() {
         if (!this.selected) {
@@ -778,7 +838,11 @@ function Text(text, pos) {
     }
 
     this.hidden = function() {
-        return this.properties[frame].c[3] == 0.0;
+        if (!this.properties[frame]) {
+            return true;
+        }
+        
+        return this.properties[frame].c[3] == 0;
     }
 
     this.in_rect = function(x, y, x2, y2) {
@@ -846,7 +910,13 @@ function Text(text, pos) {
     }
 
     this.mouse_drag = function(evt) {
-        let pos = this.properties[frame].p;
+        let props = this.properties[frame];
+        if (!props) {
+            return false;
+        }
+
+        let pos = props.p;
+
         if (tool == "select" && this.selected) {
             // shift it
             let p = this.properties[frame].p;
@@ -916,7 +986,7 @@ function Text(text, pos) {
 
         ctx.restore();
 
-        if (this.selected || this.near_mouse()) {
+        if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
             ctx.strokeStyle = dark;
             ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
         }
@@ -930,32 +1000,67 @@ function save(objs) {
     saveAs(blob, name);
 }
 
-function load(string) {
-    let dict = JSON.parse(string);
-    let arr = dict["objs"];
+function load(evt, keep_animation) {
 
-    num_frames = dict["num_frames"];
-    frames.create_buttons();
+    let files = evt.target.files; // FileList object
+    let f = files[0];
 
-    let newobjs = [];
+    var reader = new FileReader();
+
+    // Closure to capture the file information.
+    reader.onload = (function(theFile) {
+        return function(e) {
+            let string = e.target.result;
+
+            let dict = JSON.parse(string);
+            let arr = dict["objs"];
+
+            if (keep_animation) {
+                num_frames = dict["num_frames"];
+                frames.create_buttons();
+            }
+
+            let new_objs = text_array_to_objs(arr, keep_animation);
+
+            if (keep_animation) {
+                objs = new_objs;
+            } else {
+                objs = objs.concat(new_objs);
+            }
+        };
+    }
+    )(f);
+
+    reader.readAsText(f);
+}
+
+function text_array_to_objs(arr, keep_animation) {
+    
+    let new_objs = [];
     for (let i = 0; i < arr.length; i++) {
         let o = arr[i];
+        let new_obj = null;
+
         if (o.type == "Shape") {
-            let new_shape = new Shape(null, null, null);
-            new_shape.properties = o.properties;
-            newobjs.push(new_shape);
+            new_obj = new Shape();
         } else if (o.type == "Circle") {
-            let new_circle = new Circle(null);
-            new_circle.properties = o.properties;
-            newobjs.push(new_circle);
+            new_obj = new Circle();
         } else if (o.type == "Text") {
-            let new_txt = new Text(null, null);
-            new_txt.properties = o.properties;
-            newobjs.push(new_txt);
+            new_obj = new Text();
         }
+
+        if (keep_animation) {
+            new_obj.properties = o.properties;
+        } else {
+            new_obj.properties = {};
+            new_obj.properties[frame] = o.properties[1];
+            new_obj.select();
+        }
+        
+        new_objs.push(new_obj);
     }
 
-    return newobjs;
+    return new_objs;
 }
 
 function Frames(pos) {
@@ -1055,6 +1160,12 @@ function Menu(pos) {
         tool = "text";
     }));
 
+    this.buttons.push(new Button("propogate text", {x: 0, y: 0}, function(b) {
+        for (let i = 0; i < objs.length; i++) {
+
+        }
+    }));
+
     this.buttons.push(new Button("shape", {x: 0, y: 0}, function(b) {
         tool = "shape";
     }));
@@ -1108,10 +1219,11 @@ function Menu(pos) {
         onion = !onion;
     }));
 
-    this.buttons.push(new Button("render", {x: 0, y: 0}, function(b) {
-        // render
+    this.buttons.push(new Button("present", {x: 0, y: 0}, function(b) {
+        // show a cursor
         menu_time = 0;
-        playing = !playing;
+        presenting = true;
+        document.body.style.cursor = 'none';
     }));
 
     for (let i = 0; i < colors.length; i++) {
@@ -1212,12 +1324,13 @@ function loop_frame(f) {
     return f;
 }
 
-function draw_grid() {
+function draw_grid(ctx) {
     ctx.strokeStyle = grid;
     // render grid
     let r_num = c.height / grid_size;
     let c_num = c.width / grid_size;
     let x = 0; let y = 0;
+    
     ctx.beginPath();
     for (let i = 0; i < r_num; i++) {
         y = i * grid_size;
@@ -1234,11 +1347,12 @@ function draw_grid() {
 
     // draw center
     ctx.beginPath();
-    ctx.strokeStyle = grid_guide;
     ctx.moveTo(c.width/2.0, 0);
     ctx.lineTo(c.width/2.0, c.height);
     ctx.moveTo(0, c.height/2.0);
     ctx.lineTo(c.width, c.height/2.0);
+
+    ctx.strokeStyle = grid_guide;
     ctx.stroke();
 
     if (menu_time > 0) {
@@ -1302,28 +1416,27 @@ window.onload = function() {
     };
 
     document.getElementById("file").onchange = function(evt) {
-        let files = evt.target.files; // FileList object
-        let f = files[0];
+        tool = "select";
+        load(evt, true);
+    };
 
-        var reader = new FileReader();
+    document.getElementById("import").onchange = function(evt) {
+        tool = "select";
+        load(evt, false);
+    };
 
-        // Closure to capture the file information.
-        reader.onload = (function(theFile) {
-            return function(e) {
-                objs = load(e.target.result);
-            };
-        }
-        )(f);
-
-        // Read in the image file as a data URL.
-        reader.readAsText(f);
+    document.getElementById("load_to_frame").onclick = function(evt) {
+        let text = document.getElementById("selected_objects_text").value;
+        let arr = JSON.parse(text);
+        objs = objs.concat(text_array_to_objs(arr, false));
+        selected = true;
     };
 
     objs = [];
 
     transition = new Transition();
     frame = 1;
-    frames = new Frames({x: c.width - 150, y: 50});
+    frames = new Frames({x: c.width - 200, y: 50});
     frames.on_click = function(idx) {
         transition_with_next(idx);
     };
@@ -1332,6 +1445,12 @@ window.onload = function() {
 
     window.onkeydown = function(evt) {
         let key = evt.key;
+
+        if (presenting && key == "Escape") {
+            presenting = false;
+            document.body.style.cursor = '';
+            return false;
+        }
 
         if (key == "Control") {
             ctrl = true;
@@ -1371,7 +1490,7 @@ window.onload = function() {
 
     window.onkeyup = function(evt) {
         let key = evt.key;
-        if (key == "ctrl") {
+        if (key == "Control") {
             ctrl = false;
         }
     }
@@ -1380,10 +1499,15 @@ window.onload = function() {
         mouse_down = true;
         mouse_start = get_mouse_pos(c, evt);
 
+        if (presenting) {
+            return false;
+        }
+
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
             if (typeof obj.mouse_down === 'function') {
                 if (obj.mouse_down(evt)) {
+                    console.log('touched ' + obj);
                     break;
                 }
             }
@@ -1399,6 +1523,11 @@ window.onload = function() {
         // update mouse
         mouse = get_mouse_pos(c, evt);
         mouse_grid = constrain_to_grid(mouse);
+
+        if (presenting) {
+            mouse_time = 20;
+            return false;
+        }
 
         menu_time = menu_duration;
 
@@ -1417,6 +1546,10 @@ window.onload = function() {
 
     window.onmouseup = function(evt) {
         mouse_down = false;
+
+        if (presenting) {
+            return false;
+        }
 
         frames.mouse_up(evt);
 
@@ -1478,11 +1611,22 @@ window.onload = function() {
             xx2 = Math.max(x, x2);
             yy2 = Math.max(y, y2);
 
+            let selected_objs = [];
+
             for (let i = 0; i < objs.length; i++) {
                 let obj = objs[i];
                 if (typeof obj.in_rect === 'function') {
                     obj.in_rect(xx, yy, xx2, yy2);
+                    if (obj.is_selected()) {
+                        selected_objs.push(obj);
+                    }
                 }
+            }
+
+            if (selected_objs.length > 0) {
+                // store as text rep
+                let string = JSON.stringify(selected_objs);
+                document.getElementById("selected_objects_text").value = string;
             }
 
             selecting = false;
@@ -1497,9 +1641,14 @@ window.onload = function() {
             requestAnimationFrame(animate);
         }, 1000/fps);
 
+        if (presenting) {
+            menu_time = 0;
+            mouse_time -= 1;
+        }
+
         ctx.clearRect(0, 0, c.width, c.height);
 
-        draw_grid();
+        draw_grid(ctx);
 
         if (menu_time > 0) {
             menu_time -= 1;
@@ -1530,6 +1679,32 @@ window.onload = function() {
         if (menu_time > 0) {
             frames.render(ctx);
             menu.render(ctx);
+        }
+
+        if (presenting && mouse_time > 0) {
+            // draw a cursor
+
+            let mx = mouse.x;
+            let my = mouse.y;
+            
+            ctx.strokeStyle = dark;
+
+            if (mouse_down) {
+                mouse_time = 20;
+                ctx.beginPath();
+                ctx.arc(mx, my, 10, 0, Math.PI * 2.0, 0);
+                ctx.stroke();
+            } else {
+                let pad = 20;
+                ctx.beginPath();
+                ctx.moveTo(mx + pad, my);
+                ctx.lineTo(mx, my);
+                ctx.lineTo(mx, my + pad);
+                ctx.moveTo(mx, my);
+                ctx.lineTo(mx + pad, my + pad);
+                ctx.stroke();
+            }
+            
         }
         
         transition.update();
