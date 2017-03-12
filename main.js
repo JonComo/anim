@@ -309,6 +309,10 @@ function Shape(color, path) {
             return true;
         }
 
+        if (tool == "hide") {
+            return false;
+        }
+
         return this.properties[frame].c[3] == 0;
     }
 
@@ -318,7 +322,11 @@ function Shape(color, path) {
 
     this.hide = function() {
         if (this.selected_indices.length != 0) {
-            this.properties[frame].c[3] = 0;
+            if (this.properties[frame].c[3] == 1) {
+                this.properties[frame].c[3] = 0;
+            } else {
+                this.properties[frame].c[3] = 1;
+            }
             this.selected_indices = [];
         }
     }
@@ -583,6 +591,10 @@ function Circle(color, pos) {
         if (!this.properties[frame]) {
             return true;
         }
+
+        if (tool == "hide") {
+            return false;
+        }
         
         return this.properties[frame].c[3] == 0;
     }
@@ -605,7 +617,11 @@ function Circle(color, pos) {
 
     this.hide = function() {
         if (this.selected) {
-            this.properties[frame].c[3] = 0;
+            if (this.properties[frame].c[3] == 1) {
+                this.properties[frame].c[3] = 0;
+            } else {
+                this.properties[frame].c[3] = 1;
+            }
             this.selected = false;
         }
     }
@@ -816,7 +832,12 @@ function Text(text, pos) {
 
     this.hide = function() {
         if (this.selected) {
-            this.properties[frame].c[3] = 0;
+            if (this.properties[frame].c[3] == 1) {
+                this.properties[frame].c[3] = 0;
+            } else {
+                this.properties[frame].c[3] = 1;
+            }
+            
             this.selected = false;
         }
     }
@@ -840,6 +861,10 @@ function Text(text, pos) {
     this.hidden = function() {
         if (!this.properties[frame]) {
             return true;
+        }
+
+        if (tool == "hide") {
+            return false;
         }
         
         return this.properties[frame].c[3] == 0;
@@ -947,6 +972,44 @@ function Text(text, pos) {
         ctx.fillText(props.t, 0, 0);
     }
 
+    this.draw_graph = function(ctx, props) {
+        ctx.save();
+
+        ctx.translate(0, -grid_size * 5);
+
+        let t = props.t;
+
+        if (t.slice(0, 5) == "graph") {
+            let expr = t.slice(6, t.length);
+            if (!this.shape) {
+                this.shape = new Shape([0, 0, 0, 1], []);
+            }
+
+            try {
+                // graph it
+                if (this.last_expr != expr) {
+                    let path = [];
+                    for (let xx = -5; xx < 5; xx += .1) {
+                        let y = math.eval(expr, {x: xx});
+                        y = Math.max(Math.min(y, 1000), -1000);
+                        path.push({x: grid_size * xx, y: -grid_size * y});
+                    }
+
+                    this.shape.properties[frame] = {c: [0, 0, 0, 1], path: path, v: false, w: 1, h: 1, r: 0};
+                }
+
+                this.shape.render(ctx);
+
+                this.last_expr = expr;
+
+            } catch (error) {
+                ctx.fillText(error, 0, -50);
+            }
+        }
+
+        ctx.restore();
+    }
+
     this.render = function(ctx) {
         if (onion) {
             let p_before = this.properties[loop_frame(frame-1)];
@@ -983,6 +1046,9 @@ function Text(text, pos) {
 
         ctx.fillStyle = rgbToHex(i.c);
         this.draw_text(ctx, i);
+
+        // graphing
+        this.draw_graph(ctx, i);
 
         ctx.restore();
 
@@ -1623,9 +1689,16 @@ window.onload = function() {
                 }
             }
 
-            if (selected_objs.length > 0) {
+            let scopy = copy(selected_objs);
+            for (let i = 0; i < scopy.length; i++) {
+                let obj = scopy[i];
+                let props = copy(obj.properties[frame]);
+                obj.properties = {1: props};
+            }
+
+            if (scopy.length > 0) {
                 // store as text rep
-                let string = JSON.stringify(selected_objs);
+                let string = JSON.stringify(scopy);
                 document.getElementById("selected_objects_text").value = string;
             }
 
