@@ -2,6 +2,7 @@
 var gray = "#cccccc";
 var grid = "#eeeeee";
 var grid_guide = "#dddddd";
+var graph_guide = "#aaaaaa";
 var dark = "#000000";
 var light = "#ffffff";
 
@@ -560,6 +561,7 @@ function Shape(color, path) {
         let props = interpolate(a, b);
 
         ctx.beginPath();
+
         this.draw_path(props);
 
         ctx.save();
@@ -897,6 +899,10 @@ function Text(text, pos) {
 
         let key = evt.key;
 
+        if (key == "ArrowLeft" || key == "ArrowRight") {
+            return false;
+        }
+
         if (ctrl) {
             this.properties[frame] = transform_props(key, this.properties[frame]);
             return false;
@@ -915,9 +921,37 @@ function Text(text, pos) {
             text = text + key;
         }
 
-        this.properties[frame].t = text;
+        this.change_text(text);
 
         return true;
+    }
+
+    this.change_text = function(text) {
+        let changed = this.properties[frame].t != text;
+
+        this.properties[frame].t = text;
+
+        if (changed && text.slice(0, 5) == "graph") {
+            // regenerate path
+            let uw = 16;
+            let uh = 9;
+
+            try {
+                let expr = text.slice(6);
+                console.log(expr);
+                let path = [];
+                for (let xx = -uw; xx <= uw; xx += .1) {
+                    let y = math.eval(expr, {x: xx});
+                    y = Math.max(Math.min(y, 1000), -1000);
+                    path.push({x: grid_size * xx, y: -grid_size * y});
+                }
+
+                this.properties[frame].path = path;
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
     }
 
     this.mouse_down = function(evt) {
@@ -973,41 +1007,75 @@ function Text(text, pos) {
     }
 
     this.draw_graph = function(ctx, props) {
-        ctx.save();
+        let path = props.path;
 
-        ctx.translate(0, -grid_size * 5);
+        if (path == null) {
+            return;
+        }
 
-        let t = props.t;
+        // graph it
 
-        if (t.slice(0, 5) == "graph") {
-            let expr = t.slice(6, t.length);
-            if (!this.shape) {
-                this.shape = new Shape([0, 0, 0, 1], []);
-            }
+        // graph the path
+        ctx.strokeStyle = rgbToHex(props.c);
 
-            try {
-                // graph it
-                if (this.last_expr != expr) {
-                    let path = [];
-                    for (let xx = -5; xx < 5; xx += .1) {
-                        let y = math.eval(expr, {x: xx});
-                        y = Math.max(Math.min(y, 1000), -1000);
-                        path.push({x: grid_size * xx, y: -grid_size * y});
-                    }
+        let off = {x: c.width/2, y: c.height/2};
 
-                    this.shape.properties[frame] = {c: [0, 0, 0, 1], path: path, v: false, w: 1, h: 1, r: 0};
-                }
+        ctx.translate(off.x, off.y);
 
-                this.shape.render(ctx);
+        ctx.beginPath();
 
-                this.last_expr = expr;
-
-            } catch (error) {
-                ctx.fillText(error, 0, -50);
+        for (let i = 0; i < path.length; i++) {
+            let p = path[i];
+            
+            if (i == 0) {
+                ctx.moveTo(p.x, p.y);
+            } else {
+                ctx.lineTo(p.x, p.y);
             }
         }
 
-        ctx.restore();
+        ctx.stroke();
+
+
+        // show where mouse is
+        if (presenting && mouse_down) {
+            ctx.strokeStyle = graph_guide;
+
+            ctx.beginPath();
+
+            ctx.moveTo(mouse.x - off.x, -off.y);
+            ctx.lineTo(mouse.x - off.x, c.height - off.y);
+
+            let iright = path.length-1;
+            for (let i = 0; i < path.length; i++) {
+                if (path[i].x > mouse.x - off.x) {
+                    iright = i;
+                    break;
+                }
+            }
+
+            let ileft = iright - 1;
+
+            if (ileft < 0) {
+                ileft = 0;
+                iright = 1;
+            }
+
+            let xdiff = (path[iright].x) - (mouse.x - off.x);
+            let i = xdiff / (path[iright].x - path[ileft].x);
+
+            let yout = (1 - i) * path[iright].y + i * path[ileft].y;
+
+            ctx.moveTo(-off.x, yout);
+            ctx.lineTo(c.width - off.x, yout);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(mouse.x - off.x, yout, grid_size/2, 0, 2 * Math.PI, 0);
+            ctx.stroke();
+        }
+
+        ctx.translate(-off.x, -off.y);
     }
 
     this.render = function(ctx) {
@@ -1047,9 +1115,13 @@ function Text(text, pos) {
         ctx.fillStyle = rgbToHex(i.c);
         this.draw_text(ctx, i);
 
-        // graphing
-        this.draw_graph(ctx, i);
+        ctx.restore();
 
+        // graphing
+
+        ctx.save();
+        ctx.globalAlpha = i.c[3];
+        this.draw_graph(ctx, i);
         ctx.restore();
 
         if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
@@ -1226,12 +1298,6 @@ function Menu(pos) {
         tool = "text";
     }));
 
-    this.buttons.push(new Button("propogate text", {x: 0, y: 0}, function(b) {
-        for (let i = 0; i < objs.length; i++) {
-
-        }
-    }));
-
     this.buttons.push(new Button("shape", {x: 0, y: 0}, function(b) {
         tool = "shape";
     }));
@@ -1364,7 +1430,7 @@ function Transition() {
             this.step += 1;
             t_percent = this.step / this.steps;
             t_ease = ease_in_out(t_percent);
-            //t_ease = sigmoid(t_percent, 1.2, -.4, 14) - sigmoid(t_percent, .2, -.6, 10);
+            t_ease = sigmoid(t_percent, 1.2, -.4, 14) - sigmoid(t_percent, .2, -.6, 15);
             if (this.step >= this.steps) {
                 t_percent = 1.0;
                 t_ease = 1.0;
@@ -1498,6 +1564,16 @@ window.onload = function() {
         selected = true;
     };
 
+    document.getElementById("load_formula_text").onclick = function(evt) {
+        let t = document.getElementById("formula_text").value;
+        for (let i = 0; i < objs.length; i++) {
+            let obj = objs[i];
+            if (typeof obj.change_text == "function") {
+                obj.change_text(t);
+            }
+        }
+    };
+
     objs = [];
 
     transition = new Transition();
@@ -1511,6 +1587,10 @@ window.onload = function() {
 
     window.onkeydown = function(evt) {
         let key = evt.key;
+
+        if (document.getElementById("formula_text") == document.activeElement) {
+            return true;
+        }
 
         if (presenting && key == "Escape") {
             presenting = false;
