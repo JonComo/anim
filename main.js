@@ -310,10 +310,6 @@ function Shape(color, path) {
             return true;
         }
 
-        if (tool == "hide") {
-            return false;
-        }
-
         return this.properties[frame].c[3] == 0;
     }
 
@@ -864,10 +860,6 @@ function Text(text, pos) {
         if (!this.properties[frame]) {
             return true;
         }
-
-        if (tool == "hide") {
-            return false;
-        }
         
         return this.properties[frame].c[3] == 0;
     }
@@ -1073,6 +1065,9 @@ function Text(text, pos) {
             ctx.beginPath();
             ctx.arc(mouse.x - off.x, yout, grid_size/2, 0, 2 * Math.PI, 0);
             ctx.stroke();
+
+            ctx.fillText(Math.round(100 * (mouse.x - off.x)/grid_size)/100, mouse.x - off.x, off.y - 40);
+            ctx.fillText(Math.round(100 * (-yout)/grid_size)/100, off.x - 60, yout - 20);
         }
 
         ctx.translate(-off.x, -off.y);
@@ -1235,29 +1230,51 @@ function Frames(pos) {
             let btn = this.buttons[i];
             if (btn.mouse_up(evt)) {
                 if (i == this.buttons.length - 2) {
+                    // remove frame
+
+                    // remove selected frame
+                    // copy properties from next frames
+                    // decrement number of frames
                     if (num_frames == 1) {
                         break;
                     }
 
-                    // wipe those properties from the objects
-                    for (let i = 0; i < objs.length; i++) {
-                        let obj = objs[i];
-                        if (typeof obj.clear_props === 'function') {
-                            obj.clear_props(num_frames);
+                    for (let f = frame; f <= num_frames; f ++) {
+                        for (let i = 0; i < objs.length; i++) {
+                            let obj = objs[i];
+                            if (typeof obj.copy_properties == "function") {
+                                if (!obj.properties[f]) {
+                                    continue;
+                                }
+                                if (!obj.properties[f+1]) {
+                                    continue;
+                                }
+                                obj.copy_properties(f+1, f);
+                            }
                         }
                     }
 
                     num_frames -= 1;
-                    if (frame > num_frames) {
-                        frame = num_frames;
-                    }
+                    this.create_buttons();
+                    return true;
 
-                    this.create_buttons();
-                    break;
                 } else if (i == this.buttons.length - 1) {
+                    // add frame
+                    // copy to next from frame
                     num_frames += 1;
+                    for (let f = num_frames; f >= frame; f--) {
+                        for (let i = 0; i < objs.length; i++) {
+                            let obj = objs[i];
+                            if (typeof obj.copy_properties == "function") {
+                                if (!obj.properties[f]) {
+                                    continue;
+                                }
+                                obj.copy_properties(f, f+1);
+                            }
+                        }
+                    }
                     this.create_buttons();
-                    break;
+                    return true;
                 } else {
                     this.on_click(i+1);
                 }
@@ -1499,6 +1516,10 @@ function draw_grid(ctx) {
 }
 
 function transition_with_next(next) {
+    if (next > num_frames) {
+        return;
+    }
+
     if (tool == "copy frame") {
         tool = "select";
         // copy properties
