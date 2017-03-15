@@ -9,7 +9,7 @@ var light = "#ffffff";
 var colors = ["#000000", "#E74C3C", "#2980B9"];
 
 var font_menu = "20px Courier";
-var font_anim = "30px Courier";
+var font_anim = "32px Menlo";
 
 var c;
 var ctx;
@@ -995,7 +995,11 @@ function Text(text, pos) {
         ctx.translate(props.p.x, props.p.y);
         ctx.rotate(props.r);
         ctx.scale(props.w, props.h);
-        ctx.fillText(props.t, 0, 0);
+        let xoff = -Math.round((props.t.length-1)/2) * grid_size/2;
+        for (let i = 0; i < props.t.length; i++) {
+            ctx.fillText(props.t[i], xoff, 0);
+            xoff += grid_size/2;
+        }
     }
 
     this.draw_graph = function(ctx, props) {
