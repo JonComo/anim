@@ -41,11 +41,15 @@ var new_line;
 
 var mouse_down = false;
 var ctrl = false;
+var meta = false;
 var mouse = {x: 0, y: 0};
 var mouse_last = {x: 0, y: 0};
 var mouse_start = {x: 0, y: 0};
 var mouse_grid = {x: 0, y: 0};
 var mouse_last_grid = {x: 0, y: 0};
+
+// undo
+var states = [];
 
 window.requestAnimFrame = function() {
     return (
@@ -772,7 +776,12 @@ function Circle(color, pos) {
         ctx.save();
 
         ctx.beginPath();
+        ctx.fillStyle = "#ffffff";
         this.draw_ellipse(props, ctx);
+        if (props.w == 1 && props.h == 1) {
+ctx.fill();
+        
+        }
         ctx.globalAlpha = props.c[3];
         ctx.strokeStyle = rgbToHex(props.c);
         ctx.lineWidth = 2;
@@ -1130,8 +1139,43 @@ function Text(text, pos) {
     }
 }
 
+function save_state() {
+    // save state
+    let str = state_to_string();
+    if (states.length > 0) {
+        let last = states[states.length-1];
+        if (str != last) {
+            states.push(str);
+        }
+    } else {
+        states = [str];
+    }
+}
+
+function undo() {
+    if (states.length > 0) {
+        states = states.splice(0, states.length-1);
+        str_to_state(states[states.length-1]);
+    }
+}
+
+function state_to_string() {
+    return JSON.stringify({"num_frames": num_frames, "frame": frame, "objs": objs});
+}
+
+function str_to_state(str) {
+    let dict = JSON.parse(str);
+    let arr = dict["objs"];
+
+    num_frames = dict["num_frames"];
+    frame = dict["frame"];
+    frames.create_buttons();
+
+    objs = text_array_to_objs(arr, true);
+}
+
 function save(objs) {
-    let str = JSON.stringify({"num_frames": num_frames, "objs": objs});
+    let str = state_to_string();
     var blob = new Blob([str], {type: "text/plain;charset=utf-8"});
     let name = document.getElementById("name").value;
     saveAs(blob, name);
@@ -1613,6 +1657,15 @@ window.onload = function() {
     window.onkeydown = function(evt) {
         let key = evt.key;
 
+        if (key == "Meta") {
+            meta = true;
+        }
+
+        if (key == "z" && meta) {
+            undo();
+            return;
+        }
+
         if (document.getElementById("formula_text") == document.activeElement) {
             return true;
         }
@@ -1661,9 +1714,15 @@ window.onload = function() {
 
     window.onkeyup = function(evt) {
         let key = evt.key;
+        if (key == "Meta") {
+            meta = false;
+        }
+
         if (key == "Control") {
             ctrl = false;
         }
+
+        save_state();
     }
 
     window.onmousedown = function(evt) {
@@ -1727,6 +1786,8 @@ window.onload = function() {
         if (menu.mouse_up(evt)) {
             new_line = null;
             selecting = false;
+
+            save_state();
             return;
         }
 
@@ -1758,6 +1819,7 @@ window.onload = function() {
                 objs.push(l);
                 new_line = l
             }
+            return;
         } else if (tool == "circle") {
             let new_circle = new Circle([0, 0, 0, 1], mouse_grid);
             objs.push(new_circle);
@@ -1808,9 +1870,19 @@ window.onload = function() {
             }
 
             selecting = false;
+
+            save_state();
             return false;
         }
+
+        if (tool == "hide") {
+            tool = "select";
+        }
+
+        save_state();
     }
+
+    save_state();
 
     var fps = 60;
     animate();
