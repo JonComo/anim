@@ -778,10 +778,6 @@ function Circle(color, pos) {
         ctx.beginPath();
         ctx.fillStyle = "#ffffff";
         this.draw_ellipse(props, ctx);
-        if (props.w == 1 && props.h == 1) {
-ctx.fill();
-        
-        }
         ctx.globalAlpha = props.c[3];
         ctx.strokeStyle = rgbToHex(props.c);
         ctx.lineWidth = 2;
