@@ -846,6 +846,10 @@ function Text(text, pos) {
             return false;
         }
 
+        if (meta) {
+            return;
+        }
+
         let key = evt.key;
 
         if (ctrl) {
@@ -898,6 +902,7 @@ function Text(text, pos) {
 
                 this.properties[frame].path = path;
             } catch (error) {
+                console.log('graph error: ' + error);
             }
         }
     }
@@ -960,6 +965,7 @@ function Text(text, pos) {
                 // clicked, eval text
                 this.eval();
                 this.eval_graphs();
+                console.log('clicked');
             }
             return;
         }
@@ -973,7 +979,8 @@ function Text(text, pos) {
         this.dragged = false;
     }
 
-    this.graphing = function(props) {
+    this.graphing = function() {
+        let props = this.properties[frame];
         if (props && props.t && (props.t.slice(0, 8) == "tangent:" || props.t.slice(0, 6) == "graph:")) {
             return true;
         }
@@ -1189,7 +1196,7 @@ function Text(text, pos) {
         ctx.fillStyle = rgbToHex(i.c);
         ctx.strokeStyle = rgbToHex(i.c);
 
-        if (this.graphing(a)) {
+        if (this.graphing()) {
             // graphing
             this.draw_graph(ctx, i);
             this.draw_tangent(ctx, i);
