@@ -994,13 +994,6 @@ function Text(text, pos) {
     }
 
     this.draw_text = function(ctx, props) {
-        if (presenting && this.graphing(props)) {
-            return;
-        }
-
-        ctx.translate(props.p.x, props.p.y);
-        ctx.rotate(props.r);
-        ctx.scale(props.w, props.h);
 
         let exponent = false;
 
@@ -1061,7 +1054,6 @@ function Text(text, pos) {
         // graph it
 
         // graph the path
-        ctx.strokeStyle = rgbToHex(props.c);
 
         let off = {x: c.width/2, y: c.height/2};
 
@@ -1126,62 +1118,62 @@ function Text(text, pos) {
     }
 
     this.draw_tangent = function(ctx, props) {
-        if (props.t.slice(0, 8) == "tangent:") {
+        if (props.t.slice(0, 8) != "tangent:") {
+            return;
+        }
 
-            try {
-                let expr = props.t.slice(8);
+        try {
+            let expr = props.t.slice(8);
 
-                console.log(expr);
+            console.log(expr);
 
-                let off = {x: c.width/2, y: c.height/2};
+            let off = {x: c.width/2, y: c.height/2};
 
-                ctx.translate(off.x, off.y);
+            ctx.translate(off.x, off.y);
 
-                let inx = (mouse.x - c.width/2)/grid_size;
+            let inx = (mouse.x - c.width/2)/grid_size;
 
-                parser.set('x', inx);
-                let p0 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
+            parser.set('x', inx);
+            let p0 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
 
-                inx += 0.0001;
-                parser.set('x', inx);
-                let p1 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
+            inx += 0.0001;
+            parser.set('x', inx);
+            let p1 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
 
-                let slope = (p1.y - p0.y)/(p1.x - p0.x);
+            let slope = (p1.y - p0.y)/(p1.x - p0.x);
 
-                let s = 100;
-                let p0_extend = {x: p0.x - s * grid_size, y: p0.y - s * grid_size * slope};
-                let p1_extend = {x: p0.x + s * grid_size, y: p0.y + s * grid_size * slope};
+            let s = 100;
+            let p0_extend = {x: p0.x - s * grid_size, y: p0.y - s * grid_size * slope};
+            let p1_extend = {x: p0.x + s * grid_size, y: p0.y + s * grid_size * slope};
 
-                let path = [p0_extend, p1_extend];
+            let path = [p0_extend, p1_extend];
 
-                console.log(path);
+            console.log(path);
 
-                // for (let xx = -uw; xx <= uw; xx += uw) {
-                //     let y = math.eval(expr, {x: xx});
-                //     y = Math.max(Math.min(y, 1000), -1000);
-                //     path.push({x: grid_size * xx, y: -grid_size * y});
-                // }
+            // for (let xx = -uw; xx <= uw; xx += uw) {
+            //     let y = math.eval(expr, {x: xx});
+            //     y = Math.max(Math.min(y, 1000), -1000);
+            //     path.push({x: grid_size * xx, y: -grid_size * y});
+            // }
 
-                ctx.beginPath();
+            ctx.beginPath();
 
-                for (let i = 0; i < path.length; i++) {
-                    let p = path[i];
-                    
-                    if (i == 0) {
-                        ctx.moveTo(p.x, p.y);
-                    } else {
-                        ctx.lineTo(p.x, p.y);
-                    }
+            for (let i = 0; i < path.length; i++) {
+                let p = path[i];
+                
+                if (i == 0) {
+                    ctx.moveTo(p.x, p.y);
+                } else {
+                    ctx.lineTo(p.x, p.y);
                 }
-
-                ctx.strokeStyle = rgbToHex(props.c);
-                ctx.stroke();
-
-                ctx.translate(-off.x, -off.y);
-
-            } catch (error) {
-                console.log(error);
             }
+
+            ctx.stroke();
+
+            ctx.translate(-off.x, -off.y);
+
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -1201,28 +1193,34 @@ function Text(text, pos) {
         ctx.save();
 
         ctx.globalAlpha = i.c[3];
+        ctx.fillStyle = rgbToHex(i.c);
 
-        // text change
-        if (b && b.c[3] != 0) {
-            // if not fading out, but text changing, fade in and out for smoother text change
-            if (a.t != b.t ) {
-                ctx.globalAlpha = sigmoid(Math.pow(t_ease * 5.0 - 2.5, 2.0), 2.0, 0.0, 1.0) - 1;
+        if (presenting && this.graphing(a)) {
+            // graphing
+            this.draw_graph(ctx, i);
+            this.draw_tangent(ctx, i);
+
+        } else {
+            // text
+            ctx.translate(i.p.x, i.p.y);
+            ctx.rotate(i.r);
+            ctx.scale(i.w, i.h);
+
+            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+                // changing text
+                let constrained = Math.min(1, Math.max(0, t_ease));
+                ctx.globalAlpha = 1-constrained;
+                this.draw_text(ctx, a);
+                ctx.globalAlpha = constrained;
+                this.draw_text(ctx, b);
+            } else {
+                this.draw_text(ctx, i);
             }
         }
 
-        ctx.fillStyle = rgbToHex(i.c);
-        this.draw_text(ctx, i);
-
         ctx.restore();
 
-        // graphing
-
-        ctx.save();
-        ctx.globalAlpha = i.c[3];
-        this.draw_graph(ctx, i);
-        this.draw_tangent(ctx, i);
-        ctx.restore();
-
+        // draw rect
         if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
             ctx.strokeStyle = dark;
             ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
