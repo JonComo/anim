@@ -463,10 +463,7 @@ function Shape(color, path) {
 
     this.mouse_up = function(evt) {
         if (this.selected_indices.length > 0) {
-            if (tool == "delete") {
-                // delete this
-                this.deleted = true;
-            } else if (tool == "hide") {
+            if (tool == "hide") {
                 this.hide();
             }
         }
@@ -718,10 +715,7 @@ function Circle(color, pos) {
 
     this.mouse_up = function(evt) {
         if (this.selected) {
-            if (tool == "delete") {
-                // delete this
-                this.deleted = true;
-            } else if (tool == "hide") {
+            if (tool == "hide") {
                 this.hide();
             }
         }
@@ -972,9 +966,7 @@ function Text(text, pos) {
 
     this.mouse_up = function(evt) {
         if (this.selected) {
-            if (tool == "delete") {
-                this.deleted = true;
-            } else if (tool == "hide") {
+            if (tool == "hide") {
                 this.hide();
                 this.selected = false;
             }
@@ -1465,7 +1457,12 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("delete", {x: 0, y: 0}, function(b) {
-        tool = "delete";
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            if (objs[i].is_selected()) {
+                objs[i].deleted = true;
+            }
+        }
     }));
 
     this.buttons.push(new Button("clear props", {x: 0, y: 0}, function(b) {
