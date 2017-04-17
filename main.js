@@ -35,7 +35,6 @@ var mouse_time = 0;
 var menu_duration = 200;
 
 var tool = "select";
-var selected = false;
 var selecting = false;
 var new_line;
 
@@ -406,7 +405,6 @@ function Shape(color, path) {
             if (p.x > x && p.x < x2 && p.y > y && p.y < y2) {
                 this.selected_indices.push(i);
                 found = true;
-                selected = true;
             }
         }
 
@@ -437,7 +435,6 @@ function Shape(color, path) {
         let idx = this.closest_point_idx();
         if (idx != -1) {
             this.selected_indices = [idx];
-            selected = true;
             return true;
         }
 
@@ -656,7 +653,6 @@ function Circle(color, pos) {
 
         if (p.x > x && p.x < x2 && p.y > y && p.y < y2) {
             this.selected = true;
-            selected = true;
             return true;
         }
 
@@ -697,7 +693,6 @@ function Circle(color, pos) {
         // try to selected one
         if (this.near_mouse()) {
             this.selected = true;
-            selected = true;
             return true;
         }
 
@@ -774,6 +769,7 @@ function Text(text, pos) {
 
     this.edited = false;
     this.selected = false;
+    this.dragged = false;
 
     this.select = function() {
         this.selected = true;
@@ -850,7 +846,6 @@ function Text(text, pos) {
         let p = this.properties[frame].p;
         if (p.x > x && p.y > y && p.x < x2 && p.y < y2) {
             this.selected = true;
-            selected = true;
             return true;
         }
 
@@ -868,10 +863,6 @@ function Text(text, pos) {
         }
 
         let key = evt.key;
-
-        if (key == "ArrowLeft" || key == "ArrowRight") {
-            return false;
-        }
 
         if (ctrl) {
             this.properties[frame] = transform_props(key, this.properties[frame]);
@@ -943,7 +934,6 @@ function Text(text, pos) {
 
         if (this.near_mouse()) {
             this.selected = true;
-            selected = true;
             return true;
         }
 
@@ -963,6 +953,8 @@ function Text(text, pos) {
             let p = this.properties[frame].p;
             let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
             this.properties[frame].p = {x: p.x + offset.x, y: p.y + offset.y};
+
+            this.dragged = true;
         }
     }
 
@@ -971,12 +963,12 @@ function Text(text, pos) {
             if (tool == "hide") {
                 this.hide();
                 this.selected = false;
-            }
-
-            if (!this.near_mouse()) {
+            } else if (!this.near_mouse() && !this.dragged) {
                 this.selected = false;
             }
         }
+        
+        this.dragged = false;
     }
 
     this.graphing = function(props) {
@@ -1653,6 +1645,10 @@ function draw_grid(ctx) {
 }
 
 function transition_with_next(next) {
+    if (transition.transitioning) {
+        return;
+    }
+
     if (next > num_frames) {
         return;
     }
@@ -1719,7 +1715,6 @@ window.onload = function() {
         let text = document.getElementById("selected_objects_text").value;
         let arr = JSON.parse(text);
         objs = objs.concat(text_array_to_objs(arr, false));
-        selected = true;
     };
 
     document.getElementById("load_formula_text").onclick = function(evt) {
@@ -1820,6 +1815,10 @@ window.onload = function() {
     }
 
     window.onmousedown = function(evt) {
+        if (evt.srcElement != c) {
+            return;
+        }
+
         mouse_down = true;
         mouse_start = get_mouse_pos(c, evt);
 
@@ -1838,7 +1837,15 @@ window.onload = function() {
         }
 
         // didn't touch an obj, if tool is move start a rect
-        if (tool == "select" && selected == false) {
+        let obj_selected = false;
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            if (objs[i].is_selected()) {
+                obj_selected = true;
+            }
+        }
+
+        if (tool == "select" && obj_selected == false) {
             selecting = true;
         }
     };
@@ -1869,6 +1876,10 @@ window.onload = function() {
     };
 
     window.onmouseup = function(evt) {
+        if (evt.srcElement != c) {
+            return;
+        }
+
         mouse_down = false;
 
         if (presenting) {
@@ -1886,7 +1897,8 @@ window.onload = function() {
         }
 
         if (tool == "select") {
-            for (let i = 0; i < objs.length; i++) {
+            let N = objs.length;
+            for (let i = 0; i < N; i++) {
                 let obj = objs[i];
                 if (typeof obj.mouse_up === 'function') {
                     obj.mouse_up(evt);
@@ -1919,15 +1931,9 @@ window.onload = function() {
             objs.push(new_circle);
         }
 
-        for (let i = 0; i < objs.length; i++) {
-            let obj = objs[i];
-            if (typeof obj.mouse_up === 'function') {
-                obj.mouse_up(evt);
-            }
-        }
-
-        selected = false;
         if (selecting) {
+            selecting = false;
+
             let x = mouse_start.x;
             let y = mouse_start.y;
             let x2 = mouse.x;
@@ -1962,8 +1968,6 @@ window.onload = function() {
                 let string = JSON.stringify(scopy);
                 document.getElementById("selected_objects_text").value = string;
             }
-
-            selecting = false;
 
             save_state();
             return false;
