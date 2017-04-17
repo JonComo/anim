@@ -460,12 +460,6 @@ function Shape(color, path) {
     }
 
     this.mouse_up = function(evt) {
-        if (this.selected_indices.length > 0) {
-            if (tool == "hide") {
-                this.hide();
-            }
-        }
-
         this.selected_indices = [];
     }
 
@@ -577,10 +571,6 @@ function Circle(color, pos) {
     this.hidden = function() {
         if (!this.properties[frame]) {
             return true;
-        }
-
-        if (tool == "hide") {
-            return false;
         }
         
         return this.properties[frame].c[3] == 0;
@@ -711,12 +701,6 @@ function Circle(color, pos) {
     }
 
     this.mouse_up = function(evt) {
-        if (this.selected) {
-            if (tool == "hide") {
-                this.hide();
-            }
-        }
-
         this.selected = false;
     }
 
@@ -887,43 +871,55 @@ function Text(text, pos) {
         return true;
     }
 
+    this.eval = function() {
+        // reeval it
+        let text = this.properties[frame].t;
+
+        try {
+            parser.eval(text);
+        } catch (e) {
+        }
+
+        let uw = 16;
+        let uh = 9;
+
+        if (text.slice(0, 6) == "graph:") {
+            // regenerate path
+            
+            try {
+                let expr = text.slice(6);
+                let path = [];
+                for (let xx = -uw; xx <= uw; xx += .1) {
+                    parser.set('x', xx);
+                    let y = parser.eval(expr);
+                    y = Math.max(Math.min(y, 1000), -1000);
+                    path.push({x: grid_size * xx, y: -grid_size * y});
+                }
+
+                this.properties[frame].path = path;
+            } catch (error) {
+            }
+        }
+    }
+
+    this.eval_graphs = function() {
+        let N = objs.length;
+        for (let i = 0; i < N; i ++ ) {
+            let obj = objs[i];
+            if (typeof obj.eval == "function" && obj.graphing()) {
+                obj.eval();
+            }
+        }
+    }
+
     this.change_text = function(text) {
         let changed = this.properties[frame].t != text;
 
         this.properties[frame].t = text;
 
         if (changed) {
-            // reeval it
-
-            try {
-                parser.eval(text);
-            } catch (e) {
-
-            }
-
-            let uw = 16;
-            let uh = 9;
-
-            if (text.slice(0, 6) == "graph:") {
-                // regenerate path
-                
-                try {
-                    let expr = text.slice(6);
-                    console.log(expr);
-                    let path = [];
-                    for (let xx = -uw; xx <= uw; xx += .1) {
-                        parser.set('x', xx);
-                        let y = parser.eval(expr);
-                        y = Math.max(Math.min(y, 1000), -1000);
-                        path.push({x: grid_size * xx, y: -grid_size * y});
-                    }
-
-                    this.properties[frame].path = path;
-
-                } catch (error) {
-                    console.log(error);
-                }
-            }
+            this.eval();
+            this.eval_graphs();
         }
     }
 
@@ -959,11 +955,17 @@ function Text(text, pos) {
     }
 
     this.mouse_up = function(evt) {
+        if (presenting) {
+            if (this.near_mouse()) {
+                // clicked, eval text
+                this.eval();
+                this.eval_graphs();
+            }
+            return;
+        }
+
         if (this.selected) {
-            if (tool == "hide") {
-                this.hide();
-                this.selected = false;
-            } else if (!this.near_mouse() && !this.dragged) {
+            if (!this.near_mouse() && !this.dragged) {
                 this.selected = false;
             }
         }
@@ -984,6 +986,16 @@ function Text(text, pos) {
         let exponent = false;
 
         let t = props.t;
+
+        if (t.slice(0, 5) == "expr:") {
+            try {
+                let val = parser.eval(t.slice(5));
+                t = t + ' = ' + val;
+            } catch (error) {
+
+            }
+        }
+
         let N = t.length;
 
         let chars = 0;
@@ -1010,7 +1022,7 @@ function Text(text, pos) {
             if (t[i] == "*") {
                 ctx.beginPath();
                 
-                ctx.arc(xoff, 2, 4, 0, 2 * Math.PI, 0);
+                ctx.arc(xoff, 2, 3, 0, 2 * Math.PI, 0);
                 ctx.fill();
                 xoff += grid_size/2;
             } else if (t[i] == "^" && t[i+1] == "(") {
@@ -1036,10 +1048,6 @@ function Text(text, pos) {
         if (path == null) {
             return;
         }
-
-        // graph it
-
-        // graph the path
 
         let off = {x: c.width/2, y: c.height/2};
 
@@ -1108,10 +1116,10 @@ function Text(text, pos) {
             return;
         }
 
+        ctx.save();
+
         try {
             let expr = props.t.slice(8);
-
-            console.log(expr);
 
             let off = {x: c.width/2, y: c.height/2};
 
@@ -1133,8 +1141,6 @@ function Text(text, pos) {
             let p1_extend = {x: p0.x + s * grid_size, y: p0.y + s * grid_size * slope};
 
             let path = [p0_extend, p1_extend];
-
-            console.log(path);
 
             // for (let xx = -uw; xx <= uw; xx += uw) {
             //     let y = math.eval(expr, {x: xx});
@@ -1159,8 +1165,9 @@ function Text(text, pos) {
             ctx.translate(-off.x, -off.y);
 
         } catch (error) {
-            console.log(error);
         }
+
+        ctx.restore();
     }
 
     this.render = function(ctx) {
@@ -1180,28 +1187,28 @@ function Text(text, pos) {
 
         ctx.globalAlpha = i.c[3];
         ctx.fillStyle = rgbToHex(i.c);
+        ctx.strokeStyle = rgbToHex(i.c);
 
-        if (presenting && this.graphing(a)) {
+        if (this.graphing(a)) {
             // graphing
             this.draw_graph(ctx, i);
             this.draw_tangent(ctx, i);
+        }
 
+        // text
+        ctx.translate(i.p.x, i.p.y);
+        ctx.rotate(i.r);
+        ctx.scale(i.w, i.h);
+
+        if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+            // changing text
+            let constrained = Math.min(1, Math.max(0, t_ease));
+            ctx.globalAlpha = 1-constrained;
+            this.draw_text(ctx, a);
+            ctx.globalAlpha = constrained;
+            this.draw_text(ctx, b);
         } else {
-            // text
-            ctx.translate(i.p.x, i.p.y);
-            ctx.rotate(i.r);
-            ctx.scale(i.w, i.h);
-
-            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
-                // changing text
-                let constrained = Math.min(1, Math.max(0, t_ease));
-                ctx.globalAlpha = 1-constrained;
-                this.draw_text(ctx, a);
-                ctx.globalAlpha = constrained;
-                this.draw_text(ctx, b);
-            } else {
-                this.draw_text(ctx, i);
-            }
+            this.draw_text(ctx, i);
         }
 
         ctx.restore();
@@ -1489,9 +1496,8 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("hide", {x: 0, y: 0}, function(b) {
-        tool = "hide";
-
-        for (let i = 0; i < objs.length; i++) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
             let obj = objs[i];
             if (typeof obj.hide == "function") {
                 obj.hide();
@@ -1676,6 +1682,15 @@ function transition_with_next(next) {
     }
 
     transition.run(steps, next, function(targ) {
+
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (typeof obj.changed_frames == "function") {
+                obj.changed_frames(frame, targ);
+            }
+        }
+
         frame = targ;
     });
 }
@@ -1740,6 +1755,11 @@ window.onload = function() {
 
     window.onkeydown = function(evt) {
         let key = evt.key;
+
+        if (tool == "text" && key == "Escape") {
+            tool = "select";
+            return;
+        }
 
         if (key == "Meta") {
             meta = true;
@@ -1830,7 +1850,6 @@ window.onload = function() {
             let obj = objs[i];
             if (typeof obj.mouse_down === 'function') {
                 if (obj.mouse_down(evt)) {
-                    console.log('touched ' + obj);
                     break;
                 }
             }
@@ -1883,10 +1902,21 @@ window.onload = function() {
         mouse_down = false;
 
         if (presenting) {
+            // maybe tap some text
+            let N = objs.length;
+            for (let i = 0; i < N; i++) {
+                let obj = objs[i];
+                if (typeof obj.mouse_up === 'function') {
+                    obj.mouse_up(evt);
+                }
+            }
+
             return false;
         }
 
-        frames.mouse_up(evt);
+        if (frames.mouse_up(evt)) {
+            return;
+        }
 
         if (menu.mouse_up(evt)) {
             new_line = null;
@@ -1971,10 +2001,6 @@ window.onload = function() {
 
             save_state();
             return false;
-        }
-
-        if (tool == "hide") {
-            tool = "select";
         }
 
         save_state();
