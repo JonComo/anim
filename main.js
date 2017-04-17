@@ -8,6 +8,7 @@ var light = "#ffffff";
 
 var colors = ["#000000", "#E74C3C", "#2980B9"];
 
+var font_small = "16px Courier";
 var font_menu = "20px Courier";
 var font_anim = "32px Menlo";
 
@@ -516,6 +517,7 @@ function Shape(color, path) {
                 let b = between(p1, p2);
                 let d = distance(p1, p2) / grid_size;
                 d = Math.round(d * 10) / 10;
+                ctx.font = font_small;
                 ctx.fillText(d, b.x - c.x, b.y - c.y);
             }
         }
@@ -1428,6 +1430,12 @@ function Frames(pos) {
     }
 }
 
+function present() {
+    menu_time = 0;
+    presenting = true;
+    document.body.style.cursor = 'none';
+}
+
 function Menu(pos) {
     this.pos = pos;
     this.buttons = [];
@@ -1466,7 +1474,8 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("clear props", {x: 0, y: 0}, function(b) {
-        for (let i = 0; i < objs.length; i++) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
             let obj = objs[i];
             if (typeof obj.clear_all_props == "function") {
                 obj.clear_all_props();
@@ -1500,9 +1509,7 @@ function Menu(pos) {
 
     this.buttons.push(new Button("present", {x: 0, y: 0}, function(b) {
         // show a cursor
-        menu_time = 0;
-        presenting = true;
-        document.body.style.cursor = 'none';
+        present();
     }));
 
     for (let i = 0; i < colors.length; i++) {
@@ -1743,9 +1750,18 @@ window.onload = function() {
             meta = true;
         }
 
+        if (key == "Control") {
+            ctrl = true;
+        }
+
         if (key == "z" && meta) {
             undo();
             return;
+        }
+
+        if (key == "p" && ctrl) {
+            present();
+            return true;
         }
 
         if (document.getElementById("formula_text") == document.activeElement) {
@@ -1756,10 +1772,6 @@ window.onload = function() {
             presenting = false;
             document.body.style.cursor = '';
             return false;
-        }
-
-        if (key == "Control") {
-            ctrl = true;
         }
 
         let captured = false;
