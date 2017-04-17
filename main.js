@@ -22,7 +22,6 @@ var num_frames = 3;
 var frame; // current frame
 var next_frame;
 var playing;
-var onion = false;
 var rendering = false;
 var presenting = false;
 
@@ -32,7 +31,7 @@ var t_steps = 60;
 var grid_size = 40;
 var menu_time = 0;
 var mouse_time = 0;
-var menu_duration = 60;
+var menu_duration = 200;
 
 var tool = "select";
 var selected = false;
@@ -47,6 +46,8 @@ var mouse_last = {x: 0, y: 0};
 var mouse_start = {x: 0, y: 0};
 var mouse_grid = {x: 0, y: 0};
 var mouse_last_grid = {x: 0, y: 0};
+
+var parser = math.parser();
 
 // undo
 var states = [];
@@ -378,7 +379,7 @@ function Shape(color, path) {
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
 
-            if (distance(p, mouse) < grid_size/2) {
+            if (distance(p, mouse) < grid_size/8) {
                 return i;
             }
         }
@@ -544,18 +545,6 @@ function Shape(color, path) {
 
         if (!a) {
             return;
-        }
-
-        if (onion) {
-            let p_before = this.properties[loop_frame(frame-1)];
-            if (p_before) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = gray;
-                this.draw_path(p_before);
-                ctx.stroke();
-                ctx.restore();
-            }
         }
 
         let props = interpolate(a, b);
@@ -759,18 +748,6 @@ function Circle(color, pos) {
             return;
         }
 
-        if (onion) {
-            let p_before = this.properties[loop_frame(frame-1)];
-            if (p_before) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = gray;
-                this.draw_ellipse(p_before, ctx);
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
-
         let props = interpolate(a, b);
 
         ctx.save();
@@ -928,25 +905,37 @@ function Text(text, pos) {
 
         this.properties[frame].t = text;
 
-        if (changed && text.slice(0, 5) == "graph") {
-            // regenerate path
+        if (changed) {
+            // reeval it
+
+            try {
+                parser.eval(text);
+            } catch (e) {
+
+            }
+
             let uw = 16;
             let uh = 9;
 
-            try {
-                let expr = text.slice(6);
-                console.log(expr);
-                let path = [];
-                for (let xx = -uw; xx <= uw; xx += .1) {
-                    let y = math.eval(expr, {x: xx});
-                    y = Math.max(Math.min(y, 1000), -1000);
-                    path.push({x: grid_size * xx, y: -grid_size * y});
+            if (text.slice(0, 6) == "graph:") {
+                // regenerate path
+                
+                try {
+                    let expr = text.slice(6);
+                    console.log(expr);
+                    let path = [];
+                    for (let xx = -uw; xx <= uw; xx += .1) {
+                        parser.set('x', xx);
+                        let y = parser.eval(expr);
+                        y = Math.max(Math.min(y, 1000), -1000);
+                        path.push({x: grid_size * xx, y: -grid_size * y});
+                    }
+
+                    this.properties[frame].path = path;
+
+                } catch (error) {
+                    console.log(error);
                 }
-
-                this.properties[frame].path = path;
-
-            } catch (error) {
-                console.log(error);
             }
         }
     }
@@ -996,14 +985,69 @@ function Text(text, pos) {
         }
     }
 
+    this.graphing = function(props) {
+        if (props && props.t && (props.t.slice(0, 8) == "tangent:" || props.t.slice(0, 6) == "graph:")) {
+            return true;
+        }
+
+        return false;
+    }
+
     this.draw_text = function(ctx, props) {
+        if (presenting && this.graphing(props)) {
+            return;
+        }
+
         ctx.translate(props.p.x, props.p.y);
         ctx.rotate(props.r);
         ctx.scale(props.w, props.h);
-        let xoff = -Math.round((props.t.length-1)/2) * grid_size/2;
-        for (let i = 0; i < props.t.length; i++) {
-            ctx.fillText(props.t[i], xoff, 0);
-            xoff += grid_size/2;
+
+        let exponent = false;
+
+        let t = props.t;
+        let N = t.length;
+
+        let chars = 0;
+        for (let i = 0; i < N; i++) {
+            if (t[i] == "*") {
+                chars += 1;
+            } else if (t[i] == "^" && t[i+1] == "(") {
+                i += 1;
+                exponent = true;
+            } else if (t[i] == ")" && exponent) {
+                exponent = false;
+            } else {
+                chars += 1;
+            }
+        }
+
+
+        let xoff = -Math.round((chars-1)/2 * grid_size/2);
+
+        ctx.fillStyle = rgbToHex(props.c);
+
+        exponent = false;
+        for (let i = 0; i < N; i++) {
+            if (t[i] == "*") {
+                ctx.beginPath();
+                
+                ctx.arc(xoff, 2, 4, 0, 2 * Math.PI, 0);
+                ctx.fill();
+                xoff += grid_size/2;
+            } else if (t[i] == "^" && t[i+1] == "(") {
+                i += 1;
+                exponent = true;
+            } else if (t[i] == ")" && exponent) {
+                exponent = false;
+            } else {
+                let yoff = 0;
+                if (exponent) {
+                    yoff = -grid_size/2;
+                }
+
+                ctx.fillText(t[i], xoff, yoff);
+                xoff += grid_size/2;
+            }
         }
     }
 
@@ -1036,7 +1080,6 @@ function Text(text, pos) {
         }
 
         ctx.stroke();
-
 
         // show where mouse is
         if (presenting && mouse_down) {
@@ -1082,16 +1125,67 @@ function Text(text, pos) {
         ctx.translate(-off.x, -off.y);
     }
 
-    this.render = function(ctx) {
-        if (onion) {
-            let p_before = this.properties[loop_frame(frame-1)];
-            if (p_before) {
-                ctx.save();
-                ctx.fillStyle = gray;
-                this.draw_text(ctx, p_before);
-                ctx.restore();
+    this.draw_tangent = function(ctx, props) {
+        if (props.t.slice(0, 8) == "tangent:") {
+
+            try {
+                let expr = props.t.slice(8);
+
+                console.log(expr);
+
+                let off = {x: c.width/2, y: c.height/2};
+
+                ctx.translate(off.x, off.y);
+
+                let inx = (mouse.x - c.width/2)/grid_size;
+
+                parser.set('x', inx);
+                let p0 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
+
+                inx += 0.0001;
+                parser.set('x', inx);
+                let p1 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
+
+                let slope = (p1.y - p0.y)/(p1.x - p0.x);
+
+                let s = 100;
+                let p0_extend = {x: p0.x - s * grid_size, y: p0.y - s * grid_size * slope};
+                let p1_extend = {x: p0.x + s * grid_size, y: p0.y + s * grid_size * slope};
+
+                let path = [p0_extend, p1_extend];
+
+                console.log(path);
+
+                // for (let xx = -uw; xx <= uw; xx += uw) {
+                //     let y = math.eval(expr, {x: xx});
+                //     y = Math.max(Math.min(y, 1000), -1000);
+                //     path.push({x: grid_size * xx, y: -grid_size * y});
+                // }
+
+                ctx.beginPath();
+
+                for (let i = 0; i < path.length; i++) {
+                    let p = path[i];
+                    
+                    if (i == 0) {
+                        ctx.moveTo(p.x, p.y);
+                    } else {
+                        ctx.lineTo(p.x, p.y);
+                    }
+                }
+
+                ctx.strokeStyle = rgbToHex(props.c);
+                ctx.stroke();
+
+                ctx.translate(-off.x, -off.y);
+
+            } catch (error) {
+                console.log(error);
             }
         }
+    }
+
+    this.render = function(ctx) {
 
         let a = this.properties[frame];
 
@@ -1126,6 +1220,7 @@ function Text(text, pos) {
         ctx.save();
         ctx.globalAlpha = i.c[3];
         this.draw_graph(ctx, i);
+        this.draw_tangent(ctx, i);
         ctx.restore();
 
         if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
@@ -1408,10 +1503,6 @@ function Menu(pos) {
         }
     }));
 
-    this.buttons.push(new Button("onion", {x: 0, y: 0}, function(b) {
-        onion = !onion;
-    }));
-
     this.buttons.push(new Button("present", {x: 0, y: 0}, function(b) {
         // show a cursor
         menu_time = 0;
@@ -1633,7 +1724,7 @@ window.onload = function() {
         let t = document.getElementById("formula_text").value;
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
-            if (typeof obj.change_text == "function") {
+            if (typeof obj.change_text == "function" && obj.is_selected()) {
                 obj.change_text(t);
             }
         }
@@ -1729,7 +1820,7 @@ window.onload = function() {
             return false;
         }
 
-        for (let i = 0; i < objs.length; i++) {
+        for (let i = objs.length-1; i >= 0; i--) {
             let obj = objs[i];
             if (typeof obj.mouse_down === 'function') {
                 if (obj.mouse_down(evt)) {
@@ -1902,7 +1993,8 @@ window.onload = function() {
 
         ctx.font = font_anim;
 
-        for (let i = 0; i < objs.length; i++) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
             let obj = objs[i];
             obj.render(ctx);
         }
