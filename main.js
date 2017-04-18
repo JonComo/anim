@@ -1031,14 +1031,20 @@ function Text(text, pos) {
         let t = props.t;
 
         ctx.fillStyle = rgbToHex(props.c);
+        ctx.strokeStyle = ctx.fillStyle;
 
         if (t.slice(0, 5) == "expr:") {
             try {
                 let val = parser.eval(t.slice(5));
-                t = t + ' = ' + Math.round(val * 100)/100.0;
+                t = t + ' \u2192 ' + Math.round(val * 100)/100.0;
             } catch (error) {
 
             }
+        }
+
+        let s = t.split(":");
+        if (s.length == 2) {
+            t = s[1];
         }
 
         let N = t.length;
@@ -1059,6 +1065,22 @@ function Text(text, pos) {
 
 
         let xoff = -Math.round((chars-1)/2 * grid_size/2);
+
+        if (s[0] == "point") {
+            ctx.beginPath();
+            ctx.arc(xoff - grid_size, 0, 6, 0, 2*Math.PI, 0);
+            ctx.stroke();
+        } else if (s[0] == "graph") {
+            ctx.beginPath();
+            let sx = xoff - grid_size;
+            ctx.moveTo(sx, 0);
+            ctx.lineTo(sx + 6, -8);
+            ctx.lineTo(sx + 12, 8);
+            ctx.lineTo(sx + 18, 0);
+            ctx.stroke();
+        } else if (s[0] == "expr") {
+            xoff = 0;
+        }
 
         exponent = false;
         for (let i = 0; i < N; i++) {
@@ -1159,6 +1181,7 @@ function Text(text, pos) {
         if (props.t.slice(0, 6) != "point:") {
             return;
         }
+        
         ctx.fillStyle = rgbToHex(props.c);
         
         // graph a point
