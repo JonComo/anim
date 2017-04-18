@@ -893,9 +893,10 @@ function Text(text, pos) {
             try {
                 let expr = text.slice(6);
                 let path = [];
-                for (let xx = -uw; xx <= uw; xx += .1) {
+                let y = 0;
+                for (let xx = -uw; xx <= uw; xx += .2) {
                     parser.set('x', xx);
-                    let y = parser.eval(expr);
+                    y = parser.eval(expr);
                     y = Math.max(Math.min(y, 1000), -1000);
                     path.push({x: grid_size * xx, y: -grid_size * y});
                 }
@@ -928,6 +929,10 @@ function Text(text, pos) {
         }
     }
 
+    this.changed_frames = function() {
+        this.eval();
+    }
+
     this.mouse_down = function(evt) {
         if (this.hidden()) {
             return false;
@@ -947,13 +952,31 @@ function Text(text, pos) {
             return false;
         }
 
-        let pos = props.p;
+        if (presenting) {
+            if (this.slider() && distance(mouse_start, props.p) < grid_size/4) {
+                // change the value of the variable assigned
+                let text = props.t;
+                text = text.slice(6);
+                let parts = text.split("=");
+                let var_name = parts[0];
+                var_name = var_name.replace(/\s+/g, '');
+                let old_val = parts[1];
+                let delta = (mouse.x - mouse_last.x)/grid_size;
+                let new_t = var_name + " = " + Math.round(parser.eval(old_val + "+" + delta) * 100)/100.0;
+                props.t = "slide: " + new_t;
+                try {
+                    parser.eval(new_t);
+                } catch (error) {
+                    
+                }
 
-        if (tool == "select" && this.selected) {
+                this.eval_graphs();
+            }
+        } else if (tool == "select" && this.selected) {
             // shift it
-            let p = this.properties[frame].p;
+            let p = props.p;
             let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
-            this.properties[frame].p = {x: p.x + offset.x, y: p.y + offset.y};
+            props.p = {x: p.x + offset.x, y: p.y + offset.y};
 
             this.dragged = true;
         }
@@ -988,10 +1011,13 @@ function Text(text, pos) {
         return false;
     }
 
+    this.slider = function() {
+        return this.properties[frame].t.slice(0, 6) == "slide:";
+    }
+
     this.draw_text = function(ctx, props) {
 
         let exponent = false;
-
         let t = props.t;
 
         if (t.slice(0, 5) == "expr:") {
@@ -1075,7 +1101,8 @@ function Text(text, pos) {
         ctx.stroke();
 
         // show where mouse is
-        if (presenting && mouse_down) {
+        
+        if (presenting && ctrl) {
             ctx.strokeStyle = graph_guide;
 
             ctx.beginPath();
@@ -1222,6 +1249,11 @@ function Text(text, pos) {
 
         // draw rect
         if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
+            ctx.strokeStyle = dark;
+            ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
+        }
+
+        if (presenting && this.slider() && this.near_mouse() && !this.hidden()) {
             ctx.strokeStyle = dark;
             ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
         }
@@ -1881,13 +1913,6 @@ window.onload = function() {
         mouse = get_mouse_pos(c, evt);
         mouse_grid = constrain_to_grid(mouse);
 
-        if (presenting) {
-            mouse_time = 20;
-            return false;
-        }
-
-        menu_time = menu_duration;
-
         if (mouse_down) {
             for (let i = 0; i < objs.length; i++) {
                 let obj = objs[i];
@@ -1896,6 +1921,12 @@ window.onload = function() {
                 }
             }
         }
+
+        if (presenting) {
+            mouse_time = 20;
+        }
+
+        menu_time = menu_duration;
 
         mouse_last = get_mouse_pos(c, evt);
         mouse_grid_last = constrain_to_grid(mouse);
