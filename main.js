@@ -413,11 +413,6 @@ function Shape(color, path) {
 
     this.onkeydown = function(evt) {
         let key = evt.key;
-        if (this == new_line) {
-            tool = "select";
-            new_shape = null;
-            return true;
-        }
 
         if (this.selected_indices.length != 0) {
             this.properties[frame] = transform_props(key, this.properties[frame]);
@@ -957,19 +952,18 @@ function Text(text, pos) {
 
         if (presenting) {
             if (this.slider() && distance(mouse_start, props.p) < grid_size/4) {
-                // change the value of the variable assigned
+                // change the value of the variable
                 let text = props.t;
                 text = text.slice(6);
                 let var_name = text;
                 var_name = var_name.replace(/\s+/g, '');
 
-                let old_val = NaN;
-
-                try {
+                let old_val = 0;
+                if (!this.has_slid) {
+                    this.has_slid = true;
+                    parser.set(var_name, 0.0);
+                } else {
                     old_val = parser.eval(var_name);
-                } catch (error) {
-                    old_val = 0.0;
-                    parser.eval(var_name + "=" + old_val);
                 }
 
                 let delta = (mouse.x - mouse_last.x)/grid_size;
@@ -1040,6 +1034,13 @@ function Text(text, pos) {
             } catch (error) {
 
             }
+        } else if (t.slice(0, 6) == "slide:") {
+            try {
+                let val = parser.eval(t.slice(6));
+                t = t + ' \u2194 ' + Math.round(val * 100)/100.0;
+            } catch (error) {
+
+            }
         }
 
         let s = t.split(":");
@@ -1079,6 +1080,8 @@ function Text(text, pos) {
             ctx.lineTo(sx + 18, 0);
             ctx.stroke();
         } else if (s[0] == "expr") {
+            xoff = 0;
+        } else if (s[0] == "slide") {
             xoff = 0;
         }
 
@@ -1195,9 +1198,42 @@ function Text(text, pos) {
             coords = coords.split(",");
             let x = parser.eval(coords[0]);
             let y = parser.eval(coords[1]);
+
+            x = x * grid_size;
+            y = -y * grid_size;
+
             ctx.beginPath();
-            ctx.arc(x * grid_size, -y * grid_size, 6, 0, 2 * Math.PI, 0);
+            ctx.arc(x, y, 6, 0, 2 * Math.PI, 0);
             ctx.stroke();
+
+            if (coords[2] == "trail") {
+                if (x != this.last_x || y != this.last_y) {
+                    if (!this.past_points) {
+                        this.past_points = [];
+                    }
+
+                    this.past_points.push([x, y]);
+                    if (this.past_points.length > 100) {
+                        this.past_points = this.past_points.slice(1);
+                    }
+                }
+
+                // graph the past points
+                ctx.beginPath();
+                let N = this.past_points.length;
+                for (let i = 0; i < N; i++) {
+                    let p = this.past_points[i];
+                    if (i == 0) {
+                        ctx.moveTo(p[0], p[1]);
+                    } else {
+                        ctx.lineTo(p[0], p[1]);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            this.last_x = x;
+            this.last_y = y;
             
         } catch (e) {
 
@@ -1545,7 +1581,7 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("select", {x: 0, y: 0}, function(b) {
-        tool = "select";
+        enter_select();
     }));
 
     this.buttons.push(new Button("text", {x: 0, y: 0}, function(b) {
@@ -1761,7 +1797,7 @@ function transition_with_next(next) {
     }
 
     if (tool == "copy frame") {
-        tool = "select";
+        enter_select();
         // copy properties
         for (let i = 0; i < objs.length; i ++) {
             let obj = objs[i];
@@ -1796,6 +1832,11 @@ function transition_with_next(next) {
     });
 }
 
+function enter_select() {
+    tool = "select";
+    new_line = null;
+}
+
 window.onload = function() {
     
     c = document.createElement("canvas");
@@ -1818,12 +1859,12 @@ window.onload = function() {
     };
 
     document.getElementById("file").onchange = function(evt) {
-        tool = "select";
+        enter_select();
         load(evt, true);
     };
 
     document.getElementById("import").onchange = function(evt) {
-        tool = "select";
+        enter_select();
         load(evt, false);
     };
 
@@ -1857,9 +1898,8 @@ window.onload = function() {
     window.onkeydown = function(evt) {
         let key = evt.key;
 
-        if (tool == "text" && key == "Escape") {
-            tool = "select";
-            return;
+        if (key == "Escape") {
+            enter_select();
         }
 
         if (key == "Meta") {
@@ -1903,6 +1943,13 @@ window.onload = function() {
 
         if (captured) {
             return false;
+        }
+
+        if (tool == "select") {
+            tools = {'t': 'text', 's': 'shape', 'c': 'circle', 'v': 'vector'};
+            if (key in tools) {
+                tool = tools[key];
+            }
         }
 
         if (key == " ") {
@@ -2055,6 +2102,7 @@ window.onload = function() {
                 objs.push(l);
                 new_line = l
             }
+
             return;
         } else if (tool == "circle") {
             let new_circle = new Circle([0, 0, 0, 1], mouse_grid);
