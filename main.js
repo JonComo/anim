@@ -879,17 +879,20 @@ function Text(text, pos) {
         // reeval it
         let text = this.properties[frame].t;
 
+        if (this.slider()) {
+            text = text.slice(6);
+        }
+
         try {
             parser.eval(text);
         } catch (e) {
         }
 
-        let uw = 16;
-        let uh = 9;
-
         if (text.slice(0, 6) == "graph:") {
             // regenerate path
-            
+            let uw = 16;
+            let uh = 9;
+
             try {
                 let expr = text.slice(6);
                 let path = [];
@@ -957,17 +960,24 @@ function Text(text, pos) {
                 // change the value of the variable assigned
                 let text = props.t;
                 text = text.slice(6);
-                let parts = text.split("=");
-                let var_name = parts[0];
+                let var_name = text;
                 var_name = var_name.replace(/\s+/g, '');
-                let old_val = parts[1];
-                let delta = (mouse.x - mouse_last.x)/grid_size;
-                let new_t = var_name + " = " + Math.round(parser.eval(old_val + "+" + delta) * 100)/100.0;
-                props.t = "slide: " + new_t;
+
+                let old_val = NaN;
+
                 try {
-                    parser.eval(new_t);
+                    old_val = parser.eval(var_name);
                 } catch (error) {
-                    
+                    old_val = 0.0;
+                    parser.eval(var_name + "=" + old_val);
+                }
+
+                let delta = (mouse.x - mouse_last.x)/grid_size;
+
+                try {
+                    parser.set(var_name, old_val + delta);
+                } catch (error) {
+                    console.log('slide error: ' + error);
                 }
 
                 this.eval_graphs();
@@ -1004,7 +1014,7 @@ function Text(text, pos) {
 
     this.graphing = function() {
         let props = this.properties[frame];
-        if (props && props.t && (props.t.slice(0, 8) == "tangent:" || props.t.slice(0, 6) == "graph:")) {
+        if (props && props.t && (props.t.slice(0, 8) == "tangent:" || props.t.slice(0, 6) == "graph:" || props.t.slice(0, 6) == "point:")) {
             return true;
         }
 
@@ -1020,10 +1030,12 @@ function Text(text, pos) {
         let exponent = false;
         let t = props.t;
 
+        ctx.fillStyle = rgbToHex(props.c);
+
         if (t.slice(0, 5) == "expr:") {
             try {
                 let val = parser.eval(t.slice(5));
-                t = t + ' = ' + val;
+                t = t + ' = ' + Math.round(val * 100)/100.0;
             } catch (error) {
 
             }
@@ -1047,8 +1059,6 @@ function Text(text, pos) {
 
 
         let xoff = -Math.round((chars-1)/2 * grid_size/2);
-
-        ctx.fillStyle = rgbToHex(props.c);
 
         exponent = false;
         for (let i = 0; i < N; i++) {
@@ -1083,7 +1093,7 @@ function Text(text, pos) {
         }
 
         let off = {x: c.width/2, y: c.height/2};
-
+        ctx.save();
         ctx.translate(off.x, off.y);
 
         ctx.beginPath();
@@ -1142,7 +1152,35 @@ function Text(text, pos) {
             ctx.fillText(Math.round(100 * (-yout)/grid_size)/100, off.x - 60, yout - 20);
         }
 
-        ctx.translate(-off.x, -off.y);
+        ctx.restore();
+    }
+
+    this.draw_point = function(ctx, props) {
+        if (props.t.slice(0, 6) != "point:") {
+            return;
+        }
+        ctx.fillStyle = rgbToHex(props.c);
+        
+        // graph a point
+        
+        let off = {x: c.width/2, y: c.height/2};
+        ctx.save();
+        ctx.translate(off.x, off.y);
+
+        try {
+            let coords = props.t.slice(6);
+            coords = coords.split(",");
+            let x = parser.eval(coords[0]);
+            let y = parser.eval(coords[1]);
+            ctx.beginPath();
+            ctx.arc(x * grid_size, -y * grid_size, 6, 0, 2 * Math.PI, 0);
+            ctx.stroke();
+            
+        } catch (e) {
+
+        }
+
+        ctx.restore();
     }
 
     this.draw_tangent = function(ctx, props) {
@@ -1227,6 +1265,7 @@ function Text(text, pos) {
             // graphing
             this.draw_graph(ctx, i);
             this.draw_tangent(ctx, i);
+            this.draw_point(ctx, i);
         }
 
         // text
@@ -1722,6 +1761,8 @@ function transition_with_next(next) {
 
     transition.run(steps, next, function(targ) {
 
+        frame = targ;
+
         let N = objs.length;
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
@@ -1729,8 +1770,6 @@ function transition_with_next(next) {
                 obj.changed_frames(frame, targ);
             }
         }
-
-        frame = targ;
     });
 }
 
