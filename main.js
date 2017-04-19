@@ -882,6 +882,10 @@ function Text(text, pos) {
             return;
         }
 
+        if (this.hidden()) {
+            return;
+        }
+
         let text = props.t;
 
         if (this.slider()) {
@@ -1047,7 +1051,12 @@ function Text(text, pos) {
         } else if (t.slice(0, 6) == "slide:") {
             try {
                 let val = parser.eval(t.slice(6));
-                t = t + ' \u2194 ' + Math.round(val * 100)/100.0;
+                val = Math.round(val * 100)/100.0;
+                if (isNaN(val)) {
+                    val = 0.0;
+                }
+
+                t = t + ' \u2194 ' + val;
             } catch (error) {
 
             }
@@ -1081,7 +1090,7 @@ function Text(text, pos) {
             ctx.beginPath();
             ctx.arc(xoff - grid_size, 0, 6, 0, 2*Math.PI, 0);
             ctx.stroke();
-        } else if (s[0] == "graph" || s[0] == "tanget") {
+        } else if (s[0] == "graph") {
             ctx.beginPath();
             let sx = xoff - grid_size;
             ctx.moveTo(sx, 0);
@@ -1089,6 +1098,15 @@ function Text(text, pos) {
             ctx.lineTo(sx + 12, 8);
             ctx.lineTo(sx + 18, 0);
             ctx.stroke();
+        }else if (s[0] == "tangent") {
+            ctx.beginPath();
+            let sx = xoff - grid_size;
+            ctx.arc(sx, 0, 8, 0, Math.PI, 0);
+
+            ctx.moveTo(sx-12, 8);
+            ctx.lineTo(sx+12, 8);
+            ctx.stroke();
+
         } else if (s[0] == "expr") {
             xoff = 0;
         } else if (s[0] == "slide") {
@@ -1183,8 +1201,18 @@ function Text(text, pos) {
             ctx.arc(mouse.x - off.x, yout, grid_size/2, 0, 2 * Math.PI, 0);
             ctx.stroke();
 
+            let xin = (mouse.x - off.x)/grid_size;
+            let y = 0.0;
+            
+            try {
+                parser.set('x', xin);
+                y = parser.eval(props.t.split(":")[1]);
+            } catch (error) {
+                
+            }
+
             ctx.fillText(Math.round(100 * (mouse.x - off.x)/grid_size)/100, mouse.x - off.x, off.y - 40);
-            ctx.fillText(Math.round(100 * (-yout)/grid_size)/100, off.x - 60, yout - 20);
+            ctx.fillText(Math.round(100 * y)/100, off.x - 60, yout - 20);
         }
 
         ctx.restore();
@@ -1338,23 +1366,21 @@ function Text(text, pos) {
         }
 
         // text
-        if (!(presenting && this.graphing())) {
-            ctx.translate(i.p.x, i.p.y);
-            ctx.rotate(i.r);
-            ctx.scale(i.w, i.h);
+        ctx.translate(i.p.x, i.p.y);
+        ctx.rotate(i.r);
+        ctx.scale(i.w, i.h);
 
 
-            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
-                // changing text
-                let constrained = Math.min(1, Math.max(0, t_ease));
-                ctx.globalAlpha = 1-constrained;
-                this.draw_text(ctx, a);
-                ctx.globalAlpha = constrained;
-                this.draw_text(ctx, b);
-            } else {
-                ctx.globalAlpha = i.c[3];
-                this.draw_text(ctx, i);
-            }
+        if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+            // changing text
+            let constrained = Math.min(1, Math.max(0, t_ease));
+            ctx.globalAlpha = 1-constrained;
+            this.draw_text(ctx, a);
+            ctx.globalAlpha = constrained;
+            this.draw_text(ctx, b);
+        } else {
+            ctx.globalAlpha = i.c[3];
+            this.draw_text(ctx, i);
         }
 
         ctx.restore();
@@ -2046,6 +2072,9 @@ window.onload = function() {
         // update mouse
         mouse = get_mouse_pos(c, evt);
         mouse_grid = constrain_to_grid(mouse);
+
+        parser.set('x', (mouse.x - c.width/2)/grid_size);
+        parser.set('y', -(mouse.y - c.height/2)/grid_size);
 
         if (mouse_down) {
             for (let i = 0; i < objs.length; i++) {
