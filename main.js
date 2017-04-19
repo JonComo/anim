@@ -30,9 +30,8 @@ var t_ease;
 var t_steps = 60;
 
 var grid_size = 40;
-var menu_time = 0;
 var mouse_time = 0;
-var menu_duration = 200;
+var mouse_duration = 40;
 
 var tool = "select";
 var selecting = false;
@@ -623,9 +622,11 @@ function Circle(color, pos) {
 
     this.near_mouse = function () {
         let props = this.properties[frame];
-        let p = props.p;
-        
-        return distance(p, mouse) < grid_size/2
+        if (!props) {
+            return false;
+        }
+
+        return distance(props.p, mouse) < grid_size/2
     }
 
     this.in_rect = function(x, y, x2, y2) {
@@ -832,8 +833,12 @@ function Text(text, pos) {
     }
 
     this.near_mouse = function () {
-        let p = this.properties[frame].p;
-        return distance(p, mouse) < grid_size/4;
+        let props = this.properties[frame];
+        if (!props) {
+            return false;
+        }
+
+        return distance(props.p, mouse) < grid_size/4;
     }
 
     this.onkeydown = function(evt) {
@@ -872,7 +877,12 @@ function Text(text, pos) {
 
     this.eval = function() {
         // reeval it
-        let text = this.properties[frame].t;
+        let props = this.properties[frame];
+        if (!props) {
+            return;
+        }
+
+        let text = props.t;
 
         if (this.slider()) {
             text = text.slice(6);
@@ -1071,7 +1081,7 @@ function Text(text, pos) {
             ctx.beginPath();
             ctx.arc(xoff - grid_size, 0, 6, 0, 2*Math.PI, 0);
             ctx.stroke();
-        } else if (s[0] == "graph") {
+        } else if (s[0] == "graph" || s[0] == "tanget") {
             ctx.beginPath();
             let sx = xoff - grid_size;
             ctx.moveTo(sx, 0);
@@ -1328,19 +1338,23 @@ function Text(text, pos) {
         }
 
         // text
-        ctx.translate(i.p.x, i.p.y);
-        ctx.rotate(i.r);
-        ctx.scale(i.w, i.h);
+        if (!(presenting && this.graphing())) {
+            ctx.translate(i.p.x, i.p.y);
+            ctx.rotate(i.r);
+            ctx.scale(i.w, i.h);
 
-        if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
-            // changing text
-            let constrained = Math.min(1, Math.max(0, t_ease));
-            ctx.globalAlpha = 1-constrained;
-            this.draw_text(ctx, a);
-            ctx.globalAlpha = constrained;
-            this.draw_text(ctx, b);
-        } else {
-            this.draw_text(ctx, i);
+
+            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+                // changing text
+                let constrained = Math.min(1, Math.max(0, t_ease));
+                ctx.globalAlpha = 1-constrained;
+                this.draw_text(ctx, a);
+                ctx.globalAlpha = constrained;
+                this.draw_text(ctx, b);
+            } else {
+                ctx.globalAlpha = i.c[3];
+                this.draw_text(ctx, i);
+            }
         }
 
         ctx.restore();
@@ -1492,6 +1506,17 @@ function Frames(pos) {
 
     this.create_buttons();
 
+    this.mouse_down = function(evt) {
+        for (let i = 0; i < this.buttons.length; i++) {
+            let btn = this.buttons[i];
+            if (btn.hovering()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     this.mouse_up = function(evt) {
         for (let i = 0; i < this.buttons.length; i++) {
             let btn = this.buttons[i];
@@ -1567,7 +1592,6 @@ function Frames(pos) {
 }
 
 function present() {
-    menu_time = 0;
     presenting = true;
     document.body.style.cursor = 'none';
 }
@@ -1575,10 +1599,6 @@ function present() {
 function Menu(pos) {
     this.pos = pos;
     this.buttons = [];
-
-    this.buttons.push(new Button("menu", {x: 0, y: 0}, function(b) {
-        menu_time = 0;
-    }));
 
     this.buttons.push(new Button("select", {x: 0, y: 0}, function(b) {
         enter_select();
@@ -1776,7 +1796,7 @@ function draw_grid(ctx) {
     ctx.strokeStyle = grid_guide;
     ctx.stroke();
 
-    if (menu_time > 0) {
+    if (!presenting) {
         ctx.beginPath();
         ctx.strokeStyle = grid_guide;
         ctx.moveTo(mouse_grid.x, 0);
@@ -1813,7 +1833,7 @@ function transition_with_next(next) {
     next_frame = next;
     change_frames();
     let steps = t_steps;
-    if (menu_time > 0) {
+    if (!presenting) {
         // make it instant when menu open
         steps = 0;
     }
@@ -1937,6 +1957,7 @@ window.onload = function() {
             if (typeof obj.onkeydown === 'function') {
                 if (obj.onkeydown(evt)) {
                     captured = true;
+                    console.log('key captured by: ' + obj);
                 }
             }
         }
@@ -2003,6 +2024,10 @@ window.onload = function() {
             }
         }
 
+        if (frames.mouse_down()) {
+            return;
+        }
+
         // didn't touch an obj, if tool is move start a rect
         let obj_selected = false;
         let N = objs.length;
@@ -2032,10 +2057,9 @@ window.onload = function() {
         }
 
         if (presenting) {
-            mouse_time = 20;
+            mouse_time = mouse_duration;
         }
 
-        menu_time = menu_duration;
 
         mouse_last = get_mouse_pos(c, evt);
         mouse_grid_last = constrain_to_grid(mouse);
@@ -2164,17 +2188,12 @@ window.onload = function() {
         }, 1000/fps);
 
         if (presenting) {
-            menu_time = 0;
             mouse_time -= 1;
         }
 
         ctx.clearRect(0, 0, c.width, c.height);
 
         draw_grid(ctx);
-
-        if (menu_time > 0) {
-            menu_time -= 1;
-        }
 
         ctx.font = font_anim;
 
@@ -2199,7 +2218,7 @@ window.onload = function() {
 
         ctx.font = font_menu;
 
-        if (menu_time > 0) {
+        if (!presenting) {
             frames.render(ctx);
             menu.render(ctx);
         }
@@ -2213,7 +2232,7 @@ window.onload = function() {
             ctx.strokeStyle = dark;
 
             if (mouse_down) {
-                mouse_time = 20;
+                mouse_time = mouse_duration;
                 ctx.beginPath();
                 ctx.arc(mx, my, 10, 0, Math.PI * 2.0, 0);
                 ctx.stroke();
