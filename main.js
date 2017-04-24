@@ -457,10 +457,28 @@ function Shape(color, path) {
         this.selected_indices = [];
     }
 
+    this.bezier = function(points, off, t) {
+        let x = points[0].x - off.x;
+        let y = points[0].y - off.y;
+        let c = 0;
+        let N = points.length;
+        for (let i = 0; i < N; i++) {
+            c = math.factorial(N) / (math.factorial(N-i) * math.factorial(i));
+
+            c *= math.pow(1-t, N-i) * math.pow(t, i);
+
+            x += c * (points[i].x - off.x);
+            y += c * (points[i].y - off.y);
+        }
+
+        return [x, y];
+    }
+
     this.draw_path = function(props) {
         let path = props.path;
         let c = {x: 0, y: 0};
 
+        
         for (let i = 0; i < path.length; i++) {
             c.x += path[i].x;
             c.y += path[i].y;
