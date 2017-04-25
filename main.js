@@ -881,6 +881,12 @@ function Text(text, pos) {
             return false;
         }
 
+        if (key == "Enter") {
+            this.selected = false;
+            this.eval();
+            return false;
+        }
+
         if (ctrl) {
             this.properties[frame] = transform_props(key, this.properties[frame]);
             return false;
