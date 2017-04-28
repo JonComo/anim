@@ -6,11 +6,14 @@ var graph_guide = "#aaaaaa";
 var dark = "#000000";
 var light = "#ffffff";
 
-var colors = ["#000000", "#E74C3C", "#2980B9"];
+var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400"];
 
 var font_small = "16px Courier";
 var font_menu = "20px Courier";
 var font_anim = "32px Menlo";
+
+var dont_draw = ["point", "graph", "tangent", "line"];
+var point_size = 6;
 
 var c;
 var ctx;
@@ -108,6 +111,10 @@ function Animator(fps, canvas, frames, callback) {
     }
 
     this.animate();
+}
+
+function pretty_round(num) {
+    return (Math.round(num*100)/100).toFixed(2);
 }
 
 function get_mouse_pos(canvas, evt) {
@@ -454,6 +461,10 @@ function Shape(color, path) {
     }
 
     this.mouse_up = function(evt) {
+        if (meta) {
+            return;
+        }
+
         this.selected_indices = [];
     }
 
@@ -715,6 +726,10 @@ function Circle(color, pos) {
     }
 
     this.mouse_up = function(evt) {
+        if (meta) {
+            return;
+        }
+
         this.selected = false;
     }
 
@@ -864,6 +879,35 @@ function Text(text, pos) {
         return distance(props.p, mouse) < grid_size/4;
     }
 
+    this.split = function() {
+        if (!this.is_selected()) {
+            return;
+        }
+
+        // for each character, make it it's own text obj
+        let t = this.properties[frame].t;
+        if (!t) {
+            return;
+        }
+
+        let p = this.properties[frame].p;
+
+        let N = t.length;
+        let xoff = 0;
+        for (let i = 0; i < N; i++) {
+            let c = t[i];
+            if (c == " ") {
+                xoff += grid_size/2;
+                continue;
+            }
+            let newT = new Text(c, {x: p.x + xoff, y:p.y});
+            objs.push(newT);
+            xoff += grid_size/2;
+        }
+
+        this.deleted = true;
+    }
+
     this.onkeydown = function(evt) {
         if (!this.selected) {
             return false;
@@ -945,42 +989,10 @@ function Text(text, pos) {
             text = s[1];
         }
 
-        if (s[0] == "graph") {
-            // regenerate path
-            let uw = 16;
-            let uh = 9;
-
-            try {
-                let expr = s[1];
-                let path = [];
-                let y = 0;
-                for (let xx = -uw; xx <= uw; xx += .2) {
-                    parser.set('x', xx);
-                    y = parser.eval(expr);
-                    y = Math.max(Math.min(y, 1000), -1000);
-                    path.push({x: grid_size * xx, y: -grid_size * y});
-                }
-
-                this.properties[frame].path = path;
-            } catch (error) {
-                console.log('graph error: ' + error);
-            }
-        } else {
-            // evaluate it
-            try {
-                parser.eval(text);
-            } catch (e) {
-            }
-        }
-    }
-
-    this.eval_graphs = function() {
-        let N = objs.length;
-        for (let i = 0; i < N; i ++ ) {
-            let obj = objs[i];
-            if (typeof obj.eval == "function" && obj.graphing()) {
-                obj.eval();
-            }
+        // evaluate it
+        try {
+            parser.eval(text);
+        } catch (e) {
         }
     }
 
@@ -992,10 +1004,6 @@ function Text(text, pos) {
         if (changed) {
             this.chunks = this.find_chunks(text.split(":")[1]);
         }
-    }
-
-    this.changed_frames = function() {
-        this.eval();
     }
 
     this.mouse_down = function(evt) {
@@ -1042,8 +1050,6 @@ function Text(text, pos) {
                 } catch (error) {
                     console.log('slide error: ' + error);
                 }
-
-                this.eval_graphs();
             }
         } else if (tool == "select" && this.selected) {
             // shift it
@@ -1060,14 +1066,12 @@ function Text(text, pos) {
             if (this.near_mouse()) {
                 // clicked, eval text
                 this.eval();
-                this.eval_graphs();
-                console.log('clicked');
             }
             return;
         }
 
         if (this.selected) {
-            if (!this.near_mouse() && !this.dragged) {
+            if (!meta && !this.near_mouse()) {
                 this.selected = false;
             }
         }
@@ -1106,7 +1110,7 @@ function Text(text, pos) {
                 let val = parser.eval(s[1]);
                 let type = typeof val;
                 if (type == "number") {
-                    t = t + ' \u2192 ' + Math.round(val * 100)/100.0;
+                    t = t + ' \u2192 ' + pretty_round(val);
                 } else if (type == "object" && val._data.length != 0) {
                     // prob a matrix, render it
 
@@ -1126,7 +1130,7 @@ function Text(text, pos) {
         } else if (command == "slide") {
             try {
                 let val = parser.eval(s[1]);
-                val = Math.round(val * 100)/100.0;
+                val = pretty_round(val);
                 if (isNaN(val)) {
                     val = 0.0;
                 }
@@ -1166,11 +1170,18 @@ function Text(text, pos) {
             }
         }
 
-        if (!presenting && this.selected) {
+        let center = (xoff-grid_size/2) / 2;
+
+        if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
             // draw cursor
             ctx.beginPath();
             let c = this.cursor;
             ctx.fillRect(c * grid_size/2 - grid_size/4, -grid_size/2, 2, grid_size);
+
+            // draw center
+            ctx.strokeStyle = dark;
+            ctx.beginPath();
+            ctx.strokeRect(center-grid_size/8, -grid_size/8, grid_size/4, grid_size/4);
         }
     }
 
@@ -1204,83 +1215,82 @@ function Text(text, pos) {
     }
 
     this.draw_graph = function(ctx, props) {
-        let path = props.path;
-
-        if (path == null) {
-            return;
-        }
 
         let off = {x: c.width/2, y: c.height/2};
         ctx.save();
         ctx.translate(off.x, off.y);
+        ctx.strokeStyle = rgbToHex(props.c);
 
         ctx.beginPath();
 
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-            
-            if (i == 0) {
-                ctx.moveTo(p.x, p.y);
-            } else {
-                ctx.lineTo(p.x, p.y);
+        // regenerate path
+        try {
+            let uw = 16;
+            let uh = 9;
+
+            let expr = props.t.split(":")[1];
+            let y = 0;
+
+            let cx = 0;
+            let cy = 0;
+            for (let xx = -uw; xx <= uw; xx += .2) {
+                parser.set('x', xx);
+                y = parser.eval(expr);
+                y = Math.max(Math.min(y, 1000), -1000);
+
+                cx = grid_size * xx;
+                cy = -grid_size * y;
+
+                if (xx==-uw) {
+                    ctx.moveTo(cx, cy);
+                } else {
+                    ctx.lineTo(cx, cy);
+                }
             }
+
+        } catch (error) {
+            console.log('graph error: ' + error);
         }
 
         ctx.stroke();
 
         // show where mouse is
-        
-        if (presenting && ctrl) {
-            ctx.strokeStyle = graph_guide;
 
-            ctx.beginPath();
-
-            ctx.moveTo(mouse.x - off.x, -off.y);
-            ctx.lineTo(mouse.x - off.x, c.height - off.y);
-
-            let iright = path.length-1;
-            for (let i = 0; i < path.length; i++) {
-                if (path[i].x > mouse.x - off.x) {
-                    iright = i;
-                    break;
-                }
-            }
-
-            let ileft = iright - 1;
-
-            if (ileft < 0) {
-                ileft = 0;
-                iright = 1;
-            }
-
-            let xdiff = (path[iright].x) - (mouse.x - off.x);
-            let i = xdiff / (path[iright].x - path[ileft].x);
-
-            let yout = (1 - i) * path[iright].y + i * path[ileft].y;
-
-            ctx.moveTo(-off.x, yout);
-            ctx.lineTo(c.width - off.x, yout);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(mouse.x - off.x, yout, grid_size/2, 0, 2 * Math.PI, 0);
-            ctx.stroke();
-
-            let xin = (mouse.x - off.x)/grid_size;
-            let y = 0.0;
-            
-            try {
-                parser.set('x', xin);
-                y = parser.eval(props.t.split(":")[1]);
-            } catch (error) {
-                
-            }
-
-            ctx.fillText(Math.round(100 * (mouse.x - off.x)/grid_size)/100, mouse.x - off.x, off.y - 40);
-            ctx.fillText(Math.round(100 * y)/100, off.x - 60, yout - 20);
-        }
+        // if close to the line anywhere, draw a point on it
 
         ctx.restore();
+
+        try {
+            let xin = (mouse.x - off.x)/grid_size;
+            let yin = -(mouse.y - off.y)/grid_size;
+            parser.set('x', xin);
+            let fn = props.t.split(":")[1];
+            let fn_y = parser.eval(fn);
+
+            //console.log('mouse: ' + xin +', ' + yin);
+            //console.log('fn: ' + fn_y);
+            let d = (fn_y - yin) * grid_size;
+            if (Math.abs(d) < grid_size/2) {
+                // we got a match
+
+                let yt;
+                if (ctrl) {
+                    yt = fn;
+                } else {
+                    yt = pretty_round(fn_y);
+                }
+
+                let xp = mouse.x;
+                let yp = -fn_y * grid_size + off.y;
+
+                ctx.fillText("("+pretty_round(xin)+", "+yt+")", xp, yp - grid_size);
+                ctx.beginPath();
+                ctx.arc(xp, yp, point_size, 0, Math.PI*2);
+                ctx.fill();
+            }
+        } catch(e) {
+
+        }
     }
 
     this.draw_point = function(ctx, props) {
@@ -1296,15 +1306,29 @@ function Text(text, pos) {
         try {
             let coords = props.t.slice(6);
             coords = coords.split(",");
-            let x = parser.eval(coords[0]);
-            let y = parser.eval(coords[1]);
+            let xval = parser.eval(coords[0]);
+            let yval = parser.eval(coords[1]);
 
-            x = x * grid_size;
-            y = -y * grid_size;
+            let x = xval * grid_size;
+            let y = -yval * grid_size;
 
             ctx.beginPath();
-            ctx.arc(x, y, 6, 0, 2 * Math.PI, 0);
+            ctx.arc(x, y, point_size, 0, 2 * Math.PI, 0);
             ctx.stroke();
+
+            if (distance({x:mouse.x-off.x, y:mouse.y-off.y}, {x: x, y: y}) < grid_size/4) {
+                let xt;
+                let yt;
+                if (ctrl) {
+                    xt = coords[0];
+                    yt = coords[1];
+                } else {
+                    xt = pretty_round(xval);
+                    yt = pretty_round(yval);
+                }
+                ctx.fillText("("+xt+", "+yt+")", x, y-grid_size);
+                ctx.fill();
+            }
 
             if (coords[2] == "trail") {
                 if (x != this.last_x || y != this.last_y) {
@@ -1347,7 +1371,7 @@ function Text(text, pos) {
         ctx.save();
 
         try {
-            let expr = props.t.slice(8);
+            let expr = props.t.split(":")[1];
 
             let off = {x: c.width/2, y: c.height/2};
 
@@ -1398,6 +1422,16 @@ function Text(text, pos) {
         ctx.restore();
     }
 
+    this.draw_contour = function(ctx, props) {
+        let expr = props.t.split(":")[1];
+        let c = this.find_chunks(expr);
+        if (c.length == 2) {
+            let fn = c[0];
+            let cont = c[1];
+            console.log('contour: ' + fn + ' at val: ' + cont);
+        }
+    }
+
     this.draw_scatter = function(ctx, props) {
 
         if (!this.chunks || this.chunks.length != 2) {
@@ -1418,7 +1452,7 @@ function Text(text, pos) {
             let N = xs._data.length;
             for (let i = 0; i < N; i++) {
                 ctx.beginPath();
-                ctx.arc(xs._data[i] * grid_size, -ys._data[i] * grid_size, 6, 0, 2 * Math.PI, 0);
+                ctx.arc(xs._data[i] * grid_size, -ys._data[i] * grid_size, point_size, 0, 2 * Math.PI, 0);
                 ctx.stroke();
             }
         } catch(e) {
@@ -1508,39 +1542,34 @@ function Text(text, pos) {
                 this.draw_scatter(ctx, i);
             } else if (c == "tangent") {
                 this.draw_tangent(ctx, i);
-            } else if (c == "draw") {
-                this.eval_graphs();
             } else if (c == "for") {
                 this.run_for(ctx, i);
             }
         }
 
         // text
-        ctx.translate(i.p.x, i.p.y);
-        ctx.rotate(i.r);
-        ctx.scale(i.w, i.h);
 
+        if (!(presenting && dont_draw.indexOf(s[0]) != -1)) {
+            ctx.translate(i.p.x, i.p.y);
+            ctx.rotate(i.r);
+            ctx.scale(i.w, i.h);
 
-        if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
-            // changing text
-            let constrained = Math.min(1, Math.max(0, t_ease));
-            ctx.globalAlpha = 1-constrained;
-            this.draw_text(ctx, a);
-            ctx.globalAlpha = constrained;
-            this.draw_text(ctx, b);
-        } else {
-            ctx.globalAlpha = i.c[3];
-            this.draw_text(ctx, i);
+            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+                // changing text
+                let constrained = Math.min(1, Math.max(0, t_ease));
+                ctx.globalAlpha = 1-constrained;
+                this.draw_text(ctx, a);
+                ctx.globalAlpha = constrained;
+                this.draw_text(ctx, b);
+            } else {
+                ctx.globalAlpha = i.c[3];
+                this.draw_text(ctx, i);
+            }
+
+            ctx.restore();
         }
-
-        ctx.restore();
 
         // draw rect
-        if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
-            ctx.strokeStyle = dark;
-            ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
-        }
-
         if (presenting && s.length == 2 && s[0] == "slide" && this.near_mouse() && !this.hidden()) {
             ctx.strokeStyle = dark;
             ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
@@ -1784,6 +1813,16 @@ function Menu(pos) {
         tool = "text";
     }));
 
+    this.buttons.push(new Button("split", {x: 0, y: 0}, function(b) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (typeof obj.split == "function") {
+                obj.split();
+            }
+        }
+    }));
+
     this.buttons.push(new Button("shape", {x: 0, y: 0}, function(b) {
         tool = "shape";
     }));
@@ -2015,16 +2054,7 @@ function transition_with_next(next) {
     }
 
     transition.run(steps, next, function(targ) {
-
         frame = targ;
-
-        let N = objs.length;
-        for (let i = 0; i < N; i++) {
-            let obj = objs[i];
-            if (typeof obj.changed_frames == "function") {
-                obj.changed_frames(frame, targ);
-            }
-        }
     });
 }
 
