@@ -140,6 +140,23 @@ function between(a, b) {
     return {x: (a.x + b.x)/2, y: (a.y + b.y)/2};
 }
 
+function grad_2(fn, x, y) {
+    // depends on x and y
+    let h = 0.0001;
+
+    parser.set('x', x+h);
+    let fxh = parser.eval(fn);
+    parser.set('x', x);
+    let fx = parser.eval(fn);
+
+    parser.set('y', y+h);
+    let fyh = parser.eval(fn);
+    parser.set('y', y);
+    let fy = parser.eval(fn);
+
+    return [(fxh-fx)/h, (fyh-fy)/h];
+}
+
 function sigmoid(x, num, offset, width) {
     return num / (1.0 + Math.exp(-(x+offset)*width));
 }
@@ -1117,7 +1134,7 @@ function Text(text, pos) {
                     t = t + ' \u2192 [';
                     let N = val._data.length;
                     for (let i = 0; i < N; i++) {
-                        t += val._data[i];
+                        t += pretty_round(val._data[i]);
                         if (i != N - 1) {
                             t += ', ';
                         }
@@ -1304,10 +1321,22 @@ function Text(text, pos) {
         ctx.translate(off.x, off.y);
 
         try {
-            let coords = props.t.slice(6);
-            coords = coords.split(",");
-            let xval = parser.eval(coords[0]);
-            let yval = parser.eval(coords[1]);
+            let expr = props.t.split(":")[1];
+            let chunks = this.find_chunks(expr);
+            let trail = false;
+
+            if (chunks.length == 2) {
+                if (chunks[1] == "t") {
+                    trail = true;
+                }
+
+                expr = chunks[0];
+            }
+
+            let d = parser.eval(expr);
+
+            let xval = d._data[0];
+            let yval = d._data[1];
 
             let x = xval * grid_size;
             let y = -yval * grid_size;
@@ -1317,20 +1346,11 @@ function Text(text, pos) {
             ctx.stroke();
 
             if (distance({x:mouse.x-off.x, y:mouse.y-off.y}, {x: x, y: y}) < grid_size/4) {
-                let xt;
-                let yt;
-                if (ctrl) {
-                    xt = coords[0];
-                    yt = coords[1];
-                } else {
-                    xt = pretty_round(xval);
-                    yt = pretty_round(yval);
-                }
-                ctx.fillText("("+xt+", "+yt+")", x, y-grid_size);
+                ctx.fillText(expr, x, y-grid_size);
                 ctx.fill();
             }
 
-            if (coords[2] == "trail") {
+            if (trail) {
                 if (x != this.last_x || y != this.last_y) {
                     if (!this.past_points) {
                         this.past_points = [];
@@ -1423,13 +1443,64 @@ function Text(text, pos) {
     }
 
     this.draw_contour = function(ctx, props) {
-        let expr = props.t.split(":")[1];
-        let c = this.find_chunks(expr);
-        if (c.length == 2) {
-            let fn = c[0];
-            let cont = c[1];
-            console.log('contour: ' + fn + ' at val: ' + cont);
+        // contour: f, steps, step_size
+
+        ctx.save();
+
+        try {
+            ctx.fillStyle = rgbToHex(props.c);
+            let off = {x: c.width/2, y: c.height/2};
+            ctx.translate(off.x, off.y);
+
+            let chunks = this.find_chunks(props.t.split(":")[1]);
+
+            let expr = chunks[0];
+            let steps = parser.eval(chunks[1]);
+            let step_size = parser.eval(chunks[2]);
+
+            let sx = (mouse.x-off.x)/grid_size;
+            let sy = -(mouse.y-off.y)/grid_size;
+
+            parser.set('x', sx);
+            parser.set('y', sy);
+
+            let cont_v = parser.eval(expr);
+
+            ctx.beginPath();
+            ctx.moveTo(sx * grid_size, -sy * grid_size);
+
+            for (let i = 0; i < steps; i++) {
+                let grad = grad_2(expr, sx, sy);
+                let perp = [grad[1], -grad[0]];
+                let norm = Math.sqrt(perp[0]**2 + perp[1]**2);
+                perp = [step_size * perp[0] / norm, step_size * perp[1] / norm];
+
+                sx += perp[0];
+                sy += perp[1];
+
+                // auto correct
+                for (let j = 0; j < 5; j++) {
+                    parser.set('x', sx);
+                    parser.set('y', sy);
+                    let new_v = parser.eval(expr);
+
+                    let diff = new_v - cont_v;
+                    grad = grad_2(expr, sx, sy);
+                    sx -= .02 * diff * grad[0];
+                    sy -= .02 * diff * grad[1];
+                }
+                
+
+                ctx.lineTo(sx * grid_size, -sy * grid_size);
+            }
+
+            ctx.stroke();
+
+        } catch(e) {
+            console.log('contour error: ' + e);
         }
+
+        ctx.restore();
     }
 
     this.draw_scatter = function(ctx, props) {
@@ -1542,6 +1613,8 @@ function Text(text, pos) {
                 this.draw_scatter(ctx, i);
             } else if (c == "tangent") {
                 this.draw_tangent(ctx, i);
+            } else if (c == "contour") {
+                this.draw_contour(ctx, i);
             } else if (c == "for") {
                 this.run_for(ctx, i);
             }
