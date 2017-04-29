@@ -1550,6 +1550,37 @@ function Text(text, pos) {
         ctx.restore();
     }
 
+    this.draw_shape = function(ctx, props) {
+        // shape:gear,radius,rot
+
+        let args = props.t.split(":")[1];
+        args = args.split(",");
+
+        if (args[0] == "gear") {
+            try {
+                let r = parser.eval(args[1]);
+                let rot = parser.eval(args[2]);
+                let p = props.p;
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(rot);
+
+                ctx.strokeStyle = rgbToHex(props.c);
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI*2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(r*2/3, 0, r/10, 0, Math.PI*2);
+                ctx.stroke();
+
+                ctx.restore();
+            } catch(e) {
+                console.log('shape error: ' + e);
+            }
+        }
+    }
+
     this.draw_line = function(ctx, props) {        
         // graph points
         
@@ -1634,6 +1665,8 @@ function Text(text, pos) {
                 this.draw_contour(ctx, i);
             } else if (c == "for") {
                 this.run_for(ctx, i);
+            } else if (c == "shape") {
+                this.draw_shape(ctx, i);
             }
         }
 
@@ -1659,7 +1692,7 @@ function Text(text, pos) {
             ctx.restore();
         }
 
-        // draw rect
+        // draw slider rect
         if (presenting && s.length == 2 && s[0] == "slide" && this.near_mouse() && !this.hidden()) {
             ctx.strokeStyle = dark;
             ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
