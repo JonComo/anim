@@ -1082,7 +1082,24 @@ function Text(text, pos) {
         if (presenting) {
             if (this.near_mouse()) {
                 // clicked, eval text
-                this.eval();
+                let text = this.properties[frame].t;
+                if (text) {
+                    let s = text.split(":");
+                    if (s[0] == "loop") {
+                        let args = s[1].split(",");
+                        try {
+                            let num = parser.eval(args[0]);
+                            console.log('running expr ' + args[1] + ' for ' + num + ' times');
+                            for (let i = 0; i < num; i++) {
+                                parser.eval(args[1]);
+                            }
+                        } catch(e) {
+                            console.log('loop error ' + e);
+                        }
+                    } else {
+                        this.eval();
+                    }
+                }
             }
             return;
         }
