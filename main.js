@@ -1063,7 +1063,6 @@ function Text(text, pos) {
 
                 try {
                     parser.set(var_name, old_val + delta);
-                    console.log('setting: ' + var_name + " to be " + old_value + delta);
                 } catch (error) {
                     console.log('slide error: ' + error);
                 }
@@ -1089,7 +1088,6 @@ function Text(text, pos) {
                         let args = s[1].split(",");
                         try {
                             let num = parser.eval(args[0]);
-                            console.log('running expr ' + args[1] + ' for ' + num + ' times');
                             for (let i = 0; i < num; i++) {
                                 parser.eval(args[1]);
                             }
@@ -1306,8 +1304,6 @@ function Text(text, pos) {
             let fn = props.t.split(":")[1];
             let fn_y = parser.eval(fn);
 
-            //console.log('mouse: ' + xin +', ' + yin);
-            //console.log('fn: ' + fn_y);
             let d = (fn_y - yin) * grid_size;
             if (Math.abs(d) < grid_size/2) {
                 // we got a match
@@ -2363,7 +2359,6 @@ window.onload = function() {
             if (typeof obj.onkeydown === 'function') {
                 if (obj.onkeydown(evt)) {
                     captured = true;
-                    console.log('key captured by: ' + obj);
                 }
             }
         }
