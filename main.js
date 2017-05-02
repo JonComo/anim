@@ -1144,7 +1144,12 @@ function Text(text, pos) {
                 let val = parser.eval(s[1]);
                 let type = typeof val;
                 if (type == "number") {
-                    t = t + ' \u2192 ' + pretty_round(val);
+                    if (ctrl) {
+                        // nothing
+                    } else {
+                        t = pretty_round(val);
+                    }
+                    
                 } else if (type == "object" && val._data.length != 0) {
                     // prob a matrix, render it
 
