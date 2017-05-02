@@ -1557,32 +1557,98 @@ function Text(text, pos) {
 
     this.draw_shape = function(ctx, props) {
         // shape:gear,radius,rot
+        // shape:line,expr,min,max,grid_lines
 
         let args = props.t.split(":")[1];
         args = args.split(",");
 
         if (args[0] == "gear") {
+            ctx.save();
+
             try {
                 let r = parser.eval(args[1]);
                 let rot = parser.eval(args[2]);
                 let p = props.p;
 
-                ctx.save();
+                
                 ctx.translate(p.x, p.y);
                 ctx.rotate(rot);
 
-                ctx.strokeStyle = rgbToHex(props.c);
                 ctx.beginPath();
                 ctx.arc(0, 0, r, 0, Math.PI*2);
                 ctx.stroke();
                 ctx.beginPath();
                 ctx.arc(r*2/3, 0, r/10, 0, Math.PI*2);
                 ctx.stroke();
-
-                ctx.restore();
             } catch(e) {
                 console.log('shape error: ' + e);
             }
+
+            ctx.restore();
+        } else if (args[0] == "line") {
+            if (args.length != 5) {
+                return;
+            }
+
+            let expr = args[1];
+            let min = args[2];
+            let max = args[3];
+            let grid_lines = args[4];
+
+            ctx.save();
+
+            try {
+                min = parser.eval(min);
+                max = parser.eval(max);
+                grid_lines = parser.eval(grid_lines);
+
+                let range = max - min;
+                let v = parser.eval(expr);
+
+                let x0 = -grid_lines/2 * grid_size;
+                let x1 = grid_lines/2 * grid_size;
+
+                // draw it
+                ctx.translate(props.p.x, props.p.y);
+                ctx.rotate(props.r);
+                ctx.scale(props.w, props.h);
+
+                // draw the line
+                ctx.beginPath();
+                ctx.moveTo(x0, 0);
+                ctx.lineTo(x1, 0);
+                ctx.stroke();
+
+                let stuck = v;
+                if (v < min) {
+                    stuck = min;
+                } else if (v > max) {
+                    stuck = max;
+                }
+
+                let n_per_grid = range / grid_lines;
+
+                let lx = x0 + ((stuck-min)/range) * grid_lines * grid_size;
+
+                ctx.fillRect(lx - 1, -grid_size/2, 2, grid_size);
+
+
+                if (ctrl) {
+                    ctx.fillText(expr, lx, -grid_size);
+                } else {
+                    ctx.fillText(pretty_round(v), lx, -grid_size);
+                }
+
+                ctx.fillText(pretty_round(min), x0, grid_size);
+                ctx.fillText(pretty_round(max), x1, grid_size);
+
+                ctx.fillRect(x0 - 1, -grid_size/4, 2, grid_size/2);
+                ctx.fillRect(x1 - 1, -grid_size/4, 2, grid_size/2);
+            } catch(e) {
+                console.log('number line error: ' + e);
+            }
+
+            ctx.restore();
         }
     }
 
@@ -1653,6 +1719,8 @@ function Text(text, pos) {
         ctx.fillStyle = rgbToHex(i.c);
         ctx.strokeStyle = rgbToHex(i.c);
 
+        let should_draw_text = true;
+
         let s = a.t.split(":");
         if (s.length == 2) {
             let c = s[0];
@@ -1672,36 +1740,40 @@ function Text(text, pos) {
                 this.run_for(ctx, i);
             } else if (c == "shape") {
                 this.draw_shape(ctx, i);
+                if (presenting) {
+                    should_draw_text = false;
+                }
+            } else if (c == "slide") {
+                // draw slider rect
+                if (presenting && this.near_mouse() && !this.hidden()) {
+                    ctx.strokeStyle = dark;
+                    ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
+                }
             }
         }
 
         // text
+        if (should_draw_text) {
+            if (!(presenting && dont_draw.indexOf(s[0]) != -1)) {
+                ctx.translate(i.p.x, i.p.y);
+                ctx.rotate(i.r);
+                ctx.scale(i.w, i.h);
 
-        if (!(presenting && dont_draw.indexOf(s[0]) != -1)) {
-            ctx.translate(i.p.x, i.p.y);
-            ctx.rotate(i.r);
-            ctx.scale(i.w, i.h);
-
-            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
-                // changing text
-                let constrained = Math.min(1, Math.max(0, t_ease));
-                ctx.globalAlpha = 1-constrained;
-                this.draw_text(ctx, a);
-                ctx.globalAlpha = constrained;
-                this.draw_text(ctx, b);
-            } else {
-                ctx.globalAlpha = i.c[3];
-                this.draw_text(ctx, i);
+                if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+                    // changing text
+                    let constrained = Math.min(1, Math.max(0, t_ease));
+                    ctx.globalAlpha = 1-constrained;
+                    this.draw_text(ctx, a);
+                    ctx.globalAlpha = constrained;
+                    this.draw_text(ctx, b);
+                } else {
+                    ctx.globalAlpha = i.c[3];
+                    this.draw_text(ctx, i);
+                }
             }
-
-            ctx.restore();
         }
 
-        // draw slider rect
-        if (presenting && s.length == 2 && s[0] == "slide" && this.near_mouse() && !this.hidden()) {
-            ctx.strokeStyle = dark;
-            ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
-        }
+        ctx.restore();
     }
 }
 
