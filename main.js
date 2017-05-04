@@ -23,7 +23,7 @@ var frames;
 var menu;
 var cam;
 var num_frames = 3;
-var frame; // current frame
+var frame = 1; // current frame
 var next_frame;
 var playing;
 var rendering = false;
@@ -53,6 +53,7 @@ var mouse_graph = {x: 0, y: 0};
 var t = 0; // time for parser
 
 var parser = math.parser();
+parser.set('frame', frame);
 
 // undo
 var states = [];
@@ -816,12 +817,14 @@ function Text(text, pos) {
     this.properties[frame] = {t: text, p: pos, c: [0, 0, 0, 1], w: 1, h: 1, r: 0};
 
     // ephemeral
+    this.new = true; // loaded or just created
     this.selected = false;
     this.dragged = false;
     this.cursor = -1;
     this.command = "";
     this.args = [];
     this.text_val = "";
+    this.near_mouse = false;
 
     this.select = function() {
         this.selected = true;
@@ -899,22 +902,20 @@ function Text(text, pos) {
             return false;
         }
 
-        let p = this.properties[frame].p;
+        let props = this.properties[frame];
+        let p;
+        if (props.ge) {
+            p = {x: props.p.x + cam.props.p.x, y: props.p.y + cam.props.p.y};
+        } else {
+            p = props.p;
+        }
+        
         if (p.x > x && p.y > y && p.x < x2 && p.y < y2) {
             this.select();
             return true;
         }
 
         return false;
-    }
-
-    this.near_mouse = function () {
-        let props = this.properties[frame];
-        if (!props) {
-            return false;
-        }
-
-        return distance(props.p, mouse) < grid_size/4;
     }
 
     this.split = function() {
@@ -1013,6 +1014,11 @@ function Text(text, pos) {
         this.text_val = '';
         let expr = '';
 
+        if (this.new) {
+            this.new = false;
+            this.parse_text(this.properties[frame].t);
+        }
+
         if (this.command) {
             expr = this.args.join('');
         } else {
@@ -1067,13 +1073,29 @@ function Text(text, pos) {
             return false;
         } 
 
-        if (this.near_mouse()) {
+        if (this.near_mouse) {
             this.select();
             return true;
         }
 
         return false;
     }
+
+    this.mouse_move = function(evt) {
+        let props = this.properties[frame];
+        if (!props) {
+            return;
+        }
+
+        if (props.ge) {
+            let d = distance({x: props.p.x + cam.props.p.x, y: props.p.y + cam.props.p.y}, mouse);
+            console.log(d);
+            this.near_mouse = d < grid_size/4;
+        } else {
+            let d = distance(props.p, mouse);
+            this.near_mouse = d < grid_size/4;
+        }
+    };
 
     this.mouse_drag = function(evt) {
         let props = this.properties[frame];
@@ -1124,7 +1146,7 @@ function Text(text, pos) {
 
     this.mouse_up = function(evt) {
         if (presenting) {
-            if (this.near_mouse()) {
+            if (this.near_mouse) {
                 // clicked, eval text
 
                 // loop:num,expr
@@ -1146,7 +1168,7 @@ function Text(text, pos) {
         }
 
         if (this.selected) {
-            if (!meta && !this.near_mouse()) {
+            if (!meta && !this.near_mouse) {
                 this.selected = false;
             }
         }
@@ -1201,7 +1223,7 @@ function Text(text, pos) {
 
         let center = (xoff-grid_size/2) / 2;
 
-        if (!presenting && !this.hidden() && (this.selected || this.near_mouse())) {
+        if (!presenting && !this.hidden() && (this.selected || this.near_mouse)) {
             // draw cursor
             ctx.beginPath();
             let c = this.cursor;
@@ -1657,7 +1679,7 @@ function Text(text, pos) {
             }
         } else if (c == "slide") {
             // draw slider rect
-            if (presenting && this.near_mouse() && !this.hidden()) {
+            if (presenting && this.near_mouse && !this.hidden()) {
                 ctx.strokeStyle = dark;
                 ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
             }
@@ -1671,6 +1693,10 @@ function Text(text, pos) {
 
         // text
         if (should_draw_text) {
+            if (a.ge) {
+                ctx.translate(cam.props.p.x, cam.props.p.y);
+            }
+
             ctx.translate(i.p.x, i.p.y);
             ctx.rotate(i.r);
             ctx.scale(i.w, i.h);
@@ -1841,19 +1867,18 @@ function text_array_to_objs(arr, keep_animation) {
 
 function Frames(pos) {
     this.pos = pos;
-    this.pad = 0;
     this.size = grid_size/2;
 
     this.frame_pos = function(i) {
-        let size =  this.size;
+        let size = (this.size + grid_size/4);
         let yoffset = (i-1) * size;
         let xoff = 0;
-        let hcon = size * 36;
+        let hcon = size * 30;
         while (yoffset >= hcon) {
             yoffset -= hcon;
             xoff ++;
         }
-        return {x: this.pos.x + xoff * grid_size*2/3, y: this.pos.y + yoffset};
+        return {x: this.pos.x + xoff * grid_size*2/3, y: this.pos.y + yoffset + grid_size/2};
     }
 
     this.create_buttons = function() {
@@ -1919,29 +1944,32 @@ function Frames(pos) {
                 } else if (i == this.buttons.length - 1) {
                     // add frame
                     // copy to next from frame
-                    num_frames += 1;
-                    for (let f = num_frames; f >= frame; f--) {
-                        for (let i = 0; i < objs.length; i++) {
-                            let obj = objs[i];
-                            if (typeof obj.copy_properties == "function") {
-                                if (!obj.properties[f]) {
-                                    continue;
-                                }
-                                obj.copy_properties(f, f+1);
-                            }
-                        }
-
-                        if (cam.properties[f]) {
-                            cam.properties[f+1] = copy(cam.properties[f]);
-                        }
-                    }
-                    this.create_buttons();
+                    insert_frame();
                     return true;
                 } else {
                     this.on_click(i+1);
                 }
             }
         }
+    }
+
+    this.onkeydown = function(evt) {
+        let key = evt.key;
+
+        if (key == "ArrowRight") {
+            if (!presenting && frame + 1 > num_frames) {
+                // create a new one
+                insert_frame();
+            }
+
+            transition_with_next(loop_frame(frame+1));
+            return true;
+        } else if (key == "ArrowLeft") {
+            transition_with_next(loop_frame(frame-1));
+            return true;
+        }
+
+        return false;
     }
 
     this.render = function(ctx) {
@@ -1956,7 +1984,28 @@ function Frames(pos) {
     }
 }
 
+function insert_frame() {
+    num_frames += 1;
+    for (let f = num_frames; f >= frame; f--) {
+        for (let i = 0; i < objs.length; i++) {
+            let obj = objs[i];
+            if (typeof obj.copy_properties == "function") {
+                if (!obj.properties[f]) {
+                    continue;
+                }
+                obj.copy_properties(f, f+1);
+            }
+        }
+
+        if (cam.properties[f]) {
+            cam.properties[f+1] = copy(cam.properties[f]);
+        }
+    }
+    frames.create_buttons();
+}
+
 function present() {
+    tool = "select";
     presenting = true;
     document.body.style.cursor = 'none';
 }
@@ -2057,6 +2106,34 @@ function Menu(pos) {
         }
     }));
 
+    this.buttons.push(new Button("screen ele.", {x: 0, y: 0}, function(b) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (obj.properties && obj.is_selected()) {
+                let props = obj.properties[frame];
+                if (props.ge == true) {
+                    props.p = {x: props.p.x + cam.props.p.x, y: props.p.y + cam.props.p.y};
+                    obj.properties[frame]['ge'] = false;
+                }
+            }
+        }
+    }));
+
+    this.buttons.push(new Button("graph ele.", {x: 0, y: 0}, function(b) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (obj.properties && obj.is_selected()) {
+                let props = obj.properties[frame];
+                if (!props.ge) {
+                    props.p = {x: props.p.x - cam.props.p.x, y: props.p.y - cam.props.p.y};
+                    obj.properties[frame]['ge'] = true;
+                }
+            }
+        }
+    }));
+
     this.buttons.push(new Button("camera", {x: 0, y: 0}, function(b) {
         if (tool == "camera") {
             // reset cam
@@ -2138,7 +2215,9 @@ function Transition() {
         if (this.transitioning) {
             this.step += 1;
             t_percent = this.step / this.steps;
+            parser.set('_t', t_percent);
             t_ease = ease_in_out(t_percent);
+            parser.set('_tt', t_ease);
             t_ease = sigmoid(t_percent, 1.2, -.4, 14) - sigmoid(t_percent, .2, -.6, 15);
             if (this.step >= this.steps) {
                 t_percent = 1.0;
@@ -2254,6 +2333,7 @@ function transition_with_next(next) {
 
     transition.run(steps, next, function(targ) {
         frame = targ;
+        parser.set('frame', frame);
 
         let N = objs.length;
         for (let i = 0; i < N; i++) {
@@ -2426,6 +2506,10 @@ window.onload = function() {
             return false;
         }
 
+        if (frames.onkeydown(evt)) {
+            return false;
+        }
+
         cam.onkeydown(evt);
 
         if (key == " ") {
@@ -2439,13 +2523,8 @@ window.onload = function() {
             }
         }
 
-        if (key == "ArrowRight") {
-            transition_with_next(loop_frame(frame+1));
-            return false;
-        } else if (key == "ArrowLeft") {
-            transition_with_next(loop_frame(frame-1));
-            return false;
-        } else if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) != -1) {
+        
+        if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) != -1) {
             if (!transition.transitioning) {
                 transition_with_next(Number(key));
             }
@@ -2515,14 +2594,23 @@ window.onload = function() {
 
         if (mouse_down) {
             let captured = false;
-            for (let i = 0; i < objs.length; i++) {
+            let N = objs.length;
+            for (let i = 0; i < N; i++) {
                 let obj = objs[i];
                 if (typeof obj.mouse_drag === 'function') {
-                    captured = captured || obj.mouse_drag(evt);
+                    captured = obj.mouse_drag(evt) || captured;
                 }
             }
             if (!captured) {
                 cam.mouse_drag(evt);
+            }
+        } else {
+            let N = objs.length;
+            for (let i = 0; i < N; i++) {
+                let obj = objs[i];
+                if (typeof obj.mouse_move === 'function') {
+                    obj.mouse_move(evt);
+                }
             }
         }
 
@@ -2685,7 +2773,7 @@ window.onload = function() {
 
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
-            if (obj.command == "expr") {
+            if (obj.command == "expr" || obj.new) {
                 obj.eval();
             }
         }
