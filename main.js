@@ -10,9 +10,8 @@ var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400"];
 
 var font_small = "16px Courier";
 var font_menu = "20px Courier";
-var font_anim = "32px Menlo";
+var font_anim = "26px Menlo";
 
-var dont_draw = ["point", "graph", "tangent", "line"];
 var point_size = 6;
 
 var c;
@@ -22,6 +21,7 @@ var animator;
 var objs = [];
 var frames;
 var menu;
+var cam;
 var num_frames = 3;
 var frame; // current frame
 var next_frame;
@@ -29,10 +29,10 @@ var playing;
 var rendering = false;
 var presenting = false;
 
-var t_ease;
+var t_ease = 0;
 var t_steps = 60;
 
-var grid_size = 40;
+var grid_size = 30;
 var mouse_time = 0;
 var mouse_duration = 40;
 
@@ -48,6 +48,9 @@ var mouse_last = {x: 0, y: 0};
 var mouse_start = {x: 0, y: 0};
 var mouse_grid = {x: 0, y: 0};
 var mouse_last_grid = {x: 0, y: 0};
+var mouse_graph = {x: 0, y: 0};
+
+var t = 0; // time for parser
 
 var parser = math.parser();
 
@@ -216,7 +219,7 @@ function transform_props(key, props) {
 }
 
 function interpolate(a, b) {
-    if (b == null) {
+    if (!b) {
         return a;
     }
 
@@ -276,11 +279,19 @@ function Button(text, pos, callback) {
     this.text = text;
     this.pos = pos;
     this.callback = callback;
-    this.radius = 20;
     this.color = "";
+    this.align = 'left';
+    this.selected = false;
+
+    this.width = text.length * grid_size/4;
+    this.height = grid_size/4;
+
+    if (this.width == 0) {
+        this.width = grid_size;
+    }
     
     this.hovering = function() {
-        return distance(this.pos, mouse) < this.radius;
+        return (mouse.x > this.pos.x && mouse.x < this.pos.x + this.width && Math.abs(mouse.y - this.pos.y) < this.height);
     }
 
     this.mouse_up = function(evt) {
@@ -296,17 +307,24 @@ function Button(text, pos, callback) {
     }
 
     this.render = function(ctx) {
-        if (this.color.length) {
-            ctx.save();
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.pos.x - this.radius/2, this.pos.y - this.radius/2, this.radius, this.radius);
-            ctx.restore();
+        ctx.save();
+
+        ctx.translate(this.pos.x, this.pos.y);
+
+        if (this.hovering() || this.selected) {
+            ctx.scale(1.5, 1.5);
         }
 
-        ctx.fillText(this.text, this.pos.x, this.pos.y);
-        if (this.hovering() || tool == this.color) {
-            ctx.fillRect(this.pos.x - this.radius/2, this.pos.y + 10, this.radius, 2);
+        if (this.color.length) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(0, -grid_size/8, grid_size, grid_size/4);
         }
+
+        ctx.textAlign = this.align;
+        ctx.font = font_small;
+        ctx.fillText(this.text, 0, 0);
+
+        ctx.restore();
     }
 }
 
@@ -801,6 +819,9 @@ function Text(text, pos) {
     this.selected = false;
     this.dragged = false;
     this.cursor = -1;
+    this.command = "";
+    this.args = [];
+    this.text_val = "";
 
     this.select = function() {
         this.selected = true;
@@ -819,7 +840,7 @@ function Text(text, pos) {
             return;
         }
 
-        let newc = new Text(null, null);
+        let newc = new Text(this.text, null);
         newc.properties[frame] = copy(this.properties[frame]);
         newc.selected = true;
         this.selected = false;
@@ -985,31 +1006,49 @@ function Text(text, pos) {
     }
 
     this.eval = function() {
-        if (this.is_selected()) {
+        if ((!presenting && this.is_selected()) || this.hidden()) {
             return;
         }
 
-        // reeval it
-        let props = this.properties[frame];
-        if (!props) {
+        this.text_val = '';
+        let expr = '';
+
+        if (this.command) {
+            expr = this.args.join('');
+        } else {
+            expr = this.properties[frame].t;
+        }
+
+        if (!expr) {
             return;
         }
 
-        if (this.hidden()) {
-            return;
-        }
-
-        let text = props.t;
-        let s = text.split(":");
-
-        if (s.length == 2) {
-            text = s[1];
-        }
-
-        // evaluate it
         try {
-            parser.eval(text);
-        } catch (e) {
+            let val = parser.eval(expr);
+            let type = typeof val;
+            if (type == "number") {
+                if (ctrl) {
+                    // nothing
+                    this.text_val = '';
+                } else {
+                    this.text_val = ' = ' + pretty_round(val);
+                }
+                
+            } else if (type == "object" && val._data.length != 0) {
+                // prob a matrix, render it
+
+                this.text_val = ' = [';
+                let N = val._data.length;
+                for (let i = 0; i < N; i++) {
+                    this.text_val += pretty_round(val._data[i]);
+                    if (i != N - 1) {
+                        this.text_val += ', ';
+                    }
+                }
+                this.text_val += ']';
+            }
+        } catch (error) {
+
         }
     }
 
@@ -1019,7 +1058,7 @@ function Text(text, pos) {
         this.properties[frame].t = text;
 
         if (changed) {
-            this.chunks = this.find_chunks(text.split(":")[1]);
+            this.parse_text(text);
         }
     }
 
@@ -1043,12 +1082,10 @@ function Text(text, pos) {
         }
 
         if (presenting) {
-            let s = props.t.split(":");
-
-            if (s[0] == "slide" && distance(mouse_start, props.p) < grid_size/4) {
+            if (this.command == "slide" && distance(mouse_start, props.p) < grid_size/4) {
 
                 // change the value of the variable
-                let var_name = s[1];
+                let var_name = this.args[0];
                 var_name = var_name.replace(/\s+/g, '');
 
                 let old_val = 0;
@@ -1061,11 +1098,16 @@ function Text(text, pos) {
 
                 let delta = (mouse.x - mouse_last.x)/grid_size;
 
+                let new_val = old_val + delta;
+                this.text_val = ' = ' + pretty_round(new_val);
+
                 try {
-                    parser.set(var_name, old_val + delta);
+                    parser.set(var_name, new_val);
                 } catch (error) {
                     console.log('slide error: ' + error);
                 }
+
+                return true;
             }
         } else if (tool == "select" && this.selected) {
             // shift it
@@ -1074,29 +1116,30 @@ function Text(text, pos) {
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
 
             this.dragged = true;
+            return true;
         }
+
+        return false;
     }
 
     this.mouse_up = function(evt) {
         if (presenting) {
             if (this.near_mouse()) {
                 // clicked, eval text
-                let text = this.properties[frame].t;
-                if (text) {
-                    let s = text.split(":");
-                    if (s[0] == "loop") {
-                        let args = s[1].split(",");
-                        try {
-                            let num = parser.eval(args[0]);
-                            for (let i = 0; i < num; i++) {
-                                parser.eval(args[1]);
-                            }
-                        } catch(e) {
-                            console.log('loop error ' + e);
+
+                // loop:num,expr
+                if (this.command == "loop") {
+                    try {
+                        let num = this.args[0];
+                        let expr = this.args[1];
+                        for (let i = 0; i < num; i++) {
+                            parser.eval(expr);
                         }
-                    } else {
-                        this.eval();
+                    } catch(e) {
+                        console.log('loop error ' + e);
                     }
+                } else {
+                    this.eval();
                 }
             }
             return;
@@ -1112,10 +1155,9 @@ function Text(text, pos) {
     }
 
     this.graphing = function() {
-        let props = this.properties[frame];
-        let s = props.t.split(":");
+        let cs = ["tangent", "graph", "point", "scatter", "line", "contour"];
 
-        if (s && s.length == 2 && (s[0] == "tangent" || s[0] == "graph" || s[0] == "point" || s[0] == "scatter" || s[0] == "line")) {
+        if (cs.indexOf(this.command) != -1) {
             return true;
         }
 
@@ -1125,58 +1167,8 @@ function Text(text, pos) {
     this.draw_text = function(ctx, props) {
         let t = props.t;
 
-        let s = t.split(":");
-        let command = "";
-        if (s.length == 2) {
-            command = s[0];
-            if (presenting) {
-                t = s[1];
-                if (t[0] == ' ') {
-                    t = t.slice(1);
-                }
-            }
-        }
-
-        if (command == "expr" && !this.is_selected()) {
-            try {
-                let val = parser.eval(s[1]);
-                let type = typeof val;
-                if (type == "number") {
-                    if (ctrl) {
-                        // nothing
-                    } else {
-                        t = pretty_round(val);
-                    }
-                    
-                } else if (type == "object" && val._data.length != 0) {
-                    // prob a matrix, render it
-
-                    t = t + ' \u2192 [';
-                    let N = val._data.length;
-                    for (let i = 0; i < N; i++) {
-                        t += pretty_round(val._data[i]);
-                        if (i != N - 1) {
-                            t += ', ';
-                        }
-                    }
-                    t += ']';
-                }
-            } catch (error) {
-
-            }
-        } else if (command == "slide") {
-            try {
-                let val = parser.eval(s[1]);
-                val = pretty_round(val);
-                if (isNaN(val)) {
-                    val = 0.0;
-                }
-
-                //t = t + ' \u2194 ' + val;
-                t = t + ' = ' + val;
-            } catch (error) {
-
-            }
+        if (this.command == "expr" || this.command == "slide") {
+            t = t + this.text_val;
         }
 
         ctx.fillStyle = rgbToHex(props.c);
@@ -1222,16 +1214,19 @@ function Text(text, pos) {
         }
     }
 
-    this.find_chunks = function(text) {
-        if (!text) {
-            return [];
+    this.parse_text = function(text) {
+        this.command = "";
+        this.args = [];
+
+        if (!text || text.indexOf(':') == -1) {
+            return;
         }
 
-        // find top level arguments ignoring commas between
+        // find top level command and args
         let N = text.length;
         let p = 0;
         let s = 0;
-        let chu = [];
+
         for (let i = 0; i < N; i++) {
             let c = text[i];
 
@@ -1241,47 +1236,52 @@ function Text(text, pos) {
                 p -= 1;
             }
 
-            if (c == ',' && p == 0) {
-                chu.push(text.slice(s, i));
+            if (c == ':' && p == 0) {
+                this.command = text.slice(s, i);
+                s = i+1;
+            }else if (c == ',' && p == 0) {
+                this.args.push(text.slice(s, i));
                 s = i+1;
             }
         }
 
-        chu.push(text.slice(s));
-        return chu;
+        this.args.push(text.slice(s));
     }
+
+    this.parse_text(text);
 
     this.draw_graph = function(ctx, props) {
 
-        let off = {x: c.width/2, y: c.height/2};
         ctx.save();
-        ctx.translate(off.x, off.y);
+        //ctx.translate(off.x, off.y);
         ctx.strokeStyle = rgbToHex(props.c);
 
         ctx.beginPath();
+
+        let expr = this.args[0];
 
         // regenerate path
         try {
             let uw = 16;
             let uh = 9;
 
-            let expr = props.t.split(":")[1];
             let y = 0;
 
             let cx = 0;
             let cy = 0;
+
             for (let xx = -uw; xx <= uw; xx += .2) {
                 parser.set('x', xx);
                 y = parser.eval(expr);
                 y = Math.max(Math.min(y, 1000), -1000);
 
-                cx = grid_size * xx;
-                cy = -grid_size * y;
+                let p = {x: xx, y: y};
+                p = cam.graph_to_screen(p);
 
                 if (xx==-uw) {
-                    ctx.moveTo(cx, cy);
+                    ctx.moveTo(p.x, p.y);
                 } else {
-                    ctx.lineTo(cx, cy);
+                    ctx.lineTo(p.x, p.y);
                 }
             }
 
@@ -1295,16 +1295,15 @@ function Text(text, pos) {
 
         // if close to the line anywhere, draw a point on it
 
-        ctx.restore();
-
         try {
-            let xin = (mouse.x - off.x)/grid_size;
-            let yin = -(mouse.y - off.y)/grid_size;
+            let xin = mouse_graph.x;
+            let yin = mouse_graph.y;
+
             parser.set('x', xin);
-            let fn = props.t.split(":")[1];
-            let fn_y = parser.eval(fn);
+            let fn_y = parser.eval(expr);
 
             let d = (fn_y - yin) * grid_size;
+
             if (Math.abs(d) < grid_size/2) {
                 // we got a match
 
@@ -1315,90 +1314,16 @@ function Text(text, pos) {
                     yt = pretty_round(fn_y);
                 }
 
-                let xp = mouse.x;
-                let yp = -fn_y * grid_size + off.y;
+                let s = cam.graph_to_screen({x: mouse_graph.x, y: fn_y});
 
-                ctx.fillText("("+pretty_round(xin)+", "+yt+")", xp, yp - grid_size);
+                ctx.fillText("("+pretty_round(xin)+", "+yt+")", s.x, s.y - grid_size);
                 ctx.beginPath();
-                ctx.arc(xp, yp, point_size, 0, Math.PI*2);
+                ctx.arc(s.x, s.y, point_size, 0, Math.PI*2);
                 ctx.fill();
             }
+
         } catch(e) {
-
-        }
-    }
-
-    this.draw_point = function(ctx, props) {
-        
-        ctx.fillStyle = rgbToHex(props.c);
-        
-        // graph a point
-        
-        let off = {x: c.width/2, y: c.height/2};
-        ctx.save();
-        ctx.translate(off.x, off.y);
-
-        try {
-            let expr = props.t.split(":")[1];
-            let chunks = this.find_chunks(expr);
-            let trail = false;
-
-            if (chunks.length == 2) {
-                if (chunks[1] == "t") {
-                    trail = true;
-                }
-
-                expr = chunks[0];
-            }
-
-            let d = parser.eval(expr);
-
-            let xval = d._data[0];
-            let yval = d._data[1];
-
-            let x = xval * grid_size;
-            let y = -yval * grid_size;
-
-            ctx.beginPath();
-            ctx.arc(x, y, point_size, 0, 2 * Math.PI, 0);
-            ctx.stroke();
-
-            if (distance({x:mouse.x-off.x, y:mouse.y-off.y}, {x: x, y: y}) < grid_size/4) {
-                ctx.fillText(expr, x, y-grid_size);
-                ctx.fill();
-            }
-
-            if (trail) {
-                if (x != this.last_x || y != this.last_y) {
-                    if (!this.past_points) {
-                        this.past_points = [];
-                    }
-
-                    this.past_points.push([x, y]);
-                    if (this.past_points.length > 100) {
-                        this.past_points = this.past_points.slice(1);
-                    }
-                }
-
-                // graph the past points
-                ctx.beginPath();
-                let N = this.past_points.length;
-                for (let i = 0; i < N; i++) {
-                    let p = this.past_points[i];
-                    if (i == 0) {
-                        ctx.moveTo(p[0], p[1]);
-                    } else {
-                        ctx.lineTo(p[0], p[1]);
-                    }
-                }
-                ctx.stroke();
-            }
-
-            this.last_x = x;
-            this.last_y = y;
-            
-        } catch (e) {
-
+            console.log('graph mouse e: ' + e);
         }
 
         ctx.restore();
@@ -1409,20 +1334,18 @@ function Text(text, pos) {
         ctx.save();
 
         try {
-            let expr = props.t.split(":")[1];
+            let expr = this.args[0];
 
-            let off = {x: c.width/2, y: c.height/2};
+            ctx.translate(cam.props.p.x, cam.props.p.y);
 
-            ctx.translate(off.x, off.y);
-
-            let inx = (mouse.x - c.width/2)/grid_size;
+            let inx = mouse_graph.x;
 
             parser.set('x', inx);
-            let p0 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
+            let p0 = {x: inx, y: -parser.eval(expr)};
 
             inx += 0.0001;
             parser.set('x', inx);
-            let p1 = {x: inx * grid_size, y: -parser.eval(expr) * grid_size};
+            let p1 = {x: inx, y: -parser.eval(expr)};
 
             let slope = (p1.y - p0.y)/(p1.x - p0.x);
 
@@ -1444,15 +1367,13 @@ function Text(text, pos) {
                 let p = path[i];
                 
                 if (i == 0) {
-                    ctx.moveTo(p.x, p.y);
+                    ctx.moveTo(p.x * grid_size * cam.props.w, p.y * grid_size * cam.props.h);
                 } else {
-                    ctx.lineTo(p.x, p.y);
+                    ctx.lineTo(p.x * grid_size * cam.props.w, p.y * grid_size * cam.props.h);
                 }
             }
 
             ctx.stroke();
-
-            ctx.translate(-off.x, -off.y);
 
         } catch (error) {
         }
@@ -1463,6 +1384,10 @@ function Text(text, pos) {
     this.draw_contour = function(ctx, props) {
         // contour: f, steps, step_size
 
+        if (this.args.length != 3) {
+            return;
+        }
+
         ctx.save();
 
         try {
@@ -1470,11 +1395,9 @@ function Text(text, pos) {
             let off = {x: c.width/2, y: c.height/2};
             ctx.translate(off.x, off.y);
 
-            let chunks = this.find_chunks(props.t.split(":")[1]);
-
-            let expr = chunks[0];
-            let steps = parser.eval(chunks[1]);
-            let step_size = parser.eval(chunks[2]);
+            let expr = this.args[0];
+            let steps = parser.eval(this.args[1]);
+            let step_size = parser.eval(this.args[2]);
 
             let sx = (mouse.x-off.x)/grid_size;
             let sy = -(mouse.y-off.y)/grid_size;
@@ -1522,26 +1445,24 @@ function Text(text, pos) {
     }
 
     this.draw_scatter = function(ctx, props) {
+        // scatter:[x1,x2,..],[y1,y2,..]
 
-        if (!this.chunks || this.chunks.length != 2) {
+        if (this.args.length != 2) {
             return;
         }
         
-        // graph points
-        
         ctx.save();
         ctx.fillStyle = rgbToHex(props.c);
-        let off = {x: c.width/2, y: c.height/2};
-        ctx.translate(off.x, off.y);
 
         try {
-            let xs = parser.eval(this.chunks[0]);
-            let ys = parser.eval(this.chunks[1]);
+            let xs = parser.eval(this.args[0]);
+            let ys = parser.eval(this.args[1]);
 
             let N = xs._data.length;
             for (let i = 0; i < N; i++) {
                 ctx.beginPath();
-                ctx.arc(xs._data[i] * grid_size, -ys._data[i] * grid_size, point_size, 0, 2 * Math.PI, 0);
+                p = cam.graph_to_screen({x: xs._data[i], y: ys._data[i]});
+                ctx.arc(p.x, p.y, point_size, 0, 2 * Math.PI, 0);
                 ctx.stroke();
             }
         } catch(e) {
@@ -1555,15 +1476,12 @@ function Text(text, pos) {
         // shape:gear,radius,rot
         // shape:line,expr,min,max,grid_lines
 
-        let args = props.t.split(":")[1];
-        args = args.split(",");
-
-        if (args[0] == "gear") {
+        if (this.args[0] == "gear") {
             ctx.save();
 
             try {
-                let r = parser.eval(args[1]);
-                let rot = parser.eval(args[2]);
+                let r = parser.eval(this.args[1]);
+                let rot = parser.eval(this.args[2]);
                 let p = props.p;
 
                 
@@ -1581,15 +1499,15 @@ function Text(text, pos) {
             }
 
             ctx.restore();
-        } else if (args[0] == "line") {
-            if (args.length != 5) {
+        } else if (this.args[0] == "line") {
+            if (this.args.length != 5) {
                 return;
             }
 
-            let expr = args[1];
-            let min = args[2];
-            let max = args[3];
-            let grid_lines = args[4];
+            let expr = this.args[1];
+            let min = this.args[2];
+            let max = this.args[3];
+            let grid_lines = this.args[4];
 
             ctx.save();
 
@@ -1649,23 +1567,24 @@ function Text(text, pos) {
     }
 
     this.draw_line = function(ctx, props) {        
-        // graph points
+        // line:[x1,x2,...],[y1,y2,...]
         
         ctx.save();
-
         ctx.fillStyle = rgbToHex(props.c);
 
-        let off = {x: c.width/2, y: c.height/2};
-        ctx.translate(off.x, off.y);
-
         try {
-            let x = parser.eval(this.chunks[0]);
-            let y = parser.eval(this.chunks[1]);
-
+            let xs = parser.eval(this.args[0])._data;
+            let ys = parser.eval(this.args[1])._data;
             
             ctx.beginPath();
-            ctx.moveTo(x._data[0] * grid_size, -x._data[1] * grid_size);
-            ctx.lineTo(y._data[0] * grid_size, -y._data[1] * grid_size);
+            for (let i = 0; i < xs.length; i++) {
+                let p = cam.graph_to_screen({x: xs[i], y: ys[i]});
+                if (i == 0) {
+                    ctx.moveTo(p.x, p.y);
+                } else {
+                    ctx.lineTo(p.x, p.y);
+                }
+            }
             ctx.stroke();
             
         } catch (e) {
@@ -1676,14 +1595,11 @@ function Text(text, pos) {
     }
 
     this.run_for = function(ctx, props) {
-        // indices,expression
-        if (!this.chunks || this.chunks.length != 2) {
-            return;
-        }
+        // for:indices,expression
 
         try {
-            let indices = parser.eval(this.chunks[0]);
-            let expr = this.chunks[1];
+            let indices = parser.eval(this.args[0]);
+            let expr = this.args[1];
 
             let N = indices._data.length;
             for (let i = 0; i < N; i++) {
@@ -1717,59 +1633,117 @@ function Text(text, pos) {
 
         let should_draw_text = true;
 
-        let s = a.t.split(":");
-        if (s.length == 2) {
-            let c = s[0];
-            if (c == "graph") {
-                this.draw_graph(ctx, i);
-            } else if (c == "point") {
-                this.draw_point(ctx, i);
-            } else if (c == "line") {
-                this.draw_line(ctx, i);
-            } else if (c == "scatter") {
-                this.draw_scatter(ctx, i);
-            } else if (c == "tangent") {
-                this.draw_tangent(ctx, i);
-            } else if (c == "contour") {
-                this.draw_contour(ctx, i);
-            } else if (c == "for") {
-                this.run_for(ctx, i);
-            } else if (c == "shape") {
-                this.draw_shape(ctx, i);
-                if (presenting) {
-                    should_draw_text = false;
-                }
-            } else if (c == "slide") {
-                // draw slider rect
-                if (presenting && this.near_mouse() && !this.hidden()) {
-                    ctx.strokeStyle = dark;
-                    ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
-                }
+        //cam.transform(ctx);
+
+        let c = this.command;
+        if (c == "graph") {
+            this.draw_graph(ctx, i);
+        /*} else if (c == "point") {
+            this.draw_point(ctx, i); */
+        } else if (c == "line") {
+            this.draw_line(ctx, i);
+        } else if (c == "scatter") {
+            this.draw_scatter(ctx, i);
+        } else if (c == "tangent") {
+            this.draw_tangent(ctx, i);
+        } else if (c == "contour") {
+            this.draw_contour(ctx, i);
+        } else if (c == "for") {
+            this.run_for(ctx, i);
+        } else if (c == "shape") {
+            this.draw_shape(ctx, i);
+            if (presenting) {
+                should_draw_text = false;
             }
+        } else if (c == "slide") {
+            // draw slider rect
+            if (presenting && this.near_mouse() && !this.hidden()) {
+                ctx.strokeStyle = dark;
+                ctx.strokeRect(pos.x-grid_size/2, pos.y-grid_size/2, grid_size, grid_size);
+            }
+        }
+
+        //cam.restore(ctx);
+
+        if (presenting && a.ph) {
+            should_draw_text = false;
         }
 
         // text
         if (should_draw_text) {
-            if (!(presenting && dont_draw.indexOf(s[0]) != -1)) {
-                ctx.translate(i.p.x, i.p.y);
-                ctx.rotate(i.r);
-                ctx.scale(i.w, i.h);
+            ctx.translate(i.p.x, i.p.y);
+            ctx.rotate(i.r);
+            ctx.scale(i.w, i.h);
 
-                if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
-                    // changing text
-                    let constrained = Math.min(1, Math.max(0, t_ease));
-                    ctx.globalAlpha = 1-constrained;
-                    this.draw_text(ctx, a);
-                    ctx.globalAlpha = constrained;
-                    this.draw_text(ctx, b);
-                } else {
-                    ctx.globalAlpha = i.c[3];
-                    this.draw_text(ctx, i);
-                }
+            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+                // changing text
+                let constrained = Math.min(1, Math.max(0, t_ease));
+                ctx.globalAlpha = 1-constrained;
+                this.draw_text(ctx, a);
+                ctx.globalAlpha = constrained;
+                this.draw_text(ctx, b);
+            } else {
+                ctx.globalAlpha = i.c[3];
+                this.draw_text(ctx, i);
             }
         }
 
         ctx.restore();
+    }
+}
+
+function Camera() {
+    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1};
+    this.properties = {};
+    this.properties[frame] = copy(this.default_props);
+
+    this.mouse_drag = function(evt) {
+        if (tool != "camera") {
+            return;
+        }
+
+        let props = this.properties[frame];
+
+        let p = props.p;
+        let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
+        props.p = {x: p.x + offset.x, y: p.y + offset.y};
+    }
+
+    this.onkeydown = function(evt) {
+        if (tool != "camera") {
+            return;
+        }
+
+        let key = evt.key;
+        this.properties[frame] = transform_props(key, this.properties[frame]);
+        console.log('transformed: ' + this.properties[frame]);
+    }
+
+    this.update_props = function() {
+        let a = this.properties[frame];
+        let b = this.properties[next_frame];
+
+        if (!a) {
+            this.properties[frame] = copy(this.default_props);
+            this.props = this.properties[frame];
+            return;
+        }
+
+        if (a && !b) {
+            this.properties[next_frame] = copy(a);
+            this.props = a;
+            return;
+        }
+
+        this.props = interpolate(a, b);
+    }
+
+    this.graph_to_screen = function(p) {
+        return {x: p.x * grid_size * this.props.w + this.props.p.x, y: -p.y * grid_size * this.props.h + this.props.p.y};
+    }
+
+    this.screen_to_graph = function(p) {
+        return {x: (p.x-this.props.p.x)/(grid_size * this.props.w), y:-(p.y - this.props.p.y)/(grid_size * this.props.h)};
     }
 }
 
@@ -1794,7 +1768,7 @@ function undo() {
 }
 
 function state_to_string() {
-    return JSON.stringify({"num_frames": num_frames, "frame": frame, "objs": objs});
+    return JSON.stringify({"num_frames": num_frames, "frame": frame, "objs": objs, "cam": cam});
 }
 
 function str_to_state(str) {
@@ -1806,6 +1780,8 @@ function str_to_state(str) {
     frames.create_buttons();
 
     objs = text_array_to_objs(arr, true);
+    cam = new Camera();
+    cam.properties = dict.cam.properties;
 }
 
 function save(objs) {
@@ -1815,7 +1791,7 @@ function save(objs) {
     saveAs(blob, name);
 }
 
-function load(evt, keep_animation) {
+function load(evt) {
 
     let files = evt.target.files; // FileList object
     let f = files[0];
@@ -1826,22 +1802,7 @@ function load(evt, keep_animation) {
     reader.onload = (function(theFile) {
         return function(e) {
             let string = e.target.result;
-
-            let dict = JSON.parse(string);
-            let arr = dict["objs"];
-
-            if (keep_animation) {
-                num_frames = dict["num_frames"];
-                frames.create_buttons();
-            }
-
-            let new_objs = text_array_to_objs(arr, keep_animation);
-
-            if (keep_animation) {
-                objs = new_objs;
-            } else {
-                objs = objs.concat(new_objs);
-            }
+            str_to_state(string);
         };
     }
     )(f);
@@ -1880,25 +1841,25 @@ function text_array_to_objs(arr, keep_animation) {
 
 function Frames(pos) {
     this.pos = pos;
-    this.pad = 8;
-    this.size = 32;
+    this.pad = 0;
+    this.size = grid_size/2;
 
     this.frame_pos = function(i) {
-        let size =  (this.size + this.pad);
-        let yoffset = (i) * size;
+        let size =  this.size;
+        let yoffset = (i-1) * size;
         let xoff = 0;
-        let hcon = size * 15;
-        while (yoffset > hcon) {
+        let hcon = size * 36;
+        while (yoffset >= hcon) {
             yoffset -= hcon;
             xoff ++;
         }
-        return {x: this.pos.x + xoff * 50, y: this.pos.y + yoffset};
+        return {x: this.pos.x + xoff * grid_size*2/3, y: this.pos.y + yoffset};
     }
 
     this.create_buttons = function() {
         this.buttons = [];
         for (let i = 1; i <= num_frames; i++) {
-            let newb = new Button(i, this.frame_pos(i), null);
+            let newb = new Button(''+i, this.frame_pos(i), null);
             this.buttons.push(newb);
         }
         this.buttons.push(new Button("-", this.frame_pos(num_frames+1), null));
@@ -1945,6 +1906,10 @@ function Frames(pos) {
                                 obj.copy_properties(f+1, f);
                             }
                         }
+
+                        if (cam.properties[f] && cam.properties[f+1]) {
+                            cam.properties[f] = copy(cam.properties[f+1]);
+                        }
                     }
 
                     num_frames -= 1;
@@ -1965,6 +1930,10 @@ function Frames(pos) {
                                 obj.copy_properties(f, f+1);
                             }
                         }
+
+                        if (cam.properties[f]) {
+                            cam.properties[f+1] = copy(cam.properties[f]);
+                        }
                     }
                     this.create_buttons();
                     return true;
@@ -1976,17 +1945,12 @@ function Frames(pos) {
     }
 
     this.render = function(ctx) {
-        ctx.fillText('frames', this.pos.x, this.pos.y);
-
         for (let i = 1; i <= this.buttons.length; i++) {
-            ctx.strokeStyle = gray;
-            if (i == frame) {
-                ctx.strokeStyle = dark;
-            }
-            let rectp = this.frame_pos(i);
-            ctx.strokeRect(rectp.x - this.size/2, rectp.y - this.size/2, this.size, this.size);
-
             let btn = this.buttons[i-1];
+            btn.selected = false;
+            if (btn.text == ''+frame) {
+                btn.selected = true;
+            }
             btn.render(ctx);
         }
     }
@@ -2073,6 +2037,34 @@ function Menu(pos) {
         }
     }));
 
+    this.buttons.push(new Button("pres. hide", {x: 0, y: 0}, function(b) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (obj.properties && obj.is_selected()) {
+                obj.properties[frame]['ph'] = true;
+            }
+        }
+    }));
+
+    this.buttons.push(new Button("pres. show", {x: 0, y: 0}, function(b) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (obj.properties && obj.is_selected()) {
+                obj.properties[frame]['ph'] = false;
+            }
+        }
+    }));
+
+    this.buttons.push(new Button("camera", {x: 0, y: 0}, function(b) {
+        if (tool == "camera") {
+            // reset cam
+            cam.properties[frame] = cam.default_props;
+        }
+        tool = "camera";
+    }));
+
     this.buttons.push(new Button("present", {x: 0, y: 0}, function(b) {
         // show a cursor
         present();
@@ -2096,7 +2088,7 @@ function Menu(pos) {
 
     for (let i = 0; i < this.buttons.length; i++) {
         let b = this.buttons[i];
-        b.pos = {x: this.pos.x, y: this.pos.y + i * 40};
+        b.pos = {x: this.pos.x, y: this.pos.y + i * 20};
     }
 
     this.mouse_up = function(evt) {
@@ -2113,14 +2105,11 @@ function Menu(pos) {
     this.render = function(ctx) {
         for (let i = 0; i < this.buttons.length; i++) {
             let b = this.buttons[i];
-            b.render(ctx);
+            b.selected = false;
             if (b.text == tool) {
-                ctx.beginPath();
-                ctx.strokeStyle = dark;
-                ctx.moveTo(b.pos.x - 10, b.pos.y + 10);
-                ctx.lineTo(b.pos.x + 10, b.pos.y + 10);
-                ctx.stroke();
+                b.selected = true;
             }
+            b.render(ctx);
         }
     };
 }
@@ -2177,36 +2166,50 @@ function loop_frame(f) {
 }
 
 function draw_grid(ctx) {
+
+    ctx.save();
     ctx.strokeStyle = grid;
+
     // render grid
-    let r_num = c.height / grid_size;
-    let c_num = c.width / grid_size;
+    let r_num = 10;
+    let c_num = 10;
+    let tick_size = grid_size/4;
     let x = 0; let y = 0;
     
     ctx.beginPath();
-    for (let i = 0; i < r_num; i++) {
-        y = i * grid_size;
-        ctx.moveTo(0, y);
-        ctx.lineTo(c.width, y);
+    for (let i = -r_num; i <= r_num; i++) {
+        y = i * grid_size * cam.props.h + cam.props.p.y;
+        ctx.moveTo(cam.props.p.x + tick_size, y);
+        ctx.lineTo(cam.props.p.x - tick_size, y);
     }
 
-    for (let j = 0; j < c_num; j++) {
-        x = j * grid_size;
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, c.height);
+    for (let j = -c_num; j <= c_num; j++) {
+        x = j * grid_size * cam.props.w + cam.props.p.x;
+        ctx.moveTo(x, cam.props.p.y + tick_size);
+        ctx.lineTo(x, cam.props.p.y - tick_size);
     }
     ctx.stroke();
+    
 
     // draw center
     ctx.beginPath();
-    ctx.moveTo(c.width/2.0, 0);
-    ctx.lineTo(c.width/2.0, c.height);
-    ctx.moveTo(0, c.height/2.0);
-    ctx.lineTo(c.width, c.height/2.0);
+
+    let hs = cam.graph_to_screen({x: -c_num, y: 0});
+    let he = cam.graph_to_screen({x: c_num, y: 0});
+    ctx.moveTo(hs.x, hs.y);
+    ctx.lineTo(he.x, he.y);
+
+    let vs = cam.graph_to_screen({x: 0, y: -r_num});
+    let ve = cam.graph_to_screen({x: 0, y: r_num});
+    ctx.moveTo(vs.x, vs.y);
+    ctx.lineTo(ve.x, ve.y);
 
     ctx.strokeStyle = grid_guide;
     ctx.stroke();
 
+    ctx.restore();
+
+    /*
     if (!presenting) {
         ctx.beginPath();
         ctx.strokeStyle = grid_guide;
@@ -2215,7 +2218,7 @@ function draw_grid(ctx) {
         ctx.moveTo(0, mouse_grid.y);
         ctx.lineTo(c.width, mouse_grid.y);
         ctx.stroke();
-    }
+    } */
 }
 
 function transition_with_next(next) {
@@ -2251,12 +2254,59 @@ function transition_with_next(next) {
 
     transition.run(steps, next, function(targ) {
         frame = targ;
+
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (typeof obj.parse_text == 'function') {
+                obj.parse_text(obj.properties[frame].t);
+            }
+        }
     });
 }
 
 function enter_select() {
     tool = "select";
     new_line = null;
+}
+
+function draw_cursor() {
+    if (presenting && mouse_time > 0) {
+        // draw a cursor
+
+        let mx = mouse.x;
+        let my = mouse.y;
+
+        ctx.save();
+        ctx.translate(mx, my);
+        ctx.strokeStyle = dark;
+        ctx.beginPath();
+
+        if (mouse_down) {
+            mouse_time = mouse_duration;
+            
+            ctx.arc(0, 0, 10, 0, Math.PI * 2.0, 0);
+            
+        } else {
+            let pad = 20;
+
+            if (tool == "camera") {
+                ctx.moveTo(-pad, 0);
+                ctx.lineTo(pad, 0);
+                ctx.moveTo(0, -pad);
+                ctx.lineTo(0, pad);
+            } else {
+                ctx.moveTo(pad, 0);
+                ctx.lineTo(0, 0);
+                ctx.lineTo(0, pad);
+                ctx.moveTo(0, 0);
+                ctx.lineTo(pad, pad);
+            }
+        }
+
+        ctx.stroke();
+        ctx.restore();
+    }
 }
 
 window.onload = function() {
@@ -2282,12 +2332,7 @@ window.onload = function() {
 
     document.getElementById("file").onchange = function(evt) {
         enter_select();
-        load(evt, true);
-    };
-
-    document.getElementById("import").onchange = function(evt) {
-        enter_select();
-        load(evt, false);
+        load(evt);
     };
 
     document.getElementById("load_to_frame").onclick = function(evt) {
@@ -2310,15 +2355,23 @@ window.onload = function() {
 
     transition = new Transition();
     frame = 1;
-    frames = new Frames({x: c.width - 200, y: 50});
+    frames = new Frames({x: c.width - grid_size*2, y: grid_size/4});
     frames.on_click = function(idx) {
         transition_with_next(idx);
     };
 
-    menu = new Menu({x: 100, y: 50});
+    menu = new Menu({x: grid_size/4, y: grid_size/2});
+    cam = new Camera();
 
     window.onkeydown = function(evt) {
         let key = evt.key;
+
+
+        if (presenting && tool != "camera" && key == "Escape") {
+            presenting = false;
+            document.body.style.cursor = '';
+            return false;
+        }
 
         if (key == "Escape") {
             enter_select();
@@ -2330,6 +2383,18 @@ window.onload = function() {
 
         if (key == "Control") {
             ctrl = true;
+        }
+
+        if (key == "Backspace") {
+            if (ctrl) {
+                let N = objs.length;
+                for (let i = 0; i < N; i++) {
+                    let obj = objs[i];
+                    if (obj.is_selected()) {
+                        obj.deleted = true;
+                    }
+                }
+            }
         }
 
         if (key == "z" && meta) {
@@ -2344,12 +2409,6 @@ window.onload = function() {
 
         if (document.getElementById("formula_text") == document.activeElement) {
             return true;
-        }
-
-        if (presenting && key == "Escape") {
-            presenting = false;
-            document.body.style.cursor = '';
-            return false;
         }
 
         let captured = false;
@@ -2367,12 +2426,14 @@ window.onload = function() {
             return false;
         }
 
+        cam.onkeydown(evt);
+
         if (key == " ") {
             return false;
         }
 
-        if (tool == "select") {
-            tools = {'t': 'text', 's': 'shape', 'c': 'circle', 'v': 'vector'};
+        if (tool == "select" && evt.srcElement == document.body) {
+            tools = {'t': 'text', 's': 'shape', 'c': 'camera', 'v': 'vector'};
             if (key in tools) {
                 tool = tools[key];
             }
@@ -2447,16 +2508,21 @@ window.onload = function() {
         // update mouse
         mouse = get_mouse_pos(c, evt);
         mouse_grid = constrain_to_grid(mouse);
+        mouse_graph = cam.screen_to_graph(mouse);
 
-        parser.set('x', (mouse.x - c.width/2)/grid_size);
-        parser.set('y', -(mouse.y - c.height/2)/grid_size);
+        parser.set('x', mouse_graph.x);
+        parser.set('y', mouse_graph.y);
 
         if (mouse_down) {
+            let captured = false;
             for (let i = 0; i < objs.length; i++) {
                 let obj = objs[i];
                 if (typeof obj.mouse_drag === 'function') {
-                    obj.mouse_drag(evt);
+                    captured = captured || obj.mouse_drag(evt);
                 }
+            }
+            if (!captured) {
+                cam.mouse_drag(evt);
             }
         }
 
@@ -2601,17 +2667,29 @@ window.onload = function() {
             requestAnimationFrame(animate);
         }, 1000/fps);
 
+        parser.set('t', t);
+
         if (presenting) {
             mouse_time -= 1;
         }
 
         ctx.clearRect(0, 0, c.width, c.height);
 
+        cam.update_props();
+
         draw_grid(ctx);
 
         ctx.font = font_anim;
 
         let N = objs.length;
+
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (obj.command == "expr") {
+                obj.eval();
+            }
+        }
+
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
             obj.render(ctx);
@@ -2637,36 +2715,14 @@ window.onload = function() {
             menu.render(ctx);
         }
 
-        if (presenting && mouse_time > 0) {
-            // draw a cursor
-
-            let mx = mouse.x;
-            let my = mouse.y;
-            
-            ctx.strokeStyle = dark;
-
-            if (mouse_down) {
-                mouse_time = mouse_duration;
-                ctx.beginPath();
-                ctx.arc(mx, my, 10, 0, Math.PI * 2.0, 0);
-                ctx.stroke();
-            } else {
-                let pad = 20;
-                ctx.beginPath();
-                ctx.moveTo(mx + pad, my);
-                ctx.lineTo(mx, my);
-                ctx.lineTo(mx, my + pad);
-                ctx.moveTo(mx, my);
-                ctx.lineTo(mx + pad, my + pad);
-                ctx.stroke();
-            }
-            
-        }
+        draw_cursor();
         
         transition.update();
 
         if (playing) {
             transition_with_next(loop_frame(frame + 1));
         }
+
+        t += 1;
     }
 }
