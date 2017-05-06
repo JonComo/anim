@@ -52,8 +52,66 @@ var mouse_graph = {x: 0, y: 0};
 
 var t = 0; // time for parser
 
+var pi2 = 2 * Math.PI;
+
 var parser = math.parser();
 parser.set('frame', frame);
+
+// custom functions!
+function sigmoid(x) {
+    return 1/(1+Math.exp(-x));
+}
+
+math.import({
+    sig: function(x) {
+        if (typeof x == 'object') {
+            // matrix
+            let d = x._data;
+            let dims = x._size;
+
+            r = [];
+            let v = 0;
+            
+            for (let i = 0; i < dims[0]; i ++) {
+                let row = [];
+                for (let j = 0; j < dims[1]; j ++) {
+                    v = d[i][j];
+                    row.push(1/(1+Math.exp(-v)));
+                }
+
+                r.push(row);
+            }
+
+            return math.matrix(r);
+        } else {
+            return 1/(1+Math.exp(-x));
+        }
+    },
+    sigp: function(x) {
+        if (typeof x == 'object') {
+            // matrix
+            let d = x._data;
+            let dims = x._size;
+
+            r = [];
+            let v = 0;
+
+            for (let i = 0; i < dims[0]; i ++) {
+                let row = [];
+                for (let j = 0; j < dims[1]; j ++) {
+                    v = d[i][j];
+                    row.push(Math.exp(-v)/Math.pow(1+Math.exp(-v), 2));
+                }
+
+                r.push(row);
+            }
+
+            return math.matrix(r);
+        } else {
+            return Math.exp(-x)/Math.pow(1+Math.exp(-x), 2);
+        }
+    },
+});
 
 // undo
 var states = [];
@@ -144,19 +202,20 @@ function between(a, b) {
     return {x: (a.x + b.x)/2, y: (a.y + b.y)/2};
 }
 
-function grad_2(fn, x, y) {
+function grad_2(c, x, y) {
+    // c is compiled obj
     // depends on x and y
     let h = 0.0001;
 
     parser.set('x', x+h);
-    let fxh = parser.eval(fn);
+    let fxh = c.eval(parser.scope);
     parser.set('x', x);
-    let fx = parser.eval(fn);
+    let fx = c.eval(parser.scope);
 
     parser.set('y', y+h);
-    let fyh = parser.eval(fn);
+    let fyh = c.eval(parser.scope);
     parser.set('y', y);
-    let fy = parser.eval(fn);
+    let fy = c.eval(parser.scope);
 
     return [(fxh-fx)/h, (fyh-fy)/h];
 }
@@ -823,6 +882,7 @@ function Text(text, pos) {
     this.cursor = -1;
     this.command = "";
     this.args = [];
+    this.cargs = []; // compiled arguments
     this.text_val = "";
     this.near_mouse = false;
 
@@ -967,6 +1027,7 @@ function Text(text, pos) {
         if (key == "Enter") {
             this.selected = false;
             this.eval();
+            enter_select();
             return false;
         }
 
@@ -1019,18 +1080,15 @@ function Text(text, pos) {
             this.parse_text(this.properties[frame].t);
         }
 
-        if (this.command) {
-            expr = this.args.join('');
-        } else {
-            expr = this.properties[frame].t;
-        }
+        let c = this.cargs[0];
 
-        if (!expr) {
+        if (!c) {
             return;
         }
 
         try {
-            let val = parser.eval(expr);
+            let val = c.eval(parser.scope);
+            console.log(val);
             let type = typeof val;
             if (type == "number") {
                 if (ctrl) {
@@ -1041,20 +1099,28 @@ function Text(text, pos) {
                 }
                 
             } else if (type == "object" && val._data.length != 0) {
-                // prob a matrix, render it
+                // prob a matrix, render dims
+                let d = val._data;
+                let dims = [];
+
+                while (d.length) {
+                    dims.push(d.length);
+                    d = d[0];
+                }
 
                 this.text_val = ' = [';
-                let N = val._data.length;
+                let N = dims.length;
                 for (let i = 0; i < N; i++) {
-                    this.text_val += pretty_round(val._data[i]);
+                    this.text_val += dims[i];
                     if (i != N - 1) {
                         this.text_val += ', ';
                     }
                 }
                 this.text_val += ']';
             }
-        } catch (error) {
-
+        } catch (e) {
+            console.log('eval error:');
+            console.log(e);
         }
     }
 
@@ -1177,7 +1243,7 @@ function Text(text, pos) {
     }
 
     this.graphing = function() {
-        let cs = ["tangent", "graph", "point", "scatter", "line", "contour"];
+        let cs = ["tangent", "graph", "point", "scatter", "drag", "line", "contour"];
 
         if (cs.indexOf(this.command) != -1) {
             return true;
@@ -1205,7 +1271,7 @@ function Text(text, pos) {
             if (t[i] == "*") {
                 ctx.beginPath();
                 
-                ctx.arc(xoff, 2, 3, 0, 2 * Math.PI, 0);
+                ctx.arc(xoff, 2, 3, 0, pi2, 0);
                 ctx.fill();
                 xoff += grid_size/2;
             } else if (presenting && t[i] == "^" && t[i+1] == "(") {
@@ -1239,8 +1305,18 @@ function Text(text, pos) {
     this.parse_text = function(text) {
         this.command = "";
         this.args = [];
+        this.cargs = [];
 
-        if (!text || text.indexOf(':') == -1) {
+        if (!text) {
+            return;
+        } else if (text.indexOf(':') == -1) {
+            this.args = [text];
+            try {
+                this.cargs = math.compile(this.args);
+            } catch(e) {
+                console.log('compile2 error: ');
+                console.log(e);
+            }
             return;
         }
 
@@ -1268,6 +1344,12 @@ function Text(text, pos) {
         }
 
         this.args.push(text.slice(s));
+        try {
+            this.cargs = math.compile(this.args);
+        } catch(e) {
+            console.log('compile error: ');
+            console.log(e);
+        }
     }
 
     this.parse_text(text);
@@ -1280,10 +1362,12 @@ function Text(text, pos) {
 
         ctx.beginPath();
 
-        let expr = this.args[0];
+        let c = this.cargs[0];
 
         // regenerate path
         try {
+            let c = this.cargs[0];
+
             let uw = 16;
             let uh = 9;
 
@@ -1294,7 +1378,8 @@ function Text(text, pos) {
 
             for (let xx = -uw; xx <= uw; xx += .2) {
                 parser.set('x', xx);
-                y = parser.eval(expr);
+                //y = parser.eval(expr);
+                y = c.eval(parser.scope);
                 y = Math.max(Math.min(y, 1000), -1000);
 
                 let p = {x: xx, y: y};
@@ -1307,22 +1392,18 @@ function Text(text, pos) {
                 }
             }
 
-        } catch (error) {
-            console.log('graph error: ' + error);
-        }
 
-        ctx.stroke();
+            ctx.stroke();
 
-        // show where mouse is
+            // show where mouse is
 
-        // if close to the line anywhere, draw a point on it
+            // if close to the line anywhere, draw a point on it
 
-        try {
             let xin = mouse_graph.x;
             let yin = mouse_graph.y;
 
             parser.set('x', xin);
-            let fn_y = parser.eval(expr);
+            let fn_y = c.eval(parser.scope);
 
             let d = (fn_y - yin) * grid_size;
 
@@ -1356,18 +1437,18 @@ function Text(text, pos) {
         ctx.save();
 
         try {
-            let expr = this.args[0];
+            let c = this.cargs[0];
 
             ctx.translate(cam.props.p.x, cam.props.p.y);
 
             let inx = mouse_graph.x;
 
             parser.set('x', inx);
-            let p0 = {x: inx, y: -parser.eval(expr)};
+            let p0 = {x: inx, y: -c.eval(parser.scope)};
 
             inx += 0.0001;
             parser.set('x', inx);
-            let p1 = {x: inx, y: -parser.eval(expr)};
+            let p1 = {x: inx, y: -c.eval(parser.scope)};
 
             let slope = (p1.y - p0.y)/(p1.x - p0.x);
 
@@ -1414,26 +1495,27 @@ function Text(text, pos) {
 
         try {
             ctx.fillStyle = rgbToHex(props.c);
-            let off = {x: c.width/2, y: c.height/2};
-            ctx.translate(off.x, off.y);
 
-            let expr = this.args[0];
-            let steps = parser.eval(this.args[1]);
-            let step_size = parser.eval(this.args[2]);
+            let cexpr = this.cargs[0];
+            let steps = this.cargs[1].eval(parser.scope);
+            let step_size = this.cargs[2].eval(parser.scope);
 
-            let sx = (mouse.x-off.x)/grid_size;
-            let sy = -(mouse.y-off.y)/grid_size;
+            let sx = mouse_graph.x;
+            let sy = mouse_graph.y;
 
             parser.set('x', sx);
             parser.set('y', sy);
 
-            let cont_v = parser.eval(expr);
+            let cont_v = cexpr.eval(parser.scope);
+
+            ctx.fillText(pretty_round(cont_v), mouse.x, mouse.y-grid_size/2);
 
             ctx.beginPath();
-            ctx.moveTo(sx * grid_size, -sy * grid_size);
+            let p = cam.graph_to_screen({x: sx, y: sy});
+            ctx.moveTo(p.x, p.y);
 
             for (let i = 0; i < steps; i++) {
-                let grad = grad_2(expr, sx, sy);
+                let grad = grad_2(cexpr, sx, sy);
                 let perp = [grad[1], -grad[0]];
                 let norm = Math.sqrt(perp[0]**2 + perp[1]**2);
                 perp = [step_size * perp[0] / norm, step_size * perp[1] / norm];
@@ -1442,25 +1524,27 @@ function Text(text, pos) {
                 sy += perp[1];
 
                 // auto correct
+                /*
                 for (let j = 0; j < 5; j++) {
                     parser.set('x', sx);
                     parser.set('y', sy);
-                    let new_v = parser.eval(expr);
+                    let new_v = cexpr.eval(parser.scope);
 
                     let diff = new_v - cont_v;
-                    grad = grad_2(expr, sx, sy);
-                    sx -= .02 * diff * grad[0];
-                    sy -= .02 * diff * grad[1];
-                }
+                    grad = grad_2(cexpr, sx, sy);
+                    sx -= .01 * diff * grad[0];
+                    sy -= .01 * diff * grad[1];
+                } */
                 
-
-                ctx.lineTo(sx * grid_size, -sy * grid_size);
+                p = cam.graph_to_screen({x: sx, y: sy});
+                ctx.lineTo(p.x, p.y);
             }
 
             ctx.stroke();
 
         } catch(e) {
-            console.log('contour error: ' + e);
+            console.log('contour error: ');
+            console.log(e);
         }
 
         ctx.restore();
@@ -1477,18 +1561,84 @@ function Text(text, pos) {
         ctx.fillStyle = rgbToHex(props.c);
 
         try {
-            let xs = parser.eval(this.args[0]);
-            let ys = parser.eval(this.args[1]);
+            let xs = this.cargs[0].eval(parser.scope)._data;
+            let ys = this.cargs[1].eval(parser.scope)._data;
 
-            let N = xs._data.length;
+            let N = xs.length;
             for (let i = 0; i < N; i++) {
                 ctx.beginPath();
-                p = cam.graph_to_screen({x: xs._data[i], y: ys._data[i]});
-                ctx.arc(p.x, p.y, point_size, 0, 2 * Math.PI, 0);
+                p = cam.graph_to_screen({x: xs[i], y: ys[i]});
+                ctx.arc(p.x, p.y, point_size, 0, pi2, 0);
                 ctx.stroke();
             }
         } catch(e) {
+            console.log('scatter error:');
+            console.log(e);
+        }
 
+        ctx.restore();
+    }
+
+    this.draw_drag = function(ctx, props) {
+        // drag:[x1,x2,..],[y1,y2,..]
+
+        if (this.args.length != 2) {
+            return;
+        }
+        
+        ctx.save();
+        ctx.fillStyle = rgbToHex(props.c);
+
+        if (!mouse_down) {
+            this.dragv1 = '';
+            this.dragv2 = '';
+        }
+
+        try {
+            let xs = this.cargs[0].eval(parser.scope)._data;
+            let ys = this.cargs[1].eval(parser.scope)._data;
+            let gp;
+
+            let N = xs.length;
+            for (let i = 0; i < N; i++) {
+                ctx.beginPath();
+                gp = {x: xs[i], y: ys[i]};
+                p = cam.graph_to_screen(gp);
+                ctx.arc(p.x, p.y, point_size, 0, pi2, 0);
+                ctx.stroke();
+
+                if (distance(mouse_graph, gp) < .5) {
+                    ctx.fill();
+
+                    if (mouse_down && !this.dragv1) {
+                        // change the variables values!
+                        let v1 = math.parse(this.args[0]);
+                        let v2 = math.parse(this.args[1]);
+
+                        if (v1.items) {
+                            v1 = v1.items[i].name;
+                            v2 = v2.items[i].name;
+                        } else if(v1.name) {
+                            v1 = v1.name + '['+(i+1)+']';
+                            v2 = v2.name+  '['+(i+1)+']';
+                        }
+
+                        console.log('got v1: ');
+                        console.log(v1);
+                        
+                        this.dragv1 = v1;
+                        this.dragv2 = v2;
+                    }
+                }
+
+                if (this.dragv1.length) {
+                    parser.eval(this.dragv1 + ' = ' + mouse_graph.x);
+                    parser.eval(this.dragv2 + ' = ' + mouse_graph.y);
+                }
+            }
+        } catch(e) {
+            console.log('drag error:');
+            console.log(e);
         }
 
         ctx.restore();
@@ -1620,14 +1770,16 @@ function Text(text, pos) {
         // for:indices,expression
 
         try {
-            let indices = parser.eval(this.args[0]);
-            let expr = this.args[1];
+            let indices = this.cargs[0].eval(parser.scope)._data;
+            let c = this.cargs[1];
+            let v = 0;
 
-            let N = indices._data.length;
+            let N = indices.length;
             for (let i = 0; i < N; i++) {
-                let idx = indices._data[i];
+                let idx = indices[i];
                 parser.set('i', Math.floor(idx));
-                let v = parser.eval(expr);
+                //let v = parser.eval(expr);
+                v = c.eval(parser.scope);
             }
         } catch(e) {
             console.log('for error: ' + e);
@@ -1666,6 +1818,8 @@ function Text(text, pos) {
             this.draw_line(ctx, i);
         } else if (c == "scatter") {
             this.draw_scatter(ctx, i);
+        } else if (c == "drag") {
+            this.draw_drag(ctx, i);
         } else if (c == "tangent") {
             this.draw_tangent(ctx, i);
         } else if (c == "contour") {
@@ -2365,7 +2519,7 @@ function draw_cursor() {
         if (mouse_down) {
             mouse_time = mouse_duration;
             
-            ctx.arc(0, 0, 10, 0, Math.PI * 2.0, 0);
+            ctx.arc(0, 0, 10, 0, pi2, 0);
             
         } else {
             let pad = 20;
@@ -2551,6 +2705,12 @@ window.onload = function() {
 
         mouse_down = true;
         mouse_start = get_mouse_pos(c, evt);
+
+        try {
+            math.compile('click()').eval(parser.scope);
+        } catch(e) {
+
+        }
 
         if (presenting) {
             return false;
