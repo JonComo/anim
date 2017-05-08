@@ -7,6 +7,7 @@ var dark = "#000000";
 var light = "#ffffff";
 
 var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400"];
+var gcolor = "#000000";
 
 var font_small = "16px Courier";
 var font_menu = "20px Courier";
@@ -74,18 +75,13 @@ function rgb1ToHex(a) {
 }
 
 math.import({
-    scatter: function(xs, ys, cs=-1) {
-        // [x1, x2, ..], [y1, y2, ...], [[r1, r2], [g1, g2], [b1, b2]]
+    scatter: function(xs, ys) {
+        // [x1, x2, ..], [y1, y2, ...]
 
         xs = xs._data;
         ys = ys._data;
-
-        let black = false;
-        if (cs == -1) {
-            black = true;
-        } else {
-            cs = cs._data;
-        }
+        ctx.strokeStyle = gcolor;
+        ctx.fillStyle = gcolor;
         
         for (let i = 0; i < xs.length; i ++) {
 
@@ -94,11 +90,6 @@ math.import({
             let sp = cam.graph_to_screen(p);
 
             ctx.arc(sp.x, sp.y, point_size, 0, pi2);
-            if (black) {
-                ctx.strokeStyle = '#000000';
-            } else {
-                ctx.strokeStyle = rgb1ToHex([cs[0][i], cs[1][i], cs[2][i]]);
-            }
             ctx.stroke();
 
             if (distance(mouse_graph, p) < .2) {
@@ -107,13 +98,10 @@ math.import({
             }
         }
     },
-    graph: function(fn, c=-1) {
-        // function, color
+    graph: function(fn) {
+        // function
 
-        let black = false;
-        if (c == -1) {
-            black = true;
-        }
+        ctx.strokeStyle = gcolor;
 
         let y = 0;
         let p;
@@ -127,21 +115,13 @@ math.import({
                 ctx.lineTo(p.x, p.y);
             }
         }
-        if (black) {
-            ctx.strokeStyle = '#000000';
-        } else {
-            ctx.strokeStyle = rgb1ToHex(c._data);
-        }
 
         ctx.stroke();
     },
-    shape: function(xs, ys, c=-1) {
-        // function, color
+    shape: function(xs, ys) {
+        // [x1, ...], [y1, ...]
 
-        let black = false;
-        if (c == -1) {
-            black = true;
-        }
+        ctx.strokeStyle = gcolor;
 
         xs = xs._data;
         ys = ys._data;
@@ -156,11 +136,6 @@ math.import({
             } else {
                 ctx.lineTo(p.x, p.y);
             }
-        }
-        if (black) {
-            ctx.strokeStyle = '#000000';
-        } else {
-            ctx.strokeStyle = rgb1ToHex(c._data);
         }
 
         ctx.stroke();
@@ -180,19 +155,9 @@ math.import({
             }
         }
     },
-    list: function(fn, indices) {
-        // [fn(i) for i in indicies]
-        var b = indices.map(function (value, index, matrix) {
-            let v = fn(index);
-            if (v._data) {
-                return v._data;
-            }
-
-            return fn(index);
-        });
-        return b;
-    },
     view: function(x, p) {
+        ctx.fillStyle = gcolor;
+
         let t = [];
         if (x._data) {
             x = x.map(function (value, index, matrix) {
@@ -211,7 +176,6 @@ math.import({
 
         p = p._data;
         p = cam.graph_to_screen({x: p[0], y: p[1]});
-        ctx.fillStyle = '#000000';
         for (let i = 0; i < t.length; i++) {
             ctx.textAlign = 'left';
             ctx.fillText(t[i], p.x, p.y + grid_size * i);
@@ -220,7 +184,7 @@ math.import({
     label: function(l, p) {
         p = p._data;
         p = cam.graph_to_screen({x: p[0], y: p[1]});
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = gcolor;
         ctx.fillText(l, p.x, p.y);
     },
     sig: function(x) {
@@ -1264,6 +1228,7 @@ function Text(text, pos) {
             return;
         }
 
+        gcolor = rgbToHex(this.properties[frame].c);
         try {
             let val = c.eval(parser.scope);
             let type = typeof val;
@@ -1299,6 +1264,7 @@ function Text(text, pos) {
             console.log('eval error:');
             console.log(e);
         }
+        gcolor = "";
     }
 
     this.change_text = function(text) {
