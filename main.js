@@ -7,7 +7,6 @@ var dark = "#000000";
 var light = "#ffffff";
 
 var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400"];
-var gcolor = "#000000";
 
 var font_small = "16px Courier";
 var font_menu = "20px Courier";
@@ -80,8 +79,6 @@ math.import({
 
         xs = xs._data;
         ys = ys._data;
-        ctx.strokeStyle = gcolor;
-        ctx.fillStyle = gcolor;
         
         for (let i = 0; i < xs.length; i ++) {
 
@@ -101,8 +98,6 @@ math.import({
     graph: function(fn) {
         // function
 
-        ctx.strokeStyle = gcolor;
-
         let y = 0;
         let p;
         ctx.beginPath();
@@ -120,8 +115,6 @@ math.import({
     },
     shape: function(xs, ys) {
         // [x1, ...], [y1, ...]
-
-        ctx.strokeStyle = gcolor;
 
         xs = xs._data;
         ys = ys._data;
@@ -156,7 +149,6 @@ math.import({
         }
     },
     view: function(x, p) {
-        ctx.fillStyle = gcolor;
 
         let t = [];
         if (x._data) {
@@ -184,7 +176,6 @@ math.import({
     label: function(l, p) {
         p = p._data;
         p = cam.graph_to_screen({x: p[0], y: p[1]});
-        ctx.fillStyle = gcolor;
         ctx.fillText(l, p.x, p.y);
     },
     sig: function(x) {
@@ -1052,7 +1043,11 @@ function Text(text, pos) {
         if (!this.properties[frame]) {
             return true;
         }
-        
+
+        if (transition.transitioning) {
+            return this.properties[frame].c[3] == 0 && this.properties[next_frame].c[3] == 0;
+        }
+
         return this.properties[frame].c[3] == 0;
     }
 
@@ -1228,7 +1223,18 @@ function Text(text, pos) {
             return;
         }
 
-        gcolor = rgbToHex(this.properties[frame].c);
+        ctx.save();
+
+        let a = this.properties[frame];
+        let b = this.properties[next_frame];
+        let i = interpolate(a, b);
+
+        let color = rgbToHex(i.c);
+
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.globalAlpha = i.c[3];
+
         try {
             let val = c.eval(parser.scope);
             let type = typeof val;
@@ -1264,7 +1270,8 @@ function Text(text, pos) {
             console.log('eval error:');
             console.log(e);
         }
-        gcolor = "";
+        
+        ctx.restore();
     }
 
     this.change_text = function(text) {
@@ -1416,6 +1423,7 @@ function Text(text, pos) {
         let N = t.length;
 
         exponent = 0;
+        let subscript = false;
         for (let i = 0; i < N; i++) {
             if (t[i] == "*") {
                 ctx.beginPath();
@@ -1423,16 +1431,28 @@ function Text(text, pos) {
                 ctx.arc(xoff, 2, 3, 0, pi2, 0);
                 ctx.fill();
                 xoff += grid_size/2;
+            } else if (presenting && t[i] == "_") {
+                subscript = true;
             } else if (presenting && t[i] == "^" && t[i+1] == "(") {
                 i += 1;
                 exponent += 1;
-            } else if (t[i] == ")" && exponent > 0) {
-                exponent -= 1;
+            } else if (presenting && (exponent != 0 || subscript) && t[i] == ")") {
+                if (exponent > 0) {
+                    exponent -= 1;
+                }
             } else {
                 let yoff = -grid_size/2 * exponent;
 
+                if (subscript) {
+                    yoff = grid_size/2;
+                }
+
                 ctx.fillText(t[i], xoff, yoff);
                 xoff += grid_size/2;
+
+                if (subscript) {
+                    subscript = false;
+                }
             }
         }
 
@@ -1535,8 +1555,14 @@ function Text(text, pos) {
                 for (let i = 0; i < t.args.length; i ++) {
                     render_tree(ctx, t.args[i], {x: p.x + i * grid_size*4 - (t.args.length-1)*grid_size*2 , y: p.y + grid_size});
                 }
+            } else if (t.content) {
+                render_tree(ctx, t.content, p);
             } else {
-                ctx.fillText(t.value, p.x, p.y);
+                if (t.name && t.name.length) {
+                    ctx.fillText(t.name, p.x, p.y);
+                } else {
+                    ctx.fillText(t.value, p.x, p.y);
+                }
             }
         }
 
@@ -2029,7 +2055,7 @@ function Text(text, pos) {
 
         //cam.restore(ctx);
 
-        if (presenting && a.ph) {
+        if (presenting && (a.ph || b.ph)) {
             should_draw_text = false;
         }
 
@@ -2535,6 +2561,7 @@ function Menu(pos) {
     }
 
     this.render = function(ctx) {
+        ctx.fillStyle = "#000000";
         for (let i = 0; i < this.buttons.length; i++) {
             let b = this.buttons[i];
             b.selected = false;
