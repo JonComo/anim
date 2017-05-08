@@ -58,58 +58,190 @@ var parser = math.parser();
 parser.set('frame', frame);
 
 // custom functions!
-function sigmoid(x) {
-    return 1/(1+Math.exp(-x));
+function sig(x) {
+    return 1/(1+math.exp(-x));
+}
+
+function sigp(x) {
+    return math.exp(-x)/math.pow(1+math.exp(-x), 2);
+}
+
+function rgb1ToHex(a) {
+    let c = [Math.round(a[0]*255), 
+            Math.round(a[1]*255),
+            Math.round(a[2]*255)];
+    return rgbToHex(c);
 }
 
 math.import({
-    sig: function(x) {
-        if (typeof x == 'object') {
-            // matrix
-            let d = x._data;
-            let dims = x._size;
+    scatter: function(xs, ys, cs=-1) {
+        // [x1, x2, ..], [y1, y2, ...], [[r1, r2], [g1, g2], [b1, b2]]
 
-            r = [];
-            let v = 0;
-            
-            for (let i = 0; i < dims[0]; i ++) {
-                let row = [];
-                for (let j = 0; j < dims[1]; j ++) {
-                    v = d[i][j];
-                    row.push(1/(1+Math.exp(-v)));
-                }
+        xs = xs._data;
+        ys = ys._data;
 
-                r.push(row);
-            }
-
-            return math.matrix(r);
+        let black = false;
+        if (cs == -1) {
+            black = true;
         } else {
-            return 1/(1+Math.exp(-x));
+            cs = cs._data;
+        }
+        
+        for (let i = 0; i < xs.length; i ++) {
+
+            ctx.beginPath();
+            let p = {x: xs[i], y: ys[i]};
+            let sp = cam.graph_to_screen(p);
+
+            ctx.arc(sp.x, sp.y, point_size, 0, pi2);
+            if (black) {
+                ctx.strokeStyle = '#000000';
+            } else {
+                ctx.strokeStyle = rgb1ToHex([cs[0][i], cs[1][i], cs[2][i]]);
+            }
+            ctx.stroke();
+
+            if (distance(mouse_graph, p) < .2) {
+                ctx.fillText('('+pretty_round(p.x)+','+pretty_round(p.y)+')', sp.x, sp.y-grid_size);
+                ctx.fill();
+            }
         }
     },
-    sigp: function(x) {
-        if (typeof x == 'object') {
-            // matrix
-            let d = x._data;
-            let dims = x._size;
+    graph: function(fn, c=-1) {
+        // function, color
 
-            r = [];
-            let v = 0;
+        let black = false;
+        if (c == -1) {
+            black = true;
+        }
 
-            for (let i = 0; i < dims[0]; i ++) {
-                let row = [];
-                for (let j = 0; j < dims[1]; j ++) {
-                    v = d[i][j];
-                    row.push(Math.exp(-v)/Math.pow(1+Math.exp(-v), 2));
-                }
+        let y = 0;
+        let p;
+        ctx.beginPath();
+        for (let x = -10; x < 10; x += .2) {
+            y = fn(x);
+            p = cam.graph_to_screen({x: x, y: y});
+            if (x == -10) {
+                ctx.moveTo(p.x, p.y);
+            } else {
+                ctx.lineTo(p.x, p.y);
+            }
+        }
+        if (black) {
+            ctx.strokeStyle = '#000000';
+        } else {
+            ctx.strokeStyle = rgb1ToHex(c._data);
+        }
 
-                r.push(row);
+        ctx.stroke();
+    },
+    shape: function(xs, ys, c=-1) {
+        // function, color
+
+        let black = false;
+        if (c == -1) {
+            black = true;
+        }
+
+        xs = xs._data;
+        ys = ys._data;
+
+        let p;
+        ctx.beginPath();
+        let N = xs.length;
+        for (let i = 0; i < N; i ++) {
+            p = cam.graph_to_screen({x: xs[i], y: ys[i]});
+            if (i == 0) {
+                ctx.moveTo(p.x, p.y);
+            } else {
+                ctx.lineTo(p.x, p.y);
+            }
+        }
+        if (black) {
+            ctx.strokeStyle = '#000000';
+        } else {
+            ctx.strokeStyle = rgb1ToHex(c._data);
+        }
+
+        ctx.stroke();
+    },
+    if: function(x, a, b) {
+        if (x == 1) {
+            if (typeof a == 'function') {
+                return a();
+            } else {
+                return a;
+            }
+        } else {
+            if (typeof b == 'function') {
+                return b();
+            } else {
+                return b;
+            }
+        }
+    },
+    list: function(fn, indices) {
+        // [fn(i) for i in indicies]
+        var b = indices.map(function (value, index, matrix) {
+            let v = fn(index);
+            if (v._data) {
+                return v._data;
             }
 
-            return math.matrix(r);
-        } else {
-            return Math.exp(-x)/Math.pow(1+Math.exp(-x), 2);
+            return fn(index);
+        });
+        return b;
+    },
+    view: function(x, p) {
+        let t = [];
+        if (x._data) {
+            x = x.map(function (value, index, matrix) {
+                return pretty_round(value);
+            });
+
+            let d = x._data;
+            if (x._size.length == 1) {
+                t = [d.join(' ')];
+            } else {
+                for (let r = 0; r < d.length; r++) {
+                    t.push(d[r].join(' '));
+                }
+            }
         }
+
+        p = p._data;
+        p = cam.graph_to_screen({x: p[0], y: p[1]});
+        ctx.fillStyle = '#000000';
+        for (let i = 0; i < t.length; i++) {
+            ctx.textAlign = 'left';
+            ctx.fillText(t[i], p.x, p.y + grid_size * i);
+        }
+    },
+    label: function(l, p) {
+        p = p._data;
+        p = cam.graph_to_screen({x: p[0], y: p[1]});
+        ctx.fillStyle = '#000000';
+        ctx.fillText(l, p.x, p.y);
+    },
+    sig: function(x) {
+        if (x._data) {
+            var b = x.map(function (value, index, matrix) {
+                return sig(value);
+            });
+            return b;
+        }
+
+        return sig(x);
+    },
+    sigp: function(x) {
+        if (x._data) {
+            var b = x.map(function (value, index, matrix) {
+                return sigp(value);
+            });
+            return b;
+        }
+
+        return sigp(x);
     },
 });
 
@@ -390,6 +522,7 @@ function Button(text, pos, callback) {
 
 function Shape(color, path) {
     this.type = "Shape";
+    this.guid = guid();
     this.properties = {};
     this.properties[frame] = {c: color, path: path, v: false, w: 1, h: 1, r: 0};
 
@@ -674,6 +807,7 @@ function Shape(color, path) {
 
 function Circle(color, pos) {
     this.type = "Circle";
+    this.guid = guid();
     this.properties = {};
     this.properties[frame] = {p: pos, c: color, a_s:0, a_e: Math.PI*2.0, w: 1, h: 1, r: 0};
     this.selected = false;
@@ -872,6 +1006,7 @@ function Circle(color, pos) {
 
 function Text(text, pos) {
     this.type = "Text";
+    this.guid = guid();
     this.properties = {};
     this.properties[frame] = {t: text, p: pos, c: [0, 0, 0, 1], w: 1, h: 1, r: 0};
 
@@ -1040,6 +1175,49 @@ function Text(text, pos) {
             this.cursor += 1;
         } else if (key == "ArrowLeft") {
             this.cursor -= 1;
+        } else if (key == "ArrowUp") {
+            // find text above
+            let texts = objs.filter(function(o) {
+                return o.type == "Text";
+            });
+
+            texts.sort(function(a, b) {
+                let ap = a.properties[frame].p;
+                let bp = b.properties[frame].p;
+                return ap.y > bp.y;
+            });
+
+            let i = guidIndex(texts, this);
+            if (i == 0) {
+                return true;
+            }
+
+            let new_obj = texts[i-1];
+            new_obj.selected = true;
+            this.selected = false;
+            return true;
+
+        } else if (key == "ArrowDown") {
+            // find text below
+            let texts = objs.filter(function(o) {
+                return o.type == "Text";
+            });
+
+            texts.sort(function(a, b) {
+                let ap = a.properties[frame].p;
+                let bp = b.properties[frame].p;
+                return ap.y > bp.y;
+            });
+
+            let i = guidIndex(texts, this);
+            if (i == texts.length - 1) {
+                return true;
+            }
+
+            let new_obj = texts[i+1];
+            new_obj.selected = true;
+            this.selected = false;
+            return true;
         }
 
         if (key == 'Backspace') {
@@ -1088,7 +1266,6 @@ function Text(text, pos) {
 
         try {
             let val = c.eval(parser.scope);
-            console.log(val);
             let type = typeof val;
             if (type == "number") {
                 if (ctrl) {
@@ -1155,7 +1332,6 @@ function Text(text, pos) {
 
         if (props.ge) {
             let d = distance({x: props.p.x + cam.props.p.x, y: props.p.y + cam.props.p.y}, mouse);
-            console.log(d);
             this.near_mouse = d < grid_size/4;
         } else {
             let d = distance(props.p, mouse);
@@ -1255,12 +1431,19 @@ function Text(text, pos) {
     this.draw_text = function(ctx, props) {
         let t = props.t;
 
-        if (this.command == "expr" || this.command == "slide") {
+        if (this.command == "e" || this.command == "slide") {
             t = t + this.text_val;
+        }
+
+        if (presenting) {
+            if (this.command) {
+                t = t.slice(this.command.length+1); //+1 for semicolon
+            }
         }
 
         ctx.fillStyle = rgbToHex(props.c);
         ctx.strokeStyle = ctx.fillStyle;
+        ctx.textAlign = 'center';
 
         let xoff = 0;
 
@@ -1353,6 +1536,46 @@ function Text(text, pos) {
     }
 
     this.parse_text(text);
+
+    this.draw_tree = function(ctx, props) {
+
+        if (this.args.length != 1) {
+            return;
+        }
+
+        let t = -1;
+
+        try {
+            t = math.parse(this.args[0]);
+        } catch(e) {
+
+        }
+
+        if (t == -1) {
+            return;
+        }
+        
+        // recursively draw it
+        function render_tree(ctx, t, p) {
+            if (t.args) {
+                if (t.name && t.name.length) {
+                    ctx.fillText(t.name, p.x, p.y);
+                } else if (t.op && t.op.length) {
+                    ctx.fillText(t.op, p.x, p.y);
+                } else {
+                    ctx.fillText('op', p.x, p.y);
+                }
+
+                for (let i = 0; i < t.args.length; i ++) {
+                    render_tree(ctx, t.args[i], {x: p.x + i * grid_size*4 - (t.args.length-1)*grid_size*2 , y: p.y + grid_size});
+                }
+            } else {
+                ctx.fillText(t.value, p.x, p.y);
+            }
+        }
+
+        render_tree(ctx, t, {x: props.p.x, y: props.p.y + grid_size});
+    }
 
     this.draw_graph = function(ctx, props) {
 
@@ -1622,9 +1845,6 @@ function Text(text, pos) {
                             v1 = v1.name + '['+(i+1)+']';
                             v2 = v2.name+  '['+(i+1)+']';
                         }
-
-                        console.log('got v1: ');
-                        console.log(v1);
                         
                         this.dragv1 = v1;
                         this.dragv2 = v2;
@@ -1824,6 +2044,8 @@ function Text(text, pos) {
             this.draw_tangent(ctx, i);
         } else if (c == "contour") {
             this.draw_contour(ctx, i);
+        } else if (c == "tree") {
+            this.draw_tree(ctx, i);
         } else if (c == "for") {
             this.run_for(ctx, i);
         } else if (c == "shape") {
@@ -1896,7 +2118,6 @@ function Camera() {
 
         let key = evt.key;
         this.properties[frame] = transform_props(key, this.properties[frame]);
-        console.log('transformed: ' + this.properties[frame]);
     }
 
     this.update_props = function() {
@@ -1945,6 +2166,18 @@ function undo() {
         states = states.splice(0, states.length-1);
         str_to_state(states[states.length-1]);
     }
+}
+
+function guidIndex(objs, obj) {
+    let N = objs.length;
+    for (let i = 0; i < N; i ++) {
+        let tobj = objs[i];
+        if (tobj.guid == obj.guid) {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 function state_to_string() {
@@ -2012,6 +2245,8 @@ function text_array_to_objs(arr, keep_animation) {
             new_obj.properties[frame] = o.properties[1];
             new_obj.select();
         }
+
+        new_obj.guid = o.guid;
         
         new_objs.push(new_obj);
     }
@@ -2646,12 +2881,17 @@ window.onload = function() {
         }
 
         let captured = false;
-        for (let i = 0; i < objs.length; i++) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
             let obj = objs[i];
 
             if (typeof obj.onkeydown === 'function') {
                 if (obj.onkeydown(evt)) {
                     captured = true;
+                    if (key == "ArrowUp" || key == "ArrowDown") {
+                        // stops text selection from propagating as you iterate the array
+                        break;
+                    }
                 }
             }
         }
@@ -2930,10 +3170,9 @@ window.onload = function() {
         ctx.font = font_anim;
 
         let N = objs.length;
-
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
-            if (obj.command == "expr" || obj.new) {
+            if (obj.command == "e" || obj.new) {
                 obj.eval();
             }
         }
