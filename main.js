@@ -99,11 +99,12 @@ math.import({
         // function
 
         let y = 0;
-        let p;
+        let p; let gp;
         ctx.beginPath();
         for (let x = -10; x < 10; x += .2) {
             y = fn(x);
-            p = cam.graph_to_screen({x: x, y: y});
+            gp = {x: x, y: y};
+            p = cam.graph_to_screen(gp);
             if (x == -10) {
                 ctx.moveTo(p.x, p.y);
             } else {
@@ -112,6 +113,16 @@ math.import({
         }
 
         ctx.stroke();
+
+        gp = {x: mouse_graph.x, y: fn(mouse_graph.x)};
+        if (mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
+            overlay = true;
+            p = cam.graph_to_screen(gp);
+            ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p.x, p.y - grid_size);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, point_size, 0, pi2);
+            ctx.fill();
+        }
     },
     shape: function(xs, ys) {
         // [x1, ...], [y1, ...]
@@ -147,6 +158,12 @@ math.import({
                 return b;
             }
         }
+    },
+    fore: function(i, fn) {
+        let m = i.map(function(value, index, matrix) {
+            return fn(value);
+        });
+        return m;
     },
     view: function(x, p) {
 
@@ -1523,6 +1540,7 @@ function Text(text, pos) {
 
     this.parse_text(text);
 
+    /*
     this.draw_tree = function(ctx, props) {
 
         if (this.args.length != 1) {
@@ -1542,7 +1560,7 @@ function Text(text, pos) {
         }
         
         // recursively draw it
-        function render_tree(ctx, t, p) {
+        function render_tree(ctx, t, p, info) {
             if (t.args) {
                 if (t.name && t.name.length) {
                     ctx.fillText(t.name, p.x, p.y);
@@ -1552,12 +1570,33 @@ function Text(text, pos) {
                     ctx.fillText('op', p.x, p.y);
                 }
 
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, grid_size/2, 0, pi2);
+                ctx.stroke();
+
+                info[info.level] = t.args.length;
+                info.level += 1;
+
+                let x = 0;
                 for (let i = 0; i < t.args.length; i ++) {
-                    render_tree(ctx, t.args[i], {x: p.x + i * grid_size*4 - (t.args.length-1)*grid_size*2 , y: p.y + grid_size});
+                    
+                    x = p.x + info.xo;
+                    info.xo = info.xo + grid_size;
+
+                    let np = {x: x, y: p.y + grid_size*2};
+                    let diff = {x: np.x-p.x, y: np.y - p.y};
+
+                    ctx.beginPath();
+                    ctx.moveTo(p.x + diff.x*.2, p.y + diff.y*.2);
+                    ctx.lineTo(p.x + diff.x*.8, p.y + diff.y*.8);
+                    ctx.stroke();
+
+                    render_tree(ctx, t.args[i], np, info);
                 }
             } else if (t.content) {
-                render_tree(ctx, t.content, p);
+                render_tree(ctx, t.content, p, info);
             } else {
+                
                 if (t.name && t.name.length) {
                     ctx.fillText(t.name, p.x, p.y);
                 } else {
@@ -1566,7 +1605,186 @@ function Text(text, pos) {
             }
         }
 
-        render_tree(ctx, t, {x: props.p.x, y: props.p.y + grid_size});
+        let info = {xo: 0, level:0};
+        render_tree(ctx, t, {x: props.p.x, y: props.p.y + grid_size}, info);
+        console.log(info);
+    } */
+
+    this.draw_tree = function(ctx, props) {
+
+        if (this.args.length != 1) {
+            return;
+        }
+
+        let t = -1;
+
+        try {
+            t = math.parse(this.args[0]);
+        } catch(e) {
+
+        }
+
+        if (t == -1) {
+            return;
+        }
+
+        let yoff = grid_size*2;
+        let xoff = grid_size*2;
+        let opr = grid_size*3/5;
+
+        let p = {x: props.p.x, y: props.p.y + grid_size};
+        let stuff = [t];
+
+        if (!stuff) {
+            return;
+        }
+
+        while (true) {
+
+            let next_stuff = [];
+            let added_all_spaces = true;
+            for (let i = 0; i < stuff.length; i ++) {
+                let o = stuff[i];
+                if (o.args) {
+                    next_stuff = next_stuff.concat(o.args);
+                    added_all_spaces = false;
+                } else {
+                    next_stuff.push(' ');
+                }
+            }
+            
+            
+            let lx = -(next_stuff.length-1)/2*xoff;
+            let li = 0;
+
+            for (let i = 0; i < stuff.length; i ++) {
+
+                let o = stuff[i];
+                if (o == ' ') {
+                    continue;
+                }
+
+                let text;
+                let np = {x: p.x + i * xoff - (stuff.length-1)/2*xoff, y: p.y};
+
+                if (o.args) {
+                    // draw the op name
+
+                    if (o.name && o.name.length) {
+                        text = o.name;
+                    } else if (o.op && o.op.length) {
+                        text = o.op;
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.arc(np.x, np.y, opr, 0, pi2);
+                    ctx.stroke();
+
+                    ctx.fillText(text, np.x, np.y);
+
+                    for (let j = 0; j < o.args.length; j++) {
+                        while(next_stuff[li] == ' ') {
+                            lx += xoff;
+                            li += 1;
+                        }
+
+                        let argp = {x: p.x + lx, y: np.y + yoff};
+                        let diff = {x: argp.x - np.x, y: argp.y - np.y};
+                        let n = math.norm([diff.x, diff.y]);
+                        diff = {x: diff.x/n, y: diff.y/n};
+
+                        let pad = grid_size*3/5;
+
+                        ctx.beginPath();
+                        ctx.moveTo(np.x + diff.x*pad, np.y + diff.y*pad);
+                        ctx.lineTo(argp.x - diff.x*pad, argp.y - diff.y*pad);
+                        ctx.stroke();
+
+                        lx += xoff;
+                        li += 1;
+                    }
+                } else {
+
+                    if (o.name && o.name.length) {
+                        text = o.name;
+                    } else if (o.items) {
+                        text = 'A'; // array
+                    } else if (o.value) {
+                        text = o.value;
+                    } else if (o.content) {
+                        text = 'G';
+                    } else {
+                        text = '?';
+                    }
+
+                    
+                    ctx.fillText(text, np.x, np.y);
+                }
+            }
+
+            if (next_stuff.length == 0) {
+                break;
+            }
+            
+            if (added_all_spaces) {
+                break;
+            }
+
+            stuff = next_stuff;
+            p.y += yoff;
+        }
+
+        
+        // recursively draw it
+        /*
+        function render_tree(ctx, t, p, info) {
+            if (t.args) {
+                if (t.name && t.name.length) {
+                    ctx.fillText(t.name, p.x, p.y);
+                } else if (t.op && t.op.length) {
+                    ctx.fillText(t.op, p.x, p.y);
+                } else {
+                    ctx.fillText('op', p.x, p.y);
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, grid_size/2, 0, pi2);
+                ctx.stroke();
+
+                info[info.level] = t.args.length;
+                info.level += 1;
+
+                let x = 0;
+                for (let i = 0; i < t.args.length; i ++) {
+                    
+                    x = p.x + info.xo;
+                    info.xo = info.xo + grid_size;
+
+                    let np = {x: x, y: p.y + grid_size*2};
+                    let diff = {x: np.x-p.x, y: np.y - p.y};
+
+                    ctx.beginPath();
+                    ctx.moveTo(p.x + diff.x*.2, p.y + diff.y*.2);
+                    ctx.lineTo(p.x + diff.x*.8, p.y + diff.y*.8);
+                    ctx.stroke();
+
+                    render_tree(ctx, t.args[i], np, info);
+                }
+            } else if (t.content) {
+                render_tree(ctx, t.content, p, info);
+            } else {
+                
+                if (t.name && t.name.length) {
+                    ctx.fillText(t.name, p.x, p.y);
+                } else {
+                    ctx.fillText(t.value, p.x, p.y);
+                }
+            }
+        }
+
+        let info = {xo: 0, level:0};
+        render_tree(ctx, t, {x: props.p.x, y: props.p.y + grid_size}, info);
+        console.log(info); */
     }
 
     this.draw_graph = function(ctx, props) {
@@ -2055,7 +2273,7 @@ function Text(text, pos) {
 
         //cam.restore(ctx);
 
-        if (presenting && (a.ph || b.ph)) {
+        if (presenting && (a.ph || (b && b.ph))) {
             should_draw_text = false;
         }
 
