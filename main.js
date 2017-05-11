@@ -12,6 +12,7 @@ var font_small = "16px Courier";
 var font_menu = "20px Courier";
 var font_anim = "26px Menlo";
 
+// scatter
 var point_size = 6;
 
 var c;
@@ -53,6 +54,10 @@ var mouse_graph = {x: 0, y: 0};
 var t = 0; // time for parser
 
 var pi2 = 2 * Math.PI;
+
+// fn drawing
+let char_size = grid_size/2;
+let char_pad = grid_size/4;
 
 var parser = math.parser();
 parser.set('frame', frame);
@@ -103,6 +108,8 @@ math.import({
         ctx.beginPath();
         for (let x = -10; x < 10; x += .2) {
             y = fn(x);
+            y = Math.max(Math.min(y, 1000), -1000);
+
             gp = {x: x, y: y};
             p = cam.graph_to_screen(gp);
             if (x == -10) {
@@ -281,6 +288,265 @@ function Animator(fps, canvas, frames, callback) {
 
 function pretty_round(num) {
     return (Math.round(num*100)/100).toFixed(2);
+}
+
+function draw_r(o, p, d) {
+    // o tree object
+    // p position
+    // d should draw, false to just get the size
+
+    let text = '';
+    let argc = 0;
+    let args;
+
+    if (o && o.args) {
+        args = o.args;
+        argc = args.length;
+    }
+
+    let size = {w: 0, h: 0};
+
+    if (args) {
+        
+        if (o.name && o.name.length) {
+            text = o.name;
+        } else if (o.op && o.op.length) {
+            text = o.op;
+        }
+        
+        if (text == "+" || text == "-" || text == "*") {
+            if (argc == 1) {
+                if (d) ctx.fillText(text, p.x, p.y);
+                let s1 = draw_r(args[0], {x: p.x + char_size, y: p.y}, d);
+
+                size.w = s1.w + char_size;
+                size.h = s1.h;
+            } else if (argc == 2) {
+                // draw on the left and the right
+
+                let center = true; // false -> bottom align
+
+                let s1 = draw_r(args[0], {x: 0, y: 0}, false);
+                let s2 = draw_r(args[1], {x: 0, y: 0}, false);
+
+                size.w = s1.w + text.length * char_size + char_pad + s2.w + char_pad;
+                size.h = Math.max(s1.h, s2.h);
+
+                if (center) {
+                    s1 = draw_r(args[0], {x: p.x, y: p.y + size.h/2 - s1.h/2}, d);
+                    if (d) ctx.fillText(text, p.x + s1.w + char_pad, p.y + size.h/2 - char_size);
+                    s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h/2 - s2.h/2}, d);
+                } else {
+                    // bottom align
+                    s1 = draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
+                    if (d) ctx.fillText(text, p.x + s1.w + char_pad, p.y + size.h - char_size*2);
+                    s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h - s2.h}, d);
+                }
+            }
+        } else if (text == "^") {
+            if (argc == 2) {
+                // draw on the left and the right, shifted up!
+                let s1 = draw_r(args[0], {x: 0, y: 0}, false);
+                let s2 = draw_r(args[1], {x: 0, y: 0}, false);
+
+                draw_r(args[0], {x: p.x, y: p.y + s2.h - char_size}, d);
+                draw_r(args[1], {x: p.x + s1.w, y: p.y}, d);
+
+                size.w = s1.w + s2.w;
+                size.h = s1.h + s2.h - char_size;
+            }
+        } else if (text == "/") {
+            if (argc == 2) {
+                // draw on top and bottom
+                let s1 = draw_r(args[0], {x: 0, y: 0}, false);
+                let s2 = draw_r(args[1], {x: 0, y: 0}, false);
+
+                size.w = Math.max(s1.w, s2.w);
+                size.h = s1.h + s2.h;
+
+                draw_r(args[0], {x: p.x + size.w/2 - s1.w/2, y: p.y}, d);
+                draw_r(args[1], {x: p.x + size.w/2 - s2.w/2, y: p.y + s1.h}, d);
+
+                if (d) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y + s1.h);
+                    ctx.lineTo(p.x + size.w, p.y + s1.h);
+                    ctx.stroke();
+                }
+            }
+        } else if (text == "!") {
+            let s1 = draw_r(args[0], {x: p.x, y: p.y}, d);
+            if (d) ctx.fillText(text, p.x + s1.w, p.y);
+
+            size.w = s1.w + char_size;
+            size.h = s1.h;
+        } else if (o.fn) {
+            // function call
+            let h = 0;
+
+            // get height of all args
+            let N = args.length;
+            let hs = [];
+            for (let i = 0; i < N; i ++) {
+                let s1 = draw_r(args[i], {x: 0, y: 0}, false);
+                hs.push(s1);
+
+                h = Math.max(h, s1.h);
+            }
+
+            size.h = h;
+
+            // draw it
+            text = o.name + "(";
+            let cally = p.y + size.h/2 - char_size;
+
+            if (d) ctx.fillText(text, p.x, cally);
+
+            let xo = text.length * char_size;
+
+            for (let i = 0; i < N; i ++) {
+                let s1 = draw_r(args[i], {x: p.x + xo, y: p.y + size.h/2 - hs[i].h/2}, d);
+                xo += s1.w;
+
+                if (i == N-1) {
+                    if (d) ctx.fillText(")", p.x + xo, cally);
+                } else {
+                    if (d) ctx.fillText(",", p.x + xo, cally);
+                }
+                
+                xo += char_size;
+            }
+
+            size.w = xo;
+        }
+
+    } else {
+        if (o.name && o.name.length) {
+            text = o.name;
+        } else if (o.value) {
+            text = o.value;
+        } else {
+            text = '?';
+        }
+        
+        if (o.content) {
+            let s1 = draw_r(o.content, {x: 0, y: 0}, false);
+
+            if (d) ctx.fillText("(", p.x, p.y + s1.h/2-char_size);
+            s1 = draw_r(o.content, {x: p.x + char_size, y: p.y}, d);
+            if (d) ctx.fillText(")", p.x + s1.w + char_size, p.y + s1.h/2-char_size);
+            size.w = s1.w + char_size*2;
+            size.h = s1.h;
+        } else if (o.items) {
+            // array
+
+            let items = o.items;
+            let h = 0;
+
+            // get height of all args
+            let N = items.length;
+            let hs = [];
+            for (let i = 0; i < N; i ++) {
+                let s1 = draw_r(items[i], {x: 0, y: 0}, false);
+                hs.push(s1);
+
+                h = Math.max(h, s1.h);
+            }
+
+            size.h = h;
+
+            // draw it
+            text = "[";
+            let cally = p.y + size.h/2 - char_size;
+
+            if (d) ctx.fillText(text, p.x, cally);
+
+            let xo = text.length * char_size;
+
+            for (let i = 0; i < N; i ++) {
+                let s1 = draw_r(items[i], {x: p.x + xo, y: p.y + size.h/2 - hs[i].h/2}, d);
+                xo += s1.w;
+
+                if (i == N-1) {
+                    if (d) ctx.fillText("]", p.x + xo, cally);
+                } else {
+                    if (d) ctx.fillText(",", p.x + xo, cally);
+                }
+                
+                xo += char_size;
+            }
+
+            size.w = xo;
+
+        } else if (o.expr) {
+            // function definition
+            let s1 = draw_r(o.expr, {x: 0, y: 0}, false);
+
+            text = o.name;
+            text += "(" + o.params.join(",") + ")=";
+            if (d) ctx.fillText(text, p.x, p.y + s1.h/2 - char_size);
+            let xo = text.length * char_size + char_pad;
+
+            s1 = draw_r(o.expr, {x: p.x + xo, y: p.y}, d);
+
+            size.w = xo + s1.w;
+            size.h = s1.h;
+
+        } else {
+            if (d) {
+                let N = text.length;
+                for (let i = 0; i < N; i ++) {
+                    ctx.fillText(text[i], p.x + i*char_size, p.y);
+                }
+            }
+            
+            size.w = text.length * char_size;
+            size.h = char_size * 2;
+        }
+    }
+
+    //if (d) ctx.strokeRect(p.x, p.y, size.w, size.h);
+
+    return size;
+}
+
+function draw_simple(text) {
+    for (let i = 0; i < text.length; i++) {
+        ctx.fillText(text[i], i * char_size, 0);
+    }
+    return text.length * char_size;
+}
+
+let cache = {};
+function draw_fn(fn) {
+
+    let tree;
+
+    if (cache[fn]) {
+        tree = cache[fn];
+    } else {
+        try {
+            tree = math.parse(fn);
+        } catch(e) {
+
+        }
+
+        if (tree) {
+            cache[fn] = tree;
+        }
+    }
+
+    if (!tree) {
+        return {w: 0, h: 0};
+    }
+    
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    let size = draw_r(tree, {x: 0, y: 0}, true);
+    ctx.restore();
+
+    return size;
 }
 
 function get_mouse_pos(canvas, evt) {
@@ -1420,61 +1686,36 @@ function Text(text, pos) {
 
     this.draw_text = function(ctx, props) {
         let t = props.t;
+        let fn = "";
+        let size = 0;
 
-        if (this.command == "e" || this.command == "slide") {
-            t = t + this.text_val;
-        }
-
-        if (presenting) {
-            if (this.command) {
-                t = t.slice(this.command.length+1); //+1 for semicolon
-            }
+        if (this.command.length) {
+            fn = t.slice(this.command.length+1); //+1 for semicolon
+        } else {
+            fn = t;
         }
 
         ctx.fillStyle = rgbToHex(props.c);
         ctx.strokeStyle = ctx.fillStyle;
-        ctx.textAlign = 'center';
 
-        let xoff = 0;
-
-        let N = t.length;
-
-        exponent = 0;
-        let subscript = false;
-        for (let i = 0; i < N; i++) {
-            if (t[i] == "*") {
-                ctx.beginPath();
-                
-                ctx.arc(xoff, 2, 3, 0, pi2, 0);
-                ctx.fill();
-                xoff += grid_size/2;
-            } else if (presenting && t[i] == "_") {
-                subscript = true;
-            } else if (presenting && t[i] == "^" && t[i+1] == "(") {
-                i += 1;
-                exponent += 1;
-            } else if (presenting && (exponent != 0 || subscript) && t[i] == ")") {
-                if (exponent > 0) {
-                    exponent -= 1;
-                }
-            } else {
-                let yoff = -grid_size/2 * exponent;
-
-                if (subscript) {
-                    yoff = grid_size/2;
-                }
-
-                ctx.fillText(t[i], xoff, yoff);
-                xoff += grid_size/2;
-
-                if (subscript) {
-                    subscript = false;
-                }
-            }
+        let yoff = 0;
+        if (presenting) {
+            let s = draw_fn(fn);
+            size = s.w;
+            yoff = s.h/2;
+        } else {
+            size = draw_simple(t);
         }
 
-        let center = (xoff-grid_size/2) / 2;
+        if (this.command == "e" || this.command == "slide") {
+            // draw the value
+            ctx.save();
+            ctx.translate(size, yoff);
+            draw_simple(this.text_val);
+            ctx.restore();
+        }
 
+        let center = size/2;
         if (!presenting && !this.hidden() && (this.selected || this.near_mouse)) {
             // draw cursor
             ctx.beginPath();
@@ -1484,7 +1725,7 @@ function Text(text, pos) {
             // draw center
             ctx.strokeStyle = dark;
             ctx.beginPath();
-            ctx.strokeRect(center-grid_size/8, -grid_size/8, grid_size/4, grid_size/4);
+            ctx.strokeRect(center-grid_size/8, grid_size/4, grid_size/4, grid_size/4);
         }
     }
 
@@ -1540,76 +1781,6 @@ function Text(text, pos) {
 
     this.parse_text(text);
 
-    /*
-    this.draw_tree = function(ctx, props) {
-
-        if (this.args.length != 1) {
-            return;
-        }
-
-        let t = -1;
-
-        try {
-            t = math.parse(this.args[0]);
-        } catch(e) {
-
-        }
-
-        if (t == -1) {
-            return;
-        }
-        
-        // recursively draw it
-        function render_tree(ctx, t, p, info) {
-            if (t.args) {
-                if (t.name && t.name.length) {
-                    ctx.fillText(t.name, p.x, p.y);
-                } else if (t.op && t.op.length) {
-                    ctx.fillText(t.op, p.x, p.y);
-                } else {
-                    ctx.fillText('op', p.x, p.y);
-                }
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, grid_size/2, 0, pi2);
-                ctx.stroke();
-
-                info[info.level] = t.args.length;
-                info.level += 1;
-
-                let x = 0;
-                for (let i = 0; i < t.args.length; i ++) {
-                    
-                    x = p.x + info.xo;
-                    info.xo = info.xo + grid_size;
-
-                    let np = {x: x, y: p.y + grid_size*2};
-                    let diff = {x: np.x-p.x, y: np.y - p.y};
-
-                    ctx.beginPath();
-                    ctx.moveTo(p.x + diff.x*.2, p.y + diff.y*.2);
-                    ctx.lineTo(p.x + diff.x*.8, p.y + diff.y*.8);
-                    ctx.stroke();
-
-                    render_tree(ctx, t.args[i], np, info);
-                }
-            } else if (t.content) {
-                render_tree(ctx, t.content, p, info);
-            } else {
-                
-                if (t.name && t.name.length) {
-                    ctx.fillText(t.name, p.x, p.y);
-                } else {
-                    ctx.fillText(t.value, p.x, p.y);
-                }
-            }
-        }
-
-        let info = {xo: 0, level:0};
-        render_tree(ctx, t, {x: props.p.x, y: props.p.y + grid_size}, info);
-        console.log(info);
-    } */
-
     this.draw_tree = function(ctx, props) {
 
         if (this.args.length != 1) {
@@ -1628,9 +1799,9 @@ function Text(text, pos) {
             return;
         }
 
-        let yoff = grid_size*2;
-        let xoff = grid_size*2;
-        let opr = grid_size*3/5;
+        let yoff = grid_size*3;
+        let xoff = grid_size*3;
+        let op_size = grid_size;
 
         let p = {x: props.p.x, y: props.p.y + grid_size};
         let stuff = [t];
@@ -1675,9 +1846,13 @@ function Text(text, pos) {
                     } else if (o.op && o.op.length) {
                         text = o.op;
                     }
+
+                    if (distance(mouse, np) < grid_size) {
+                        text = o.toString();
+                    }
                     
                     ctx.beginPath();
-                    ctx.arc(np.x, np.y, opr, 0, pi2);
+                    ctx.arc(np.x, np.y, op_size, 0, pi2);
                     ctx.stroke();
 
                     ctx.fillText(text, np.x, np.y);
@@ -1693,11 +1868,9 @@ function Text(text, pos) {
                         let n = math.norm([diff.x, diff.y]);
                         diff = {x: diff.x/n, y: diff.y/n};
 
-                        let pad = grid_size*3/5;
-
                         ctx.beginPath();
-                        ctx.moveTo(np.x + diff.x*pad, np.y + diff.y*pad);
-                        ctx.lineTo(argp.x - diff.x*pad, argp.y - diff.y*pad);
+                        ctx.moveTo(np.x + diff.x*op_size, np.y + diff.y*op_size);
+                        ctx.lineTo(argp.x - diff.x*op_size, argp.y - diff.y*op_size);
                         ctx.stroke();
 
                         lx += xoff;
@@ -2256,6 +2429,9 @@ function Text(text, pos) {
             this.draw_contour(ctx, i);
         } else if (c == "tree") {
             this.draw_tree(ctx, i);
+            if (presenting) {
+                should_draw_text = false;
+            }
         } else if (c == "for") {
             this.run_for(ctx, i);
         } else if (c == "shape") {
