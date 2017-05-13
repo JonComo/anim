@@ -2075,6 +2075,72 @@ function Text(text, pos) {
         ctx.restore();
     }
 
+    this.draw_contour = function(ctx, props) {
+        // contour: f, steps, step_size
+
+        if (this.args.length != 3) {
+            return;
+        }
+
+        ctx.save();
+
+        try {
+            ctx.fillStyle = rgbToHex(props.c);
+
+            let cexpr = this.cargs[0];
+            let steps = this.cargs[1].eval(parser.scope);
+            let step_size = this.cargs[2].eval(parser.scope);
+
+            let sx = mouse_graph.x;
+            let sy = mouse_graph.y;
+
+            parser.set('x', sx);
+            parser.set('y', sy);
+
+            let cont_v = cexpr.eval(parser.scope);
+
+            ctx.fillText(pretty_round(cont_v), mouse.x, mouse.y-grid_size/2);
+
+            ctx.beginPath();
+            let p = cam.graph_to_screen({x: sx, y: sy});
+            ctx.moveTo(p.x, p.y);
+
+            for (let i = 0; i < steps; i++) {
+                let grad = grad_2(cexpr, sx, sy);
+                let perp = [grad[1], -grad[0]];
+                let norm = Math.sqrt(perp[0]**2 + perp[1]**2);
+                perp = [step_size * perp[0] / norm, step_size * perp[1] / norm];
+
+                sx += perp[0];
+                sy += perp[1];
+
+                // auto correct
+                /*
+                for (let j = 0; j < 5; j++) {
+                    parser.set('x', sx);
+                    parser.set('y', sy);
+                    let new_v = cexpr.eval(parser.scope);
+
+                    let diff = new_v - cont_v;
+                    grad = grad_2(cexpr, sx, sy);
+                    sx -= .01 * diff * grad[0];
+                    sy -= .01 * diff * grad[1];
+                } */
+                
+                p = cam.graph_to_screen({x: sx, y: sy});
+                ctx.lineTo(p.x, p.y);
+            }
+
+            ctx.stroke();
+
+        } catch(e) {
+            console.log('contour error: ');
+            console.log(e);
+        }
+
+        ctx.restore();
+    }
+
     this.draw_drag = function(ctx, props) {
         // drag:[x1,x2,..],[y1,y2,..]
 
@@ -2163,11 +2229,13 @@ function Text(text, pos) {
             this.draw_drag(ctx, i);
         } else if (c == "tangent") {
             this.draw_tangent(ctx, i);
-        }else if (c == "tree") {
+        } else if (c == "tree") {
             this.draw_tree(ctx, i);
             if (presenting) {
                 should_draw_text = false;
             }
+        } else if (c == "contour") {
+            this.draw_contour(ctx, i);
         } else if (c == "slide") {
             // draw slider rect
             if (presenting && this.near_mouse && !this.hidden()) {
