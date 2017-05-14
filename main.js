@@ -1791,19 +1791,13 @@ function Text(text, pos) {
 
     this.draw_text = function(ctx, props) {
         let t = props.t;
-        let fn = "";
         let size = 0;
-
-        if (this.command.length) {
-            fn = t.slice(this.command.length+1); //+1 for semicolon
-        } else {
-            fn = t;
-        }
 
         ctx.fillStyle = rgbToHex(props.c);
         ctx.strokeStyle = ctx.fillStyle;
 
-        if (presenting) {
+        if (!this.is_selected() && this.command == "f") {
+            let fn = t.slice(this.command.length+1); //+1 for semicolon
             let s = draw_fn(fn);
             size = s.w;
         } else {
