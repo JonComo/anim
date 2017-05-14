@@ -451,6 +451,8 @@ function draw_r(o, p, d) {
         }
 
     } else {
+        // no args
+
         if (o.name && o.name.length) {
             text = o.name;
         } else if (o.value) {
@@ -472,6 +474,8 @@ function draw_r(o, p, d) {
 
             size.w = s1.w + char_size*2;
             size.h = s1.h;
+        } else if (o.node) {
+            size = draw_r(o.node, {x: p.x, y: p.y}, d);
         } else if (o.object && o.value) {
             // assignment
             
@@ -483,6 +487,42 @@ function draw_r(o, p, d) {
 
             size.w = s1.w + text.length * char_size;
             size.h = s1.h;
+        } else if (o.blocks) {
+            // block
+
+            let items = o.blocks;
+            let h = 0;
+
+            // get height of all args
+            let N = items.length;
+            let hs = [];
+            for (let i = 0; i < N; i ++) {
+                let s1 = draw_r(items[i], {x: 0, y: 0}, false);
+                hs.push(s1);
+
+                h = Math.max(h, s1.h);
+            }
+
+            size.h = h;
+
+            // draw it
+            let cally = p.y + size.h/2 - char_size;
+            let xo = 0;
+
+            for (let i = 0; i < N; i ++) {
+                let s1 = draw_r(items[i], {x: p.x + xo, y: p.y + size.h/2 - hs[i].h/2}, d);
+                xo += s1.w;
+
+                if (i != N-1) {
+                    if (d) ctx.fillText(";", p.x + xo, cally);
+                }
+                xo += char_size;
+            }
+
+            xo -= char_size;
+
+            size.w = xo;
+
         } else if (o.items) {
             // array
 
