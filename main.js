@@ -79,25 +79,58 @@ function rgb1ToHex(a) {
 }
 
 math.import({
-    scatter: function(xs, ys) {
-        // [x1, x2, ..], [y1, y2, ...]
+    fori: function(is, f) {
+        // [0, 1, 2, ..], "f(i)=i*2"
 
-        xs = xs._data;
-        ys = ys._data;
-        
-        for (let i = 0; i < xs.length; i ++) {
+        let N = is.size()[0];
+        let d = is._data;
 
-            ctx.beginPath();
-            let p = {x: xs[i], y: ys[i]};
-            let sp = cam.graph_to_screen(p);
+        let r = [];
+        let i = 0;
+        for (let k = 0; k < N; k++) {
+            parser.set('i', d[k]);
+            r.push(parser.eval(f));
+        }
 
-            ctx.arc(sp.x, sp.y, point_size, 0, pi2);
-            ctx.stroke();
+        return math.matrix(r);
+    },
+    grid: function(nr, nc) {
+        let m = math.zeros([nr*nc, 2]);
+        let pc = 1/(nc-1); let pr = 1/(nr-1);
 
-            if (distance(mouse_graph, p) < .2) {
-                ctx.fillText('('+pretty_round(p.x)+','+pretty_round(p.y)+')', sp.x, sp.y-grid_size);
-                ctx.fill();
+        for (let r = 0; r < nr; r++) {
+            for (let c = 0; c < nc; c++) {
+                let i = r*nc+c;
+                m[i][0] = pc*c;
+                m[i][1] = pr*r;
             }
+        }
+
+        return math.matrix(m);
+    },
+    rotate: function(rxyz) {
+        if (rxyz && rxyz.size()[0] == 3) {
+            cam.properties[frame].rxyz = rxyz._data;
+        } else {
+            cam.properties[frame].rxyz = [0, 0, 0];
+        }
+    },
+    T: function(m) {
+        return math.transpose(m);
+    },
+    scatter: function(points) {
+        // points num x coords
+        // rot x, rot y, rot z
+        let size = points.size();
+        let n = size[0];
+
+        let data = cam.graph_to_screen_mat(points)._data;
+        
+        for (let i = 0; i < n; i++) {
+            /*ctx.beginPath();
+            ctx.arc(data[i][0], data[i][1], point_size, 0, pi2);
+            ctx.stroke(); */
+            ctx.fillRect(data[i][0]-1, data[i][1]-1, 2, 2);
         }
     },
     graph: function(fn) {
@@ -122,8 +155,7 @@ math.import({
         ctx.stroke();
 
         gp = {x: mouse_graph.x, y: fn(mouse_graph.x)};
-        if (mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
-            overlay = true;
+        if (ctrl && mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
             p = cam.graph_to_screen(gp);
             ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p.x, p.y - grid_size);
             ctx.beginPath();
@@ -190,7 +222,12 @@ math.import({
             }
         }
 
-        p = p._data;
+        if (p) {
+            p = p._data;
+        } else {
+            p = [0, 0];
+        }
+        
         p = cam.graph_to_screen({x: p[0], y: p[1]});
         for (let i = 0; i < t.length; i++) {
             ctx.textAlign = 'left';
@@ -759,6 +796,13 @@ function interpolate(a, b) {
             let aw = a[key];
             let bw = b[key];
             interp[key] = (1-t_ease) * aw + t_ease * bw;
+        } else if (key == "rxyz") {
+            let ar = a[key];
+            let br = b[key];
+            interp[key] = [0, 0, 0];
+            for (let i = 0; i < 3; i ++) {
+                interp[key][i] = (1-t_ease) * ar[i] + t_ease * br[i];
+            }
         } else if (key == "c") {
             // interpolate colors
             let ac = a[key];
@@ -2310,7 +2354,7 @@ function Text(text, pos) {
 }
 
 function Camera() {
-    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1};
+    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1, rxyz: [0, 0, 0]};
     this.properties = {};
     this.properties[frame] = copy(this.default_props);
 
@@ -2352,10 +2396,69 @@ function Camera() {
         }
 
         this.props = interpolate(a, b);
+
+
+        // transform matrix T
+        let rx = this.props.rxyz[0];
+        let ry = this.props.rxyz[1];
+        let rz = this.props.rxyz[2];
+        
+        let Rx = [[1,        0,        0],
+                  [0, Math.cos(rx), -Math.sin(rx)],
+                  [0, Math.sin(rx), Math.cos(rx)]];
+
+        let Ry = [[Math.cos(ry),   0, Math.sin(ry)],
+                [0, 1, 0],
+                [-Math.sin(ry), 0, Math.cos(ry)]];
+
+        let Rz = [[Math.cos(rz), -Math.sin(rz), 0],
+                [Math.sin(rz), Math.cos(rz), 0],
+                [0, 0, 1]];
+
+        // 3 x 3 scale
+        let scale = [[grid_size * this.props.w, 0, 0],
+                [0, -grid_size * this.props.h, 0],
+                [0, 0, 1]];
+
+        // offset
+        let off = [[1, 0],
+                   [0, 1],
+                   [this.props.p.x, this.props.p.y]];
+
+        this.R = math.multiply(math.multiply(Rx, Ry), Rz);
+        this.T = math.multiply(scale, off);
     }
 
     this.graph_to_screen = function(p) {
         return {x: p.x * grid_size * this.props.w + this.props.p.x, y: -p.y * grid_size * this.props.h + this.props.p.y};
+    }
+
+    this.graph_to_screen_mat = function(p) {
+        // n x ?
+        let size = p.size();
+        let n = size[0];
+        let d = size[1];
+
+        if (d == 2) {
+            // 2d
+            // append zeros for zs
+            p = p.resize([n, 3]);
+        }
+
+        console.log(this.R);
+        console.log(p);
+
+        p = math.multiply(p, this.R);
+
+        console.log(p);
+
+        // set zs to ones
+        p.subset(math.index(math.range(0, n), 2), math.ones(n));
+
+        p = math.multiply(p, this.T);
+
+        console.log(p);
+        return p;
     }
 
     this.screen_to_graph = function(p) {
