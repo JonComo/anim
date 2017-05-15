@@ -361,7 +361,7 @@ function draw_r(o, p, d) {
             } else if (argc == 2) {
                 // draw on the left and the right
 
-                let center = false; // false -> bottom align
+                let center = true; // false -> bottom align
 
                 let s1 = draw_r(args[0], {x: 0, y: 0}, false);
                 let s2 = draw_r(args[1], {x: 0, y: 0}, false);
@@ -398,14 +398,15 @@ function draw_r(o, p, d) {
                 if (b.content) {
                     b = b.content;
                 }
+
                 let s1 = draw_r(args[0], {x: 0, y: 0}, false);
                 let s2 = draw_r(b, {x: 0, y: 0}, false);
 
-                draw_r(args[0], {x: p.x, y: p.y}, d);
-                draw_r(b, {x: p.x + s1.w, y: p.y - s1.h + char_size}, d);
-
                 size.w = s1.w + s2.w;
-                size.h = Math.max(s1.h, s2.h); // wrong rect I know
+                size.h = s1.h + s2.h;
+
+                draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
+                draw_r(b, {x: p.x + s1.w, y: p.y}, d);
             }
         } else if (text == "/") {
             if (argc == 2) {
@@ -501,11 +502,11 @@ function draw_r(o, p, d) {
         if (o.content) {
             // parens
             let s1 = draw_r(o.content, {x: 0, y: 0}, false);
-            ctx.save();
-            ctx.scale(1, s1.h/(char_size*2));
+            //ctx.save();
+            //ctx.scale(1, s1.h/(char_size*2));
             if (d) ctx.fillText("(", p.x, p.y + s1.h/2-char_size);
             if (d) ctx.fillText(")", p.x + s1.w + char_size, p.y + s1.h/2-char_size);
-            ctx.restore();
+            //ctx.restore();
 
             s1 = draw_r(o.content, {x: p.x + char_size, y: p.y}, d);
 
