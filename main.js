@@ -79,6 +79,9 @@ function rgb1ToHex(a) {
     return rgbToHex(c);
 }
 
+// cache
+var grid_cache = {};
+
 math.import({
     fori: function(is, f) {
         // [0, 1, 2, ..], "f(i)=i*2"
@@ -95,23 +98,46 @@ math.import({
 
         return math.matrix(r);
     },
-    grid: function(nr, nc) {
-        let m = math.zeros([nr*nc, 2]);
-        let pc = 1/(nc-1); let pr = 1/(nr-1);
+    grid: function(nx, ny, fn) {
+        // fn(x, y) = [x, y, z]
+        let m;
+        let key = nx+'_'+ny;
+        if (key in grid_cache) {
+            m = grid_cache[key];
+        } else {
+            m = math.zeros(math.matrix([nx*ny, 3]));
+            grid_cache[key] = m;
+        }
 
-        for (let r = 0; r < nr; r++) {
-            for (let c = 0; c < nc; c++) {
-                let i = r*nc+c;
-                m[i][0] = pc*c;
-                m[i][1] = pr*r;
+        let px = 0;
+        let py = 0;
+
+        if (nx > 1) {
+            px = 1/(nx-1);
+        }
+
+        if (ny > 1) {
+            py = 1/(ny-1);
+        }
+
+        let v;
+        let d = m._data;
+
+        for (let x = 0; x < nx; x++) {
+            for (let y = 0; y < ny; y++) {
+                let i = x*ny+y;
+
+                v = fn(px*x, py*y)._data;
+                d[i][0] = v[0];
+                d[i][1] = v[1];
+                d[i][2] = v[2];
             }
         }
 
-        return math.matrix(m);
+        return m;
     },
     rotate: function(rx, ry, rz) {
         let rxyz = [rx, ry, rz];
-        console.log(rxyz);
         if (!isNaN(math.sum(rxyz))) {
             cam.properties[frame].rxyz = rxyz;
         } else {
@@ -127,7 +153,7 @@ math.import({
         let size = points.size();
         let n = size[0];
 
-        let data = cam.graph_to_screen_mat(points)._data;
+        let data = cam.graph_to_screen_mat(points);
         
         for (let i = 0; i < n; i++) {
             /*ctx.beginPath();
@@ -141,46 +167,56 @@ math.import({
 
         let y = 0;
         let p; let gp;
-        ctx.beginPath();
+        let N = 100;
+        let points = math.zeros([101, 3]);
+
+        let i = 0;
         for (let x = -10; x < 10; x += .2) {
             y = fn(x);
             y = Math.max(Math.min(y, 1000), -1000);
 
-            gp = {x: x, y: y};
-            p = cam.graph_to_screen(gp);
-            if (x == -10) {
-                ctx.moveTo(p.x, p.y);
-            } else {
-                ctx.lineTo(p.x, p.y);
-            }
+            points[i][0] = x;
+            points[i][1] = y;
+
+            i ++;
         }
 
+        points = cam.graph_to_screen_mat(math.matrix(points));
+
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+            p = points[i];
+            if (i == 0) {
+                ctx.moveTo(p[0], p[1]);
+            } else {
+                ctx.lineTo(p[0], p[1]);
+            }
+        }
         ctx.stroke();
 
         gp = {x: mouse_graph.x, y: fn(mouse_graph.x)};
         if (ctrl && mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
-            p = cam.graph_to_screen(gp);
-            ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p.x, p.y - grid_size);
+            p = cam.graph_to_screen(gp.x, gp.y, 0);
+            ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p[0], p[1] - grid_size);
             ctx.beginPath();
-            ctx.arc(p.x, p.y, point_size, 0, pi2);
+            ctx.arc(p[0], p[1], point_size, 0, pi2);
             ctx.fill();
         }
     },
-    shape: function(xs, ys) {
-        // [x1, ...], [y1, ...]
+    lines: function(points) {
+        // [[x1,y1,z1], ...]
+        
+        let N = points.size()[0];
+        points = cam.graph_to_screen_mat(points);
 
-        xs = xs._data;
-        ys = ys._data;
-
-        let p;
         ctx.beginPath();
-        let N = xs.length;
+        let p;
         for (let i = 0; i < N; i ++) {
-            p = cam.graph_to_screen({x: xs[i], y: ys[i]});
+            p = points[i];
             if (i == 0) {
-                ctx.moveTo(p.x, p.y);
+                ctx.moveTo(p[0], p[1]);
             } else {
-                ctx.lineTo(p.x, p.y);
+                ctx.lineTo(p[0], p[1]);
             }
         }
 
@@ -201,11 +237,16 @@ math.import({
             }
         }
     },
-    fore: function(i, fn) {
-        let m = i.map(function(value, index, matrix) {
-            return fn(value);
-        });
-        return m;
+    list: function(i, fn) {
+        // list, fn(index, value)
+        let m = [];
+        let N = i.size()[0];
+        let d = i._data;
+        for (let i = 0; i < N; i++) {
+            m.push(fn(i, d[i]));
+        }
+
+        return math.matrix(m);
     },
     view: function(x, p) {
 
@@ -231,16 +272,23 @@ math.import({
             p = [0, 0];
         }
         
-        p = cam.graph_to_screen({x: p[0], y: p[1]});
+        p = cam.graph_to_screen(p[0], p[1], 0);
         for (let i = 0; i < t.length; i++) {
             ctx.textAlign = 'left';
-            ctx.fillText(t[i], p.x, p.y + grid_size * i);
+            ctx.fillText(t[i], p[0], p[1] + grid_size * i);
         }
     },
-    label: function(l, p) {
-        p = p._data;
-        p = cam.graph_to_screen({x: p[0], y: p[1]});
-        ctx.fillText(l, p.x, p.y);
+    labels: function(labels, points) {
+        points = cam.graph_to_screen_mat(points);
+        let N = labels.size()[0];
+        let p;
+        ctx.save();
+        ctx.textAlign = 'center';
+        for (let i = 0; i < N; i++) {
+            p = points[i];
+            ctx.fillText(labels._data[i], p[0], p[1]);
+        }
+        ctx.restore();
     },
     sig: function(x) {
         if (x._data) {
@@ -2200,8 +2248,8 @@ function Text(text, pos) {
             ctx.fillText(pretty_round(cont_v), mouse.x, mouse.y-grid_size/2);
 
             ctx.beginPath();
-            let p = cam.graph_to_screen({x: sx, y: sy});
-            ctx.moveTo(p.x, p.y);
+            let p = cam.graph_to_screen(sx, sy, 0);
+            ctx.moveTo(p[0], p[1]);
 
             for (let i = 0; i < steps; i++) {
                 let grad = grad_2(cexpr, sx, sy);
@@ -2225,76 +2273,14 @@ function Text(text, pos) {
                     sy -= .01 * diff * grad[1];
                 } */
                 
-                p = cam.graph_to_screen({x: sx, y: sy});
-                ctx.lineTo(p.x, p.y);
+                p = cam.graph_to_screen(sx, sy, 0);
+                ctx.lineTo(p[0], p[1]);
             }
 
             ctx.stroke();
 
         } catch(e) {
             console.log('contour error: ');
-            console.log(e);
-        }
-
-        ctx.restore();
-    }
-
-    this.draw_drag = function(ctx, props) {
-        // drag:[x1,x2,..],[y1,y2,..]
-
-        if (this.args.length != 2) {
-            return;
-        }
-        
-        ctx.save();
-        ctx.fillStyle = rgbToHex(props.c);
-
-        if (!mouse_down) {
-            this.dragv1 = '';
-            this.dragv2 = '';
-        }
-
-        try {
-            let xs = this.cargs[0].eval(parser.scope)._data;
-            let ys = this.cargs[1].eval(parser.scope)._data;
-            let gp;
-
-            let N = xs.length;
-            for (let i = 0; i < N; i++) {
-                ctx.beginPath();
-                gp = {x: xs[i], y: ys[i]};
-                p = cam.graph_to_screen(gp);
-                ctx.arc(p.x, p.y, point_size, 0, pi2, 0);
-                ctx.stroke();
-
-                if (distance(mouse_graph, gp) < .5) {
-                    ctx.fill();
-
-                    if (mouse_down && !this.dragv1) {
-                        // change the variables values!
-                        let v1 = math.parse(this.args[0]);
-                        let v2 = math.parse(this.args[1]);
-
-                        if (v1.items) {
-                            v1 = v1.items[i].name;
-                            v2 = v2.items[i].name;
-                        } else if(v1.name) {
-                            v1 = v1.name + '['+(i+1)+']';
-                            v2 = v2.name+  '['+(i+1)+']';
-                        }
-                        
-                        this.dragv1 = v1;
-                        this.dragv2 = v2;
-                    }
-                }
-
-                if (this.dragv1.length) {
-                    parser.eval(this.dragv1 + ' = ' + mouse_graph.x);
-                    parser.eval(this.dragv2 + ' = ' + mouse_graph.y);
-                }
-            }
-        } catch(e) {
-            console.log('drag error:');
             console.log(e);
         }
 
@@ -2330,9 +2316,7 @@ function Text(text, pos) {
         let should_draw_text = true;
 
         let c = this.command;
-        if (c == "drag") {
-            this.draw_drag(ctx, i);
-        } else if (c == "tangent") {
+        if (c == "tangent") {
             this.draw_tangent(ctx, i);
         } else if (c == "tree") {
             this.draw_tree(ctx, i);
@@ -2416,9 +2400,17 @@ function Camera() {
 
         let props = this.properties[frame];
 
-        let p = props.p;
-        let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
-        props.p = {x: p.x + offset.x, y: p.y + offset.y};
+        if (meta) {
+            // rotate
+            let r = props.rxyz;
+            r = [r[0] + (mouse.y - mouse_last.y)/100, r[1] + (mouse.x - mouse_last.x)/100, 0];
+            props.rxyz = r;
+        } else {
+            // translate
+            let p = props.p;
+            let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
+            props.p = {x: p.x + offset.x, y: p.y + offset.y};
+        }
     }
 
     this.onkeydown = function(evt) {
@@ -2466,22 +2458,16 @@ function Camera() {
                 [Math.sin(rz), Math.cos(rz), 0],
                 [0, 0, 1]];
 
-        // 3 x 3 scale
-        let scale = [[grid_size * this.props.w, 0, 0],
-                [0, -grid_size * this.props.h, 0],
-                [0, 0, 1]];
-
-        // offset
-        let off = [[1, 0],
-                   [0, 1],
-                   [this.props.p.x, this.props.p.y]];
+        
 
         this.R = math.multiply(math.multiply(Rx, Ry), Rz);
-        this.T = math.multiply(scale, off);
+
     }
 
-    this.graph_to_screen = function(p) {
-        return {x: p.x * grid_size * this.props.w + this.props.p.x, y: -p.y * grid_size * this.props.h + this.props.p.y};
+    this.graph_to_screen = function(x, y, z) {
+        // takes array [x, y, z]
+        // returns [x, y, z] projected to screen (render using first two coords)
+        return this.graph_to_screen_mat(math.matrix([[x, y, z]]))[0];
     }
 
     this.graph_to_screen_mat = function(p) {
@@ -2497,15 +2483,22 @@ function Camera() {
         }
 
         p = math.multiply(p, this.R);
+        p = p._data;
 
-        // set zs to ones
-        if (n > 1) {
-            p.subset(math.index(math.range(0, n), 2), math.ones(n));
-        } else {
-            p.subset(math.index(0, 2), 1);
+        let x; let y; let z; let m;
+        for (let i = 0; i < n; i++) {
+            x = p[i][0];
+            y = p[i][1];
+            z = p[i][2];
+
+            /*
+            m = z/20+1;
+            if (m < 0) {
+                m = 1;
+            } */
+
+            p[i] = [x * this.props.w * grid_size + this.props.p.x, -y * this.props.h * grid_size + this.props.p.y, z];
         }
-
-        p = math.multiply(p, this.T);
 
         return p;
     }
@@ -2978,59 +2971,49 @@ function loop_frame(f) {
 }
 
 function draw_grid(ctx) {
+    if (!cam.R) {
+        return;
+    }
 
     ctx.save();
-    ctx.strokeStyle = grid;
+    ctx.textAlign = 'center';
+    ctx.globalAlpha = .2;
 
-    // render grid
-    let r_num = 10;
-    let c_num = 10;
-    let tick_size = grid_size/4;
-    let x = 0; let y = 0;
+    // center
+    let c = cam.graph_to_screen_mat(math.matrix([[0, 0, 0]]));
+
+    // axes
+    let axes = math.matrix([[10, 0, 0],
+                [0, 10, 0],
+                [0, 0, 10],
+                [-10, 0, 0],
+                [0, -10, 0],
+                [0, 0, -10]]);
+
+    axes = cam.graph_to_screen_mat(axes);
+
+    let labels = ['x', 'y', 'z'];
+    let colors = ["#FF0000", "#00FF00", "#0000FF"];
     
-    ctx.beginPath();
-    for (let i = -r_num; i <= r_num; i++) {
-        y = i * grid_size * cam.props.h + cam.props.p.y;
-        ctx.moveTo(cam.props.p.x + tick_size, y);
-        ctx.lineTo(cam.props.p.x - tick_size, y);
+    let N = axes.length;
+    for (let i = 0; i < N; i ++) {
+        ctx.fillStyle = colors[i%3];
+        ctx.strokeStyle = colors[i%3];
+
+        x = axes[i][0];
+        y = axes[i][1];
+
+        ctx.beginPath();
+        ctx.moveTo(c[0][0], c[0][1]);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        if (i < 3) {
+            ctx.fillText(labels[i], x, y);
+        }
     }
-
-    for (let j = -c_num; j <= c_num; j++) {
-        x = j * grid_size * cam.props.w + cam.props.p.x;
-        ctx.moveTo(x, cam.props.p.y + tick_size);
-        ctx.lineTo(x, cam.props.p.y - tick_size);
-    }
-    ctx.stroke();
-    
-
-    // draw center
-    ctx.beginPath();
-
-    let hs = cam.graph_to_screen({x: -c_num, y: 0});
-    let he = cam.graph_to_screen({x: c_num, y: 0});
-    ctx.moveTo(hs.x, hs.y);
-    ctx.lineTo(he.x, he.y);
-
-    let vs = cam.graph_to_screen({x: 0, y: -r_num});
-    let ve = cam.graph_to_screen({x: 0, y: r_num});
-    ctx.moveTo(vs.x, vs.y);
-    ctx.lineTo(ve.x, ve.y);
-
-    ctx.strokeStyle = grid_guide;
-    ctx.stroke();
 
     ctx.restore();
-
-    /*
-    if (!presenting) {
-        ctx.beginPath();
-        ctx.strokeStyle = grid_guide;
-        ctx.moveTo(mouse_grid.x, 0);
-        ctx.lineTo(mouse_grid.x, c.height);
-        ctx.moveTo(0, mouse_grid.y);
-        ctx.lineTo(c.width, mouse_grid.y);
-        ctx.stroke();
-    } */
 }
 
 function transition_with_next(next) {
