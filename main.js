@@ -52,6 +52,8 @@ var mouse_grid = {x: 0, y: 0};
 var mouse_last_grid = {x: 0, y: 0};
 var mouse_graph = {x: 0, y: 0};
 
+var brackets = {"(": 1, "[": 1, ")": -1, "]": -1};
+
 var t = 0; // time for parser
 
 var pi2 = 2 * Math.PI;
@@ -238,12 +240,12 @@ math.import({
         }
     },
     list: function(i, fn) {
-        // list, fn(index, value)
+        // list, fn(value)
         let m = [];
         let N = i.size()[0];
         let d = i._data;
         for (let i = 0; i < N; i++) {
-            m.push(fn(i, d[i]));
+            m.push(fn(d[i]));
         }
 
         return math.matrix(m);
@@ -1908,7 +1910,8 @@ function Text(text, pos) {
         let t = props.t;
         let size;
 
-        ctx.fillStyle = rgbToHex(props.c);
+        let c = rgbToHex(props.c);
+        ctx.fillStyle = c;
         ctx.strokeStyle = ctx.fillStyle;
 
         let draw_val = false;
@@ -1925,8 +1928,42 @@ function Text(text, pos) {
             let fn = t.slice(this.command.length+1); //+1 for semicolon
             size = draw_fn(fn);
         } else {
-            size = {w: draw_simple(t), h:char_size*2};
+            let N = t.length;
+            let plevel = 0;
+            size = {w: N * char_size, h:char_size*2};
+            for (let i = 0; i < N; i++) {
+                if (i < this.cursor) {
+                    if (t[i] in brackets) plevel += brackets[t[i]];
+                }
+                
+                ctx.fillText(t[i], i * char_size, 0);
+            }
+            
+            if (this.is_selected() && plevel != 0) {
+                ctx.fillStyle = colors[1];
+                let p2 = plevel;
+                for (let i = this.cursor; i < N; i++) {
+                    if (t[i] in brackets) p2 += brackets[t[i]];
+
+                    if (p2 == plevel-1) {
+                        ctx.fillText(t[i], i * char_size, 0);
+                        break;
+                    }
+                }
+
+                p2 = plevel;
+                for (let i = this.cursor-1; i >= 0; i--) {
+                    if (t[i] in brackets) p2 += brackets[t[i]];
+
+                    if (p2 == plevel+1) {
+                        ctx.fillText(t[i], i * char_size, 0);
+                        break;
+                    }
+                }
+            }
         }
+
+        ctx.fillStyle = c;
 
         if (draw_val) {
             ctx.save();
