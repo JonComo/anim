@@ -29,6 +29,7 @@ var next_frame;
 var playing;
 var rendering = false;
 var presenting = false;
+var debug = false;
 
 var t_ease = 0;
 var t_steps = 60;
@@ -130,7 +131,7 @@ math.import({
             /*ctx.beginPath();
             ctx.arc(data[i][0], data[i][1], point_size, 0, pi2);
             ctx.stroke(); */
-            ctx.fillRect(data[i][0]-1, data[i][1]-1, 2, 2);
+            ctx.fillRect(data[i][0]-2, data[i][1]-2, 4, 4);
         }
     },
     graph: function(fn) {
@@ -394,18 +395,20 @@ function draw_r(o, p, d) {
         } else if (text == "^") {
             if (argc == 2) {
                 // draw on the left and the right, shifted up!
+                let a = args[0];
                 let b = args[1];
+
                 if (b.content) {
                     b = b.content;
                 }
 
-                let s1 = draw_r(args[0], {x: 0, y: 0}, false);
+                let s1 = draw_r(a, {x: 0, y: 0}, false);
                 let s2 = draw_r(b, {x: 0, y: 0}, false);
 
                 size.w = s1.w + s2.w;
-                size.h = s1.h + s2.h;
+                size.h = s1.h + s2.h - char_size;
 
-                draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
+                draw_r(a, {x: p.x, y: p.y + size.h - s1.h}, d);
                 draw_r(b, {x: p.x + s1.w, y: p.y}, d);
             }
         } else if (text == "/") {
@@ -425,13 +428,14 @@ function draw_r(o, p, d) {
                 let s1 = draw_r(a, {x: 0, y: 0}, false);
                 let s2 = draw_r(b, {x: 0, y: 0}, false);
 
-                size.w = Math.max(s1.w, s2.w);
+                size.w = Math.max(s1.w, s2.w) + char_pad*2;
                 size.h = Math.max(s1.h, s2.h)*2 + char_pad*4;
 
-                draw_r(a, {x: p.x + size.w/2 - s1.w/2, y: p.y + size.h/2 - s1.h - char_pad*2}, d);
-                draw_r(b, {x: p.x + size.w/2 - s2.w/2, y: p.y + size.h/2 + char_pad*2}, d);
-
                 if (d) {
+
+                    draw_r(a, {x: p.x + size.w/2 - s1.w/2, y: p.y + size.h/2 - s1.h - char_pad*2}, d);
+                    draw_r(b, {x: p.x + size.w/2 - s2.w/2, y: p.y + size.h/2 + char_pad*2}, d);
+
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y + size.h/2);
                     ctx.lineTo(p.x + size.w, p.y + size.h/2);
@@ -518,10 +522,16 @@ function draw_r(o, p, d) {
             // assignment
             
             let s1 = draw_r(o.value, {x: 0, y: 0}, false);
-            let text = o.object.name + "=";
+            let text = o.object.name + " = ";
 
-            if (d) ctx.fillText(text, p.x, p.y + s1.h/2-char_size);
-            s1 = draw_r(o.value, {x: p.x + text.length * char_size, y: p.y}, d);
+            if (d) {
+                ctx.save();
+                ctx.translate(p.x, p.y + s1.h/2-char_size);
+                draw_simple(text);
+                ctx.restore();
+                
+                draw_r(o.value, {x: p.x + text.length*char_size, y: p.y}, d);
+            }
 
             size.w = s1.w + text.length * char_size;
             size.h = s1.h;
@@ -606,17 +616,18 @@ function draw_r(o, p, d) {
             let s1 = draw_r(o.expr, {x: 0, y: 0}, false);
 
             text = o.name;
-            text += "(" + o.params.join(",") + ")=";
+            text += "(" + o.params.join(",") + ") = ";
 
             if (d) {
-                for (let i = 0; i < text.length; i ++) {
-                    ctx.fillText(text[i], p.x + i*char_size, p.y + s1.h/2 - char_size);
-                }
+                ctx.save();
+                ctx.translate(p.x, p.y + s1.h/2 - char_size);
+                draw_simple(text);
+                ctx.restore();
             }
 
-            let xo = text.length * char_size + char_pad;
+            let xo = text.length*char_size;
 
-            s1 = draw_r(o.expr, {x: p.x + xo, y: p.y}, d);
+            draw_r(o.expr, {x: p.x + xo, y: p.y}, d);
 
             size.w = xo + s1.w;
             size.h = s1.h;
@@ -634,7 +645,7 @@ function draw_r(o, p, d) {
         }
     }
 
-    //if (d) ctx.strokeRect(p.x, p.y, size.w, size.h);
+    if (debug && d) ctx.strokeRect(p.x, p.y, size.w, size.h);
 
     return size;
 }
@@ -1395,6 +1406,7 @@ function Text(text, pos) {
     this.cargs = []; // compiled arguments
     this.text_val = "";
     this.near_mouse = false;
+    this.size = {w:0, h:0}; // pixel width and height
 
     this.select = function() {
         this.selected = true;
@@ -1709,8 +1721,9 @@ function Text(text, pos) {
             return false;
         }
 
+        this.near_mouse = this.point_in_text_rect(mouse);
+        
         if (this.near_mouse) {
-            this.select();
             return true;
         }
 
@@ -1724,8 +1737,7 @@ function Text(text, pos) {
         }
 
         let p = props.p;
-        let t = props.t;
-        if (point.x > p.x && point.x < p.x + t.length*char_size/2 && point.y > p.y - char_size && point.y < p.y + char_size) {
+        if (point.x > p.x && point.x < p.x + this.size.w && point.y > p.y - this.size.h/2 && point.y < p.y + this.size.h/2) {
             return true;
         }
 
@@ -1742,6 +1754,12 @@ function Text(text, pos) {
         this.near_mouse = this.point_in_text_rect(mouse);
     };
 
+    this.slide_var_name = function() {
+        let var_name = this.args[0];
+        var_name = var_name.replace(/\s+/g, '');
+        return var_name;
+    }
+
     this.mouse_drag = function(evt) {
         let props = this.properties[frame];
         if (!props) {
@@ -1752,8 +1770,7 @@ function Text(text, pos) {
             if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
 
                 // change the value of the variable
-                let var_name = this.args[0];
-                var_name = var_name.replace(/\s+/g, '');
+                let var_name = this.slide_var_name();
 
                 let old_val = 0;
                 try {
@@ -1770,6 +1787,7 @@ function Text(text, pos) {
 
                 let new_val = old_val + delta;
                 this.text_val = ' = ' + pretty_round(new_val);
+                this.properties[frame][var_name] = new_val;
 
                 try {
                     parser.set(var_name, new_val);
@@ -1779,13 +1797,13 @@ function Text(text, pos) {
 
                 return true;
             }
-        } else if (tool == "select" && this.selected) {
+        } else if (tool == "select" && (this.near_mouse || this.is_selected())) {
             // shift it
+            this.dragged = true;
             let p = props.p;
             let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
 
-            this.dragged = true;
             return true;
         }
 
@@ -1814,11 +1832,13 @@ function Text(text, pos) {
             }
             return;
         }
-
-        if (this.selected) {
-            if (!meta && !this.near_mouse) {
-                this.selected = false;
+        
+        if (this.near_mouse) {
+            if (!this.dragged) {
+                this.selected = !this.is_selected();
             }
+        } else if (!meta && this.is_selected()) {
+            this.selected = false;
         }
         
         this.dragged = false;
@@ -1836,39 +1856,36 @@ function Text(text, pos) {
 
     this.draw_text = function(ctx, props) {
         let t = props.t;
-        let size = 0;
+        let size;
 
         ctx.fillStyle = rgbToHex(props.c);
         ctx.strokeStyle = ctx.fillStyle;
 
-        if (!this.is_selected() && this.command == "f") {
-            let fn = t.slice(this.command.length+1); //+1 for semicolon
-            let s = draw_fn(fn);
-            size = s.w;
-        } else {
-            size = draw_simple(t);
-        }
-
+        let draw_val = false;
         if (this.command == "e" || this.command == "slide") {
             // draw the value
+            if (presenting) {
+                t = t.split(":")[1];
+            }
+
+            draw_val = true;
+        }
+
+        if (!this.is_selected() && this.command == "f") {
+            let fn = t.slice(this.command.length+1); //+1 for semicolon
+            size = draw_fn(fn);
+        } else {
+            size = {w: draw_simple(t), h:char_size*2};
+        }
+
+        if (draw_val) {
             ctx.save();
-            ctx.translate(size, 0);
-            draw_simple(this.text_val);
+            ctx.translate(size.w, 0);
+            size.w = size.w + draw_simple(this.text_val);
             ctx.restore();
         }
 
-        let center = size/2;
-        if (!presenting && !this.hidden() && (this.selected || this.near_mouse)) {
-            // draw cursor
-            ctx.beginPath();
-            let c = this.cursor;
-            ctx.fillRect(c * grid_size/2, -grid_size/2, 2, grid_size);
-
-            // draw center
-            ctx.strokeStyle = dark;
-            ctx.beginPath();
-            ctx.strokeRect(center-grid_size/8, grid_size/4, grid_size/4, grid_size/4);
-        }
+        return size;
     }
 
     this.parse_text = function(text) {
@@ -2282,6 +2299,13 @@ function Text(text, pos) {
         ctx.restore();
     }
 
+    this.draw_border = function(ctx) {
+        ctx.strokeStyle = dark;
+        ctx.beginPath();
+        let pad = 4;
+        ctx.strokeRect(-pad, -this.size.h/2-pad, this.size.w+pad*2, this.size.h+pad*2);
+    }
+
     this.render = function(ctx) {
 
         let a = this.properties[frame];
@@ -2315,15 +2339,6 @@ function Text(text, pos) {
             }
         } else if (c == "contour") {
             this.draw_contour(ctx, i);
-        } else if (c == "slide") {
-            // draw slider rect
-            if (presenting && this.near_mouse && !this.hidden()) {
-                ctx.strokeStyle = dark;
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y+char_size);
-                ctx.lineTo(pos.x + this.args[0].length*char_size, pos.y+char_size);
-                ctx.stroke();
-            }
         }
 
         if (presenting && (a.ph || (b && b.ph))) {
@@ -2331,6 +2346,7 @@ function Text(text, pos) {
         }
 
         // text
+        this.size = {w: 0, h: 0};
         if (should_draw_text) {
 
             ctx.translate(i.p.x, i.p.y);
@@ -2346,8 +2362,40 @@ function Text(text, pos) {
                 this.draw_text(ctx, b);
             } else {
                 ctx.globalAlpha = i.c[3];
-                this.draw_text(ctx, i);
+                this.size = this.draw_text(ctx, i);
             }
+        }
+
+        if (c == "slide" && a && b) {
+            // interpolate variable value! oh boy...
+            let var_name = this.slide_var_name();
+            let va = this.properties[frame][var_name];
+            let vb = this.properties[next_frame][var_name];
+            if (!isNaN(va) && !isNaN(vb)) {
+                let new_val = va * (1-t_ease) + vb * (t_ease);
+                this.text_val = " = " + pretty_round(new_val);
+                try {
+                    parser.set(var_name, new_val);
+                } catch(e) {
+
+                }
+            }
+        }
+
+        if (c == "slide" && presenting && this.near_mouse && !this.hidden()) {
+            // draw slider rect
+            this.draw_border(ctx);
+        }
+        
+        if (!presenting && !this.hidden() && this.near_mouse) {
+            // draw border
+            this.draw_border(ctx);
+        }
+
+        if (this.is_selected()) {
+            // draw cursor
+            ctx.beginPath();
+            ctx.fillRect(this.cursor * grid_size/2, -grid_size/2, 2, grid_size);
         }
 
         ctx.restore();
@@ -2446,19 +2494,17 @@ function Camera() {
             p = p.resize([n, 3]);
         }
 
-        console.log(this.R);
-        console.log(p);
-
         p = math.multiply(p, this.R);
 
-        console.log(p);
-
         // set zs to ones
-        p.subset(math.index(math.range(0, n), 2), math.ones(n));
+        if (n > 1) {
+            p.subset(math.index(math.range(0, n), 2), math.ones(n));
+        } else {
+            p.subset(math.index(0, 2), 1);
+        }
 
         p = math.multiply(p, this.T);
 
-        console.log(p);
         return p;
     }
 
@@ -2820,6 +2866,10 @@ function Menu(pos) {
             cam.properties[frame] = cam.default_props;
         }
         tool = "camera";
+    }));
+
+    this.buttons.push(new Button("debug", {x: 0, y: 0}, function(b) {
+        debug = !debug;
     }));
 
     this.buttons.push(new Button("present", {x: 0, y: 0}, function(b) {
@@ -3248,13 +3298,19 @@ window.onload = function() {
             return false;
         }
 
+        let captured = false;
         for (let i = objs.length-1; i >= 0; i--) {
             let obj = objs[i];
             if (typeof obj.mouse_down === 'function') {
                 if (obj.mouse_down(evt)) {
+                    captured = true;
                     break;
                 }
             }
+        }
+
+        if (captured) {
+            return false;
         }
 
         if (frames.mouse_down()) {
