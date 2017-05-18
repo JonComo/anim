@@ -109,9 +109,11 @@ math.import({
 
         return math.matrix(m);
     },
-    rotate: function(rxyz) {
-        if (rxyz && rxyz.size()[0] == 3) {
-            cam.properties[frame].rxyz = rxyz._data;
+    rotate: function(rx, ry, rz) {
+        let rxyz = [rx, ry, rz];
+        console.log(rxyz);
+        if (!isNaN(math.sum(rxyz))) {
+            cam.properties[frame].rxyz = rxyz;
         } else {
             cam.properties[frame].rxyz = [0, 0, 0];
         }
