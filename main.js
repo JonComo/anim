@@ -85,60 +85,36 @@ function rgb1ToHex(a) {
 var grid_cache = {};
 
 math.import({
-    fori: function(is, f) {
-        // [0, 1, 2, ..], "f(i)=i*2"
-
-        let N = is.size()[0];
-        let d = is._data;
-
-        let r = [];
-        let i = 0;
-        for (let k = 0; k < N; k++) {
-            parser.set('i', d[k]);
-            r.push(parser.eval(f));
-        }
-
-        return math.matrix(r);
+    _: function() {
+        console.log('dot');
     },
-    grid: function(nx, ny, fn) {
-        // fn(x, y) = [x, y, z]
-        let m;
-        let key = nx+'_'+ny;
-        if (key in grid_cache) {
-            m = grid_cache[key];
-        } else {
-            m = math.zeros(math.matrix([nx*ny, 3]));
-            grid_cache[key] = m;
+    block: function() { // exectutes string a for a in actions
+        let N = arguments.length;
+        for (var i = 0; i < N; i++) {
+            let expr = arguments[i];
+            if (typeof expr == "string") {
+                parser.eval(expr);
+            } else {
+                expr();
+            }
         }
-
-        let px = 0;
-        let py = 0;
-
-        if (nx > 1) {
-            px = 1/(nx-1);
-        }
-
-        if (ny > 1) {
-            py = 1/(ny-1);
-        }
-
-        let v;
-        let d = m._data;
-
-        for (let x = 0; x < nx; x++) {
-            for (let y = 0; y < ny; y++) {
-                let i = x*ny+y;
-
-                v = fn(px*x, py*y)._data;
-                d[i][0] = v[0];
-                d[i][1] = v[1];
-                d[i][2] = v[2];
+    },
+    rotation: function(rx, ry, rz) { // creates a 3x3 rotation matrix
+        return math.matrix(rotation_matrix(rx, ry, rz));
+    },
+    grid: function(rangex, rangey) { // returns matrix x*y by 2
+        let m = [];
+        xd = rangex._data;
+        yd = rangey._data;
+        for (let i = 0; i < xd.length; i ++) {
+            for (let j = 0; j < yd.length; j ++) {
+                m.push([xd[i], yd[j]]);
             }
         }
 
-        return m;
+        return math.matrix(m);
     },
-    rotate: function(rx, ry, rz) {
+    rotate: function(rx, ry, rz) { // rotates the camera
         let rxyz = [rx, ry, rz];
         if (!isNaN(math.sum(rxyz))) {
             cam.properties[frame].rxyz = rxyz;
@@ -146,12 +122,10 @@ math.import({
             cam.properties[frame].rxyz = [0, 0, 0];
         }
     },
-    T: function(m) {
+    T: function(m) { // transpose m
         return math.transpose(m);
     },
-    scatter: function(points) {
-        // points num x coords
-        // rot x, rot y, rot z
+    scatter: function(points) { // points [[x1, y1, z1], ...]
         let size = points.size();
         let n = size[0];
 
@@ -164,9 +138,7 @@ math.import({
             ctx.fillRect(data[i][0]-2, data[i][1]-2, 4, 4);
         }
     },
-    graph: function(fn) {
-        // function
-
+    graph: function(fn) { // graphs y=f(x) from -10 to 10
         let y = 0;
         let p; let gp;
         let N = 100;
@@ -205,9 +177,7 @@ math.import({
             ctx.fill();
         }
     },
-    lines: function(points) {
-        // [[x1,y1,z1], ...]
-        
+    lines: function(points) { // draws line from point to point [[x1,y1,z1], ...]
         let N = points.size()[0];
         points = cam.graph_to_screen_mat(points);
 
@@ -224,33 +194,30 @@ math.import({
 
         ctx.stroke();
     },
-    if: function(x, a, b) {
-        if (x == 1) {
-            if (typeof a == 'function') {
-                return a();
-            } else {
-                return a;
-            }
+    if: function(string_x, string_a, string_b) { // if x == true then eval string_a else eval string_b
+        if (parser.eval(string_x)) {
+            return parser.eval(string_a);
         } else {
-            if (typeof b == 'function') {
-                return b();
-            } else {
-                return b;
-            }
+            return parser.eval(string_b);
         }
     },
-    list: function(i, fn) {
-        // list, fn(value)
+    list: function(fn, array) { // [fn(v) for v in array]
         let m = [];
-        let N = i.size()[0];
-        let d = i._data;
+        let N = array.size()[0];
+        let d = array._data;
+
         for (let i = 0; i < N; i++) {
-            m.push(fn(d[i]));
+            let v = fn(d[i]);
+            if (v._data) {
+                m.push(v._data);
+            } else {
+                m.push(v);
+            }
         }
 
         return math.matrix(m);
     },
-    view: function(x, p) {
+    view: function(x, p) { // matrix, position: [x, y, z]
 
         let t = [];
         if (x._data) {
@@ -280,7 +247,7 @@ math.import({
             ctx.fillText(t[i], p[0], p[1] + grid_size * i);
         }
     },
-    labels: function(labels, points) {
+    labels: function(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
         points = cam.graph_to_screen_mat(points);
         let N = labels.size()[0];
         let p;
@@ -292,7 +259,7 @@ math.import({
         }
         ctx.restore();
     },
-    sig: function(x) {
+    sig: function(x) { // sigmoid(x)
         if (x._data) {
             var b = x.map(function (value, index, matrix) {
                 return sig(value);
@@ -302,7 +269,7 @@ math.import({
 
         return sig(x);
     },
-    sigp: function(x) {
+    sigp: function(x) { // sigmoid_prime(x)
         if (x._data) {
             var b = x.map(function (value, index, matrix) {
                 return sigp(value);
@@ -742,6 +709,12 @@ function draw_fn(fn) {
     return size;
 }
 
+function function_before_i(text, c) {
+    text = text.slice(0, c);
+    let s = text.split(/[^A-Za-z]/);
+    return s.pop();
+}
+
 function get_mouse_pos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -781,6 +754,22 @@ function grad_2(c, x, y) {
     let fy = c.eval(parser.scope);
 
     return [(fxh-fx)/h, (fyh-fy)/h];
+}
+
+function rotation_matrix(rx, ry, rz) {
+    let Rx = [[1,        0,        0],
+                  [0, Math.cos(rx), -Math.sin(rx)],
+                  [0, Math.sin(rx), Math.cos(rx)]];
+
+    let Ry = [[Math.cos(ry),   0, Math.sin(ry)],
+            [0, 1, 0],
+            [-Math.sin(ry), 0, Math.cos(ry)]];
+
+    let Rz = [[Math.cos(rz), -Math.sin(rz), 0],
+            [Math.sin(rz), Math.cos(rz), 0],
+            [0, 0, 1]];
+
+    return math.multiply(math.multiply(Rx, Ry), Rz);
 }
 
 function sigmoid(x, num, offset, width) {
@@ -1693,8 +1682,8 @@ function Text(text, pos) {
             return;
         }
 
-        this.text_val = '';
-        let expr = '';
+        this.text_val = "?";
+        let expr = "";
 
         if (this.new) {
             this.new = false;
@@ -1725,12 +1714,12 @@ function Text(text, pos) {
             if (type == "number") {
                 if (ctrl) {
                     // nothing
-                    this.text_val = '';
+                    this.text_val = ' = ' + val;
                 } else {
                     this.text_val = ' = ' + pretty_round(val);
                 }
                 
-            } else if (type == "object" && val._data.length != 0) {
+            } else if (type == "object" && val._data && val._data.length != 0) {
                 // prob a matrix, render dims
                 let d = val._data;
                 let dims = [];
@@ -2419,6 +2408,17 @@ function Text(text, pos) {
             // draw cursor
             ctx.beginPath();
             ctx.fillRect(this.cursor * grid_size/2, -grid_size/2, 2, grid_size);
+
+            // draw function information
+            let fn = function_before_i(i.t, this.cursor);
+            if (fn.length && math[fn]) {
+                ctx.save();
+                ctx.translate(0, char_size*2);
+                ctx.scale(.5, .5);
+                ctx.globalAlpha = .5;
+                draw_simple((math[fn]+"").split("\n")[0]);
+                ctx.restore();
+            }
         }
 
         ctx.restore();
@@ -2477,27 +2477,12 @@ function Camera() {
 
         this.props = interpolate(a, b);
 
-
         // transform matrix T
         let rx = this.props.rxyz[0];
         let ry = this.props.rxyz[1];
         let rz = this.props.rxyz[2];
-        
-        let Rx = [[1,        0,        0],
-                  [0, Math.cos(rx), -Math.sin(rx)],
-                  [0, Math.sin(rx), Math.cos(rx)]];
 
-        let Ry = [[Math.cos(ry),   0, Math.sin(ry)],
-                [0, 1, 0],
-                [-Math.sin(ry), 0, Math.cos(ry)]];
-
-        let Rz = [[Math.cos(rz), -Math.sin(rz), 0],
-                [Math.sin(rz), Math.cos(rz), 0],
-                [0, 0, 1]];
-
-        
-
-        this.R = math.multiply(math.multiply(Rx, Ry), Rz);
+        this.R = rotation_matrix(rx, ry, rz);
 
     }
 
