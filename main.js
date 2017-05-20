@@ -1682,7 +1682,7 @@ function Text(text, pos) {
             return;
         }
 
-        this.text_val = "?";
+        this.text_val = " = ?";
         let expr = "";
 
         if (this.new) {
@@ -1876,7 +1876,12 @@ function Text(text, pos) {
         
         if (this.near_mouse) {
             if (!this.dragged) {
-                this.selected = !this.is_selected();
+                this.selected = true;
+                // move cursor
+                let p = this.properties[frame].p;
+                let t = this.properties[frame].t;
+                this.cursor = Math.round((mouse.x - p.x)/char_size);
+                this.cursor = Math.min(this.cursor, t.length);
             }
         } else if (!meta && this.is_selected()) {
             this.selected = false;
