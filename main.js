@@ -1738,6 +1738,8 @@ function Text(text, pos) {
                     }
                 }
                 this.text_val += ']';
+            } else {
+                this.text_val = ' = ' + val.toString();
             }
         } catch (e) {
             console.log('eval error:');
