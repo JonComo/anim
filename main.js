@@ -125,18 +125,50 @@ math.import({
     T: function(m) { // transpose m
         return math.transpose(m);
     },
-    scatter: function(points) { // points [[x1, y1, z1], ...]
+    scatter: function(points, point_size, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
         let size = points.size();
         let n = size[0];
+        let points_d = points._data;
 
-        let data = cam.graph_to_screen_mat(points);
-        
-        for (let i = 0; i < n; i++) {
-            /*ctx.beginPath();
-            ctx.arc(data[i][0], data[i][1], point_size, 0, pi2);
-            ctx.stroke(); */
-            ctx.fillRect(data[i][0]-2, data[i][1]-2, 4, 4);
+        let psize = 4;
+        if (arguments.length >= 2) {
+            psize = arguments[1];
         }
+        let psize_half = psize/2;
+
+        let cam_data = cam.graph_to_screen_mat(points);
+        
+        ctx.save();
+        if (arguments.length == 3) {
+            // gradation
+
+            var indices = new Array(n);
+            for (var i = 0; i < n; ++i) indices[i] = i;
+
+            indices.sort(function(a, b) {
+                a = cam_data[a][2];
+                b = cam_data[b][2];
+                return a < b ? 1 : (a > b ? -1 : 1);
+            });
+            
+            
+            for (let j = 0; j < n; j++) {
+                let i = indices[j];
+
+                let p = points_d[i];
+
+                // constrain
+                let col = color_fn(p)._data;
+                col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
+                ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+                ctx.fillRect(cam_data[i][0]-psize_half, cam_data[i][1]-psize_half, psize, psize);
+            }
+        } else {
+            for (let i = 0; i < n; i++) {
+                ctx.fillRect(cam_data[i][0]-psize_half, cam_data[i][1]-psize_half, psize, psize);
+            }
+        }
+        ctx.restore();
     },
     graph: function(fn) { // graphs y=f(x) from -10 to 10
         let y = 0;
@@ -860,13 +892,7 @@ function interpolate(a, b) {
             // interpolate colors
             let ac = a[key];
             let bc = b[key];
-            let ic = [];
-            let constrain = Math.min(1, Math.max(0, t_ease));
-            for (let i = 0; i < ac.length; i++) {
-                ic.push((1-constrain) * ac[i] + constrain * bc[i]);
-            }
-
-            interp[key] = ic;
+            interp[key] = interpolate_colors_rgb(ac, bc, constrain(t_ease));
         } else if (key == "path") {
             // interpolate paths
             let ap = a[key];
@@ -892,6 +918,15 @@ function interpolate(a, b) {
     }
 
     return interp;
+}
+
+function interpolate_colors_rgb(ac, bc, interp) {
+    let ic = [];
+    for (let i = 0; i < ac.length; i++) {
+        ic.push((1-interp) * ac[i] + interp * bc[i]);
+    }
+
+    return ic;
 }
 
 function Button(text, pos, callback) {
@@ -1739,7 +1774,9 @@ function Text(text, pos) {
                 }
                 this.text_val += ']';
             } else {
-                this.text_val = ' = ' + val.toString();
+                if (val) {
+                    this.text_val = ' = ' + val.toString();
+                }
             }
         } catch (e) {
             console.log('eval error:');
@@ -2374,7 +2411,7 @@ function Text(text, pos) {
 
             if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
                 // changing text
-                let constrained = Math.min(1, Math.max(0, t_ease));
+                let constrained = constrain(t_ease);
                 ctx.globalAlpha = 1-constrained;
                 this.draw_text(ctx, a);
                 ctx.globalAlpha = constrained;
@@ -2901,6 +2938,12 @@ function Menu(pos) {
         present();
     }));
 
+    this.buttons.push(new Button("hot refresh", {x: 0, y: 0}, function(b) {
+        // Put the object into storage
+        localStorage.setItem('page', state_to_string());
+        location.reload();
+    }));
+
     for (let i = 0; i < colors.length; i++) {
 
         let b = new Button("", {x: 0, y: 0}, function(b) {
@@ -2987,6 +3030,10 @@ function Transition() {
 
 function constrain_frame(f) {
     return Math.max(1, Math.min(num_frames, f));
+}
+
+function constrain(v) {
+    return Math.min(1, Math.max(0, v));
 }
 
 function loop_frame(f) {
@@ -3508,7 +3555,13 @@ window.onload = function() {
         save_state();
     }
 
-    save_state();
+    let previous_page = localStorage.getItem('page');
+    if (previous_page) {
+        str_to_state(previous_page);
+        localStorage.removeItem('page');
+    } else {
+        save_state();
+    }
 
     var fps = 60;
     animate();
