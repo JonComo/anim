@@ -74,19 +74,30 @@ function sigp(x) {
     return math.exp(-x)/math.pow(1+math.exp(-x), 2);
 }
 
-function rgb1ToHex(a) {
-    let c = [Math.round(a[0]*255), 
-            Math.round(a[1]*255),
-            Math.round(a[2]*255)];
-    return rgbToHex(c);
+// http://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+// Maxwell Collard
+function randn_bm() {
+    var u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
+    var v = 1 - Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
 // cache
 var grid_cache = {};
 
 math.import({
-    _: function() {
-        console.log('dot');
+    randn: function() { // no args: random normal, 1 arg shape: dims of matrix to return
+        let N = arguments.length;
+        if (N == 1) {
+            let shape = arguments[0];
+            let m = math.zeros(shape);
+            m = m.map(function (value, index, matrix) {
+                return randn_bm();
+            });
+
+            return m;
+        }
+        return randn_bm();
     },
     block: function() { // exectutes string a for a in actions
         let N = arguments.length;
@@ -150,7 +161,6 @@ math.import({
                 b = cam_data[b][2];
                 return a < b ? 1 : (a > b ? -1 : 1);
             });
-            
             
             for (let j = 0; j < n; j++) {
                 let i = indices[j];
@@ -315,6 +325,13 @@ math.import({
 
 // undo
 var states = [];
+
+function rgb1ToHex(a) {
+    let c = [Math.round(a[0]*255), 
+            Math.round(a[1]*255),
+            Math.round(a[2]*255)];
+    return rgbToHex(c);
+}
 
 window.requestAnimFrame = function() {
     return (
@@ -2474,6 +2491,40 @@ function Camera() {
     this.properties = {};
     this.properties[frame] = copy(this.default_props);
 
+    function generate_ticks() {
+        let ticks = [];
+
+        var R = math.range(-10,10,1);
+        let N = R.size()[0];
+        let m = [];
+        let tick_size = .2;
+
+        for (let i = 0; i < 3; i++) {
+            
+            for (let j = 0; j < N; j++) {
+                let t = R._data[j];
+                if (i == 0) {
+                    m.push([t, -tick_size, 0]);
+                    m.push([t, tick_size, 0]);
+                } else if (i == 1) {
+                    // y axis
+                    m.push([-tick_size, t, 0]);
+                    m.push([tick_size,  t, 0]);
+                } else if (i == 2) {
+                    // z axis
+                    m.push([-tick_size, 0, t]);
+                    m.push([tick_size, 0, t]);
+                }
+            }
+
+            ticks.push(m);
+        }
+
+        return ticks;
+    }
+
+    this.ticks = generate_ticks();
+
     this.mouse_drag = function(evt) {
         if (tool != "camera") {
             return;
@@ -2938,10 +2989,17 @@ function Menu(pos) {
         present();
     }));
 
-    this.buttons.push(new Button("hot refresh", {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button("save local", {x: 0, y: 0}, function(b) {
         // Put the object into storage
         localStorage.setItem('page', state_to_string());
-        location.reload();
+    }));
+
+    this.buttons.push(new Button("load local", {x: 0, y: 0}, function(b) {
+        // Put the object into storage
+        let page = localStorage.getItem('page');
+        if (page && page.length) {
+            str_to_state(page);
+        }
     }));
 
     for (let i = 0; i < colors.length; i++) {
@@ -3088,6 +3146,23 @@ function draw_grid(ctx) {
             ctx.fillText(labels[i], x, y);
         }
     }
+
+    /*
+    for (let i = 0; i < 3; i++) {
+        ctx.fillStyle = colors[i%3];
+        ctx.strokeStyle = colors[i%3];
+
+        let axis = cam.ticks[i];
+        axis = math.matrix(axis);
+        axis = cam.graph_to_screen_mat(axis);
+        let N = axis.length;
+        for (let j = 0; j < N; j += 2) {
+            ctx.beginPath();
+            ctx.moveTo(axis[j][0], axis[j][1]);
+            ctx.lineTo(axis[j+1][0], axis[j+1][1]);
+            ctx.stroke();
+        }
+    } */
 
     ctx.restore();
 }
@@ -3555,13 +3630,7 @@ window.onload = function() {
         save_state();
     }
 
-    let previous_page = localStorage.getItem('page');
-    if (previous_page) {
-        str_to_state(previous_page);
-        localStorage.removeItem('page');
-    } else {
-        save_state();
-    }
+    save_state();
 
     var fps = 60;
     animate();
