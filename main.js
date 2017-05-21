@@ -1682,7 +1682,7 @@ function Text(text, pos) {
             return;
         }
 
-        this.text_val = " = ?";
+        this.text_val = "";
         let expr = "";
 
         if (this.new) {
@@ -1830,7 +1830,7 @@ function Text(text, pos) {
 
                 let new_val = old_val + delta;
                 this.text_val = ' = ' + pretty_round(new_val);
-                this.properties[frame][var_name] = new_val;
+                this.properties[frame]['sval'] = new_val;
 
                 try {
                     parser.set(var_name, new_val);
@@ -2388,8 +2388,8 @@ function Text(text, pos) {
         if (c == "slide" && a && b) {
             // interpolate variable value! oh boy...
             let var_name = this.slide_var_name();
-            let va = this.properties[frame][var_name];
-            let vb = this.properties[next_frame][var_name];
+            let va = this.properties[frame]['sval'];
+            let vb = this.properties[next_frame]['sval'];
             if (!isNaN(va) && !isNaN(vb)) {
                 let new_val = va * (1-t_ease) + vb * (t_ease);
                 this.text_val = " = " + pretty_round(new_val);
