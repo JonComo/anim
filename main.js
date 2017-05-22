@@ -155,9 +155,6 @@ math.import({
                 xin = (x-d2);
                 zin = (z-d2);
                 yout = fn(xin, zin);
-                if (!md[i]) {
-                    console.log('nope for ' + i);
-                }
                 md[i][0] = xin;
                 md[i][1] = yout;
                 md[i][2] = zin;
@@ -325,12 +322,12 @@ math.import({
     graphzy: function(fn) {
         graph(fn, 2, 1, 0);
     },
-    lines: function(points) { // draws line from point to point [[x1,y1,z1], ...]
+    lines: function(points, vector) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
         let N = points.size()[0];
         points = cam.graph_to_screen_mat(points);
 
         ctx.beginPath();
-        let p;
+        let p; let lastp;
         for (let i = 0; i < N; i ++) {
             p = points[i];
             if (i == 0) {
@@ -338,9 +335,27 @@ math.import({
             } else {
                 ctx.lineTo(p[0], p[1]);
             }
+
+            lastp = p;
         }
 
         ctx.stroke();
+
+        if (vector) {
+            
+            // draw an arrow head
+            let a = {x: points[N-1][0], y:points[N-1][1]};
+            let b = {x: points[N-2][0], y:points[N-2][1]};
+
+            let theta = Math.atan2(a.y - b.y, a.x - b.x);
+
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(a.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(a.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
+            ctx.stroke();
+        }
     },
     if: function(string_x, string_a, string_b) { // if x == true then eval string_a else eval string_b
         if (parser.eval(string_x)) {
