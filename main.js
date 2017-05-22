@@ -45,6 +45,7 @@ var new_line;
 var mouse_down = false;
 var ctrl = false;
 var meta = false;
+var shift = false;
 var mouse = {x: 0, y: 0};
 var mouse_last = {x: 0, y: 0};
 var mouse_start = {x: 0, y: 0};
@@ -99,6 +100,9 @@ math.import({
         }
         return randn_bm();
     },
+    labelaxes: function(x,y,z) { // replace default camera axis names
+        cam.axes_names = [x,y,z];
+    },
     block: function() { // exectutes string a for a in actions
         let N = arguments.length;
         for (var i = 0; i < N; i++) {
@@ -114,11 +118,16 @@ math.import({
         return math.matrix(rotation_matrix(rx, ry, rz));
     },
     grid: function(rangex, rangey) { // returns matrix x*y by 2
+        if (!rangey) {
+            rangey = rangex;
+        }
+
         let m = [];
-        xd = rangex._data;
-        yd = rangey._data;
-        for (let i = 0; i < xd.length; i ++) {
-            for (let j = 0; j < yd.length; j ++) {
+        let xd = rangex._data;
+        let yd = rangey._data;
+        let xN = xd.length; let yN = yd.length;
+        for (let i = 0; i < xN; i ++) {
+            for (let j = 0; j < yN; j ++) {
                 m.push([xd[i], yd[j]]);
             }
         }
@@ -1168,11 +1177,9 @@ function Shape(color, path) {
     }
 
     this.mouse_up = function(evt) {
-        if (meta) {
-            return;
+        if (!shift) {
+            this.selected_indices = [];
         }
-
-        this.selected_indices = [];
     }
 
     this.bezier = function(points, off, t) {
@@ -1434,11 +1441,9 @@ function Circle(color, pos) {
     }
 
     this.mouse_up = function(evt) {
-        if (meta) {
-            return;
+        if (!shift) {
+            this.selected = false;
         }
-
-        this.selected = false;
     }
 
     this.draw_ellipse = function(props, ctx) {
@@ -1939,7 +1944,7 @@ function Text(text, pos) {
                 this.cursor = Math.round((mouse.x - p.x)/char_size);
                 this.cursor = Math.min(this.cursor, t.length);
             }
-        } else if (!meta && this.is_selected()) {
+        } else if (!shift && this.is_selected()) {
             this.selected = false;
         }
         
@@ -2975,7 +2980,7 @@ function Menu(pos) {
     this.buttons.push(new Button("camera", {x: 0, y: 0}, function(b) {
         if (tool == "camera") {
             // reset cam
-            cam.properties[frame] = cam.default_props;
+            cam.properties[frame] = copy(cam.default_props);
         }
         tool = "camera";
     }));
@@ -3126,7 +3131,13 @@ function draw_grid(ctx) {
 
     axes = cam.graph_to_screen_mat(axes);
 
-    let labels = ['x', 'y', 'z'];
+    let labels;
+    if (cam.axes_names) {
+        labels = cam.axes_names;
+    } else {
+        labels = ['x', 'y', 'z'];
+    }
+    
     let colors = ["#FF0000", "#00FF00", "#0000FF"];
     
     let N = axes.length;
@@ -3310,9 +3321,12 @@ window.onload = function() {
     menu = new Menu({x: grid_size/4, y: grid_size/2});
     cam = new Camera();
 
+    $(window).focus(function(){
+        meta = false;
+    });
+
     window.onkeydown = function(evt) {
         let key = evt.key;
-
 
         if (presenting && tool != "camera" && key == "Escape") {
             presenting = false;
@@ -3326,6 +3340,10 @@ window.onload = function() {
 
         if (key == "Meta") {
             meta = true;
+        }
+
+        if (key == "Shift") {
+            shift = true;
         }
 
         if (key == "Control") {
@@ -3407,6 +3425,10 @@ window.onload = function() {
         let key = evt.key;
         if (key == "Meta") {
             meta = false;
+        }
+
+        if (key == "Shift") {
+            shift = false;
         }
 
         if (key == "Control") {
