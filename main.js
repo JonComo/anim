@@ -8,9 +8,11 @@ var light = "#ffffff";
 
 var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400"];
 
-var font_small = "16px Courier";
-var font_menu = "20px Courier";
-var font_anim = "26px Menlo";
+var font_small = "26px Courier";
+var font_menu = "30px Courier";
+var font_anim = "40px Menlo";
+
+var scale_factor = 2; // retina
 
 // scatter
 var point_size = 6;
@@ -34,7 +36,7 @@ var debug = false;
 var t_ease = 0;
 var t_steps = 60;
 
-var grid_size = 30;
+var grid_size = 45;
 var mouse_time = 0;
 var mouse_duration = 40;
 
@@ -84,7 +86,60 @@ function randn_bm() {
 }
 
 // cache
-var grid_cache = {};
+var matrix_cache = {};
+function cached(dims) {
+    let s = dims.join('_');
+    let m = matrix_cache[s];
+    if (!m) {
+        m = math.matrix(math.zeros(dims));
+        matrix_cache[s] = m;
+    }
+
+    return m;
+}
+
+// import
+function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
+    let y = 0;
+    let p; let gp;
+    let N = 100;
+    let points = cached([101, 3]);
+    let pd = points._data;
+
+    let i = 0;
+    for (let x = -10; x < 10; x += .2) {
+        y = fn(x);
+        y = Math.max(Math.min(y, 1000), -1000);
+
+        pd[i][d1] = x;
+        pd[i][d2] = y;
+        pd[i][d3] = 0;
+
+        i ++;
+    }
+
+    points = cam.graph_to_screen_mat(points);
+
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+        p = points[i];
+        if (i == 0) {
+            ctx.moveTo(p[0], p[1]);
+        } else {
+            ctx.lineTo(p[0], p[1]);
+        }
+    }
+    ctx.stroke();
+
+    gp = {x: mouse_graph.x, y: fn(mouse_graph.x)};
+    if (ctrl && mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
+        p = cam.graph_to_screen(gp.x, gp.y, 0);
+        ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p[0], p[1] - grid_size);
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], point_size, 0, pi2);
+        ctx.fill();
+    }
+}
 
 math.import({
     randn: function() { // no args: random normal, 1 arg shape: dims of matrix to return
@@ -122,17 +177,24 @@ math.import({
             rangey = rangex;
         }
 
-        let m = [];
         let xd = rangex._data;
         let yd = rangey._data;
         let xN = xd.length; let yN = yd.length;
+        let m = cached([xN*yN, 2]);
+
+        let idx = 0;
+
         for (let i = 0; i < xN; i ++) {
+            
             for (let j = 0; j < yN; j ++) {
-                m.push([xd[i], yd[j]]);
+                let row = m._data[idx];
+                row[0] = xd[i];
+                row[1] = yd[j];
+                idx += 1;
             }
         }
 
-        return math.matrix(m);
+        return m;
     },
     rotate: function(rx, ry, rz) { // rotates the camera
         let rxyz = [rx, ry, rz];
@@ -164,20 +226,21 @@ math.import({
 
             var indices = new Array(n);
             for (var i = 0; i < n; ++i) indices[i] = i;
-
+            
             indices.sort(function(a, b) {
                 a = cam_data[a][2];
                 b = cam_data[b][2];
                 return a < b ? 1 : (a > b ? -1 : 1);
             });
             
+            let col;
             for (let j = 0; j < n; j++) {
                 let i = indices[j];
 
                 let p = points_d[i];
 
                 // constrain
-                let col = color_fn(p)._data;
+                col = color_fn(p)._data;
                 col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
                 ctx.fillStyle = rgbToHex(math.multiply(col, 255));
                 ctx.fillRect(cam_data[i][0]-psize_half, cam_data[i][1]-psize_half, psize, psize);
@@ -189,44 +252,17 @@ math.import({
         }
         ctx.restore();
     },
-    graph: function(fn) { // graphs y=f(x) from -10 to 10
-        let y = 0;
-        let p; let gp;
-        let N = 100;
-        let points = math.zeros([101, 3]);
-
-        let i = 0;
-        for (let x = -10; x < 10; x += .2) {
-            y = fn(x);
-            y = Math.max(Math.min(y, 1000), -1000);
-
-            points[i][0] = x;
-            points[i][1] = y;
-
-            i ++;
-        }
-
-        points = cam.graph_to_screen_mat(math.matrix(points));
-
-        ctx.beginPath();
-        for (let i = 0; i < N; i++) {
-            p = points[i];
-            if (i == 0) {
-                ctx.moveTo(p[0], p[1]);
-            } else {
-                ctx.lineTo(p[0], p[1]);
-            }
-        }
-        ctx.stroke();
-
-        gp = {x: mouse_graph.x, y: fn(mouse_graph.x)};
-        if (ctrl && mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
-            p = cam.graph_to_screen(gp.x, gp.y, 0);
-            ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p[0], p[1] - grid_size);
-            ctx.beginPath();
-            ctx.arc(p[0], p[1], point_size, 0, pi2);
-            ctx.fill();
-        }
+    graph: function(fn) {
+        graph(fn, 0, 1, 2);
+    },
+    graphxy: function(fn) {
+        graph(fn, 0, 1, 2);
+    },
+    graphxz: function(fn) {
+        graph(fn, 0, 2, 1);
+    },
+    graphzy: function(fn) {
+        graph(fn, 2, 1, 0);
     },
     lines: function(points) { // draws line from point to point [[x1,y1,z1], ...]
         let N = points.size()[0];
@@ -253,20 +289,31 @@ math.import({
         }
     },
     list: function(fn, array) { // [fn(v) for v in array]
-        let m = [];
         let N = array.size()[0];
         let d = array._data;
 
+        let v = fn(d[0])._data;
+        // get return size
+        let dims = [N, v.length];
+        
+        let m = cached(dims);
+        let md = m._data;
+
         for (let i = 0; i < N; i++) {
-            let v = fn(d[i]);
-            if (v._data) {
-                m.push(v._data);
+            v = fn(d[i]);
+            let vd = v._data;
+
+            if (vd) {
+                let vN = vd.length;
+                for (let j = 0; j < vN; j++) {
+                    md[i][j] = vd[j];
+                }
             } else {
-                m.push(v);
+                md[i] = v;
             }
         }
 
-        return math.matrix(m);
+        return m;
     },
     view: function(x, p) { // matrix, position: [x, y, z]
 
@@ -776,8 +823,8 @@ function function_before_i(text, c) {
 function get_mouse_pos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
-        x: evt.clientX - rect.left,
-        y: evt.clientY - rect.top
+        x: (evt.clientX - rect.left) * scale_factor,
+        y: (evt.clientY - rect.top) * scale_factor
     };
 }
 
@@ -1284,7 +1331,6 @@ function Shape(color, path) {
         ctx.globalAlpha = props.c[3];
 
         ctx.strokeStyle = rgbToHex(props.c);
-        ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.restore();
@@ -1474,7 +1520,6 @@ function Circle(color, pos) {
         this.draw_ellipse(props, ctx);
         ctx.globalAlpha = props.c[3];
         ctx.strokeStyle = rgbToHex(props.c);
-        ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.restore();
@@ -2578,6 +2623,10 @@ function Camera() {
         this.props = interpolate(a, b);
 
         // transform matrix T
+        if (!this.props.rxyz) {
+            this.props.rxyz = [0, 0, 0];
+        }
+
         let rx = this.props.rxyz[0];
         let ry = this.props.rxyz[1];
         let rz = this.props.rxyz[2];
@@ -3025,7 +3074,7 @@ function Menu(pos) {
 
     for (let i = 0; i < this.buttons.length; i++) {
         let b = this.buttons[i];
-        b.pos = {x: this.pos.x, y: this.pos.y + i * 20};
+        b.pos = {x: this.pos.x, y: this.pos.y + i * grid_size/2};
     }
 
     this.mouse_up = function(evt) {
@@ -3270,13 +3319,16 @@ function draw_cursor() {
 window.onload = function() {
     
     c = document.createElement("canvas");
-    c.width = 1280;
-    c.height = 720;
+    let w = 1280; let h = 720;
+    c.width = w*scale_factor;
+    c.height = h*scale_factor;
+    c.style.width = w;
+    c.style.height = h;
 
     ctx = c.getContext("2d");
     ctx.fillStyle = dark;
     ctx.strokeStyle = dark;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
