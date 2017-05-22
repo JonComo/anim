@@ -19,6 +19,7 @@ var point_size = 6;
 
 var c;
 var ctx;
+var formula_text;
 
 var animator;
 var objs = [];
@@ -43,6 +44,7 @@ var mouse_duration = 40;
 var tool = "select";
 var selecting = false;
 var new_line;
+var text_copied;
 
 var mouse_down = false;
 var ctrl = false;
@@ -1641,7 +1643,8 @@ function Text(text, pos) {
     this.new = true; // loaded or just created
     this.selected = false;
     this.dragged = false;
-    this.cursor = -1;
+    this.cursor = 0;
+    this.cursor_selection = 0;
     this.command = "";
     this.args = [];
     this.cargs = []; // compiled arguments
@@ -1651,14 +1654,71 @@ function Text(text, pos) {
 
     this.select = function() {
         this.selected = true;
-
-        if (this.cursor == -1) {
-            this.cursor = 0;
-        }
+        formula_text.value = this.properties[frame].t;
     }
 
     this.is_selected = function() {
         return this.selected;
+    }
+
+    this.selection_indices = function() {
+        let s = Math.min(this.cursor, this.cursor_selection);
+        let e = Math.max(this.cursor, this.cursor_selection);
+        return {s: s, e: e};
+    }
+
+    this.text_selected = function() {
+        if (!this.is_text_selected()) {
+            return;
+        }
+
+        let props = this.properties[frame];
+        if (!props) {
+            return;
+        }
+
+        let s = this.selection_indices();
+        return props.t.slice(s.s, s.e);
+    }
+
+    this.is_text_selected = function() {
+        return this.cursor != this.cursor_selection;
+    }
+
+    this.replace_selected_text = function(replace) {
+        let props = this.properties[frame];
+        if (!props) {
+            return;
+        }
+
+        let text = props.t;
+        let s = this.selection_indices();
+        let new_text = text.slice(0, s.s) + replace + text.slice(s.e, text.length);
+
+        this.cursor = s.s + replace.length;
+        this.cursor_selection = this.cursor;
+
+        return new_text;
+    }
+
+    this.constrain_cursors = function() {
+        let props = this.properties[frame];
+        if (!props) {
+            return;
+        }
+        let t = props.t;
+        this.cursor = Math.max(0, Math.min(this.cursor, props.t.length));
+        this.cursor_selection = Math.max(0, Math.min(this.cursor_selection, props.t.length));
+    }
+
+    this.char_index_at_x = function(x) {
+        let props = this.properties[frame];
+        if (!props) {
+            return 0;
+        }
+        
+        let idx = Math.round((x - props.p.x)/char_size);
+        return Math.max(0, Math.min(idx, props.t.length));
     }
 
     this.duplicate = function() {
@@ -1779,12 +1839,35 @@ function Text(text, pos) {
             return false;
         }
 
-        if (meta) {
-            return false;
-        }
-
         let key = evt.key;
         let text = this.properties[frame].t;
+
+        if (meta) {
+            if (this.is_selected()) {
+                if (key == "c") {
+                    // copy
+                    text_copied = this.text_selected();
+                    return true;
+                } else if (key == "v") {
+                    // paste
+                    if (this.is_text_selected()) {
+                        // wipe out some text in between
+                        this.change_text(this.replace_selected_text(text_copied));
+                        return true;
+                    } else {
+                        this.properties[frame].t = text.slice(0, this.cursor) + text_copied + text.slice(this.cursor, text.length);
+                        this.cursor += text_copied.length;
+                        return true;
+                    }
+                } else if (key == "a") {
+                    // select all
+                    this.cursor = this.properties[frame].t.length;
+                    this.cursor_selection = 0;
+                    return true;
+                }
+            }
+            return false;
+        }
 
         if (key == "Escape") {
             this.selected = false;
@@ -1803,11 +1886,22 @@ function Text(text, pos) {
             return false;
         }
 
-        if (key == "ArrowRight") {
-            this.cursor += 1;
-        } else if (key == "ArrowLeft") {
-            this.cursor -= 1;
-        } else if (key == "ArrowUp") {
+        if (!shift && this.is_text_selected()) {
+            let s = this.selection_indices();
+            if (key == "ArrowRight") {
+                this.cursor = s.e;
+            } else if (key == "ArrowLeft") {
+                this.cursor = s.s;
+            }
+        } else {
+            if (key == "ArrowRight") {
+                this.cursor += 1;
+            } else if (key == "ArrowLeft") {
+                this.cursor -= 1;
+            }
+        }
+
+        if (key == "ArrowUp") {
             // find text above
             let texts = objs.filter(function(o) {
                 return o.type == "Text";
@@ -1852,24 +1946,26 @@ function Text(text, pos) {
             return true;
         }
 
-        if (key == 'Backspace') {
-            let before = text.slice(0, this.cursor);
-            let after = text.slice(this.cursor, text.length);
-            this.cursor -= 1;
-            
-            text = before.slice(0, before.length-1) + after;
+        if (key == "Backspace") {
+            if (!this.is_text_selected()) {
+                this.cursor_selection = this.cursor - 1;
+                this.constrain_cursors();
+                text = this.replace_selected_text("");
+            } else {
+                text = this.replace_selected_text("");
+            }
         } else if (key.length == 1) {
-            let before = text.slice(0, this.cursor);
-            let after = text.slice(this.cursor, text.length);
-
-            text = before + key + after;
-            this.cursor += 1;
+            // type character
+            if (this.is_text_selected()) {
+                text = this.replace_selected_text(key);
+            } else {
+                text = text.slice(0, this.cursor) + key + text.slice(this.cursor, text.length);
+                this.cursor += 1;
+            }
         }
 
-        if (this.cursor > text.length) {
-            this.cursor = text.length;
-        } else if (this.cursor < 0) {
-            this.cursor = 0;
+        if (!shift || (key != "ArrowRight" && key != "ArrowLeft")) {
+            this.cursor_selection = this.cursor;
         }
 
         this.change_text(text);
@@ -1961,6 +2057,7 @@ function Text(text, pos) {
         let changed = this.properties[frame].t != text;
 
         this.properties[frame].t = text;
+        this.constrain_cursors();
 
         if (changed) {
             this.parse_text(text);
@@ -2017,6 +2114,8 @@ function Text(text, pos) {
             return false;
         }
 
+        this.dragged = true;
+
         if (presenting) {
             if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
 
@@ -2048,16 +2147,22 @@ function Text(text, pos) {
 
                 return true;
             }
+        } else if (this.is_selected()) {
+            let p = props.p;
+            
+            this.cursor = this.char_index_at_x(mouse.x);
+            this.cursor_selection = this.char_index_at_x(mouse_start.x);
+
+            this.constrain_cursors();
         } else if (tool == "select" && (this.near_mouse || this.is_selected())) {
             // shift it
-            this.dragged = true;
             let p = props.p;
             let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
 
             return true;
         }
-
+        
         return false;
     }
 
@@ -2086,12 +2191,14 @@ function Text(text, pos) {
         
         if (this.near_mouse) {
             if (!this.dragged) {
-                this.selected = true;
-                // move cursor
-                let p = this.properties[frame].p;
-                let t = this.properties[frame].t;
-                this.cursor = Math.round((mouse.x - p.x)/char_size);
-                this.cursor = Math.min(this.cursor, t.length);
+                if (this.is_selected()) {
+                    // move cursor
+                    this.cursor = this.char_index_at_x(mouse.x);
+                    this.cursor_selection = this.cursor;
+                    this.constrain_cursors();
+                }
+                
+                this.select();
             }
         } else if (!shift && this.is_selected()) {
             this.selected = false;
@@ -2629,8 +2736,19 @@ function Text(text, pos) {
 
         if (this.is_selected()) {
             // draw cursor
-            ctx.beginPath();
             ctx.fillRect(this.cursor * grid_size/2, -grid_size/2, 2, grid_size);
+            if (this.is_text_selected()) {
+                // draw selection
+                let s = this.selection_indices();
+
+                let xstart = s.s * char_size;
+                let xend = s.e * char_size;
+
+                ctx.save();
+                ctx.globalAlpha = .1;
+                ctx.fillRect(xstart, -grid_size/2, xend-xstart, grid_size);
+                ctx.restore();
+            }
 
             // draw function information
             let fn = function_before_i(i.t, this.cursor);
@@ -3467,12 +3585,22 @@ window.onload = function() {
         objs = objs.concat(text_array_to_objs(arr, false));
     };
 
-    document.getElementById("load_formula_text").onclick = function(evt) {
-        let t = document.getElementById("formula_text").value;
+    formula_text = document.getElementById("formula_text");
+    document.getElementById("load_clear_formula_text").onclick = function(evt) {
+        let t = formula_text.value;
         for (let i = 0; i < objs.length; i++) {
             let obj = objs[i];
             if (typeof obj.change_text == "function" && obj.is_selected()) {
                 obj.change_text(t);
+            }
+        }
+    };
+    document.getElementById("load_insert_formula_text").onclick = function(evt) {
+        let t = formula_text.value;
+        for (let i = 0; i < objs.length; i++) {
+            let obj = objs[i];
+            if (typeof obj.replace_selected_text == "function" && obj.is_selected()) {
+                obj.change_text(obj.replace_selected_text(t));
             }
         }
     };
