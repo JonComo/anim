@@ -142,11 +142,72 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
 }
 
 math.import({
+    surface: function(fn) {
+        let d = 20; let d2 = d/2;
+        let dims = [d*d, 3];
+        let m = cached(dims);
+        let md = m._data;
+
+        let xin = 0; let zin = 0; let yout = 0;
+        let i = 0;
+        for (let x = 0; x < d; x ++) {
+            for (let z = 0; z < d; z ++) {
+                xin = (x-d2);
+                zin = (z-d2);
+                yout = fn(xin, zin);
+                if (!md[i]) {
+                    console.log('nope for ' + i);
+                }
+                md[i][0] = xin;
+                md[i][1] = yout;
+                md[i][2] = zin;
+                i += 1;
+            }
+        }
+
+        md = cam.graph_to_screen_mat(m);
+        
+        i = 0;
+        for (let x = 0; x < d; x ++) {
+            ctx.beginPath();
+            let xc = md[i][0];
+            let yc = md[i][1];
+            ctx.moveTo(xc, yc);
+
+            for (let z = 0; z < d; z ++) {
+                xc = md[i][0];
+                yc = md[i][1];
+
+                ctx.lineTo(xc, yc);
+
+                i += 1;
+            }
+
+            ctx.stroke();
+        }
+
+        for (let i = 0; i < d; i ++) {
+
+            ctx.beginPath();
+            let xc = md[i][0];
+            let yc = md[i][1];
+            ctx.moveTo(xc, yc);
+
+            for (let x = 0; x < dims[0]; x += d) {
+                xc = md[i+x][0];
+                yc = md[i+x][1];
+
+                ctx.lineTo(xc, yc);
+            }
+
+            ctx.stroke();
+        }
+    },
     randn: function() { // no args: random normal, 1 arg shape: dims of matrix to return
         let N = arguments.length;
         if (N == 1) {
             let shape = arguments[0];
-            let m = math.zeros(shape);
+            let m = cached(shape._data);
             m = m.map(function (value, index, matrix) {
                 return randn_bm();
             });
@@ -970,12 +1031,12 @@ function interpolate(a, b) {
             // interpolate paths
             let ap = a[key];
             let bp = b[key];
-            
-            ip = [];
-            for (let i = 0; i < ap.length; i ++) {
+            let N = ap.length;
+            let ip = new Array(N);
+            for (let i = 0; i < N; i ++) {
                 let newp = {x: (1-t_ease) * ap[i].x + t_ease * bp[i].x,
                             y: (1-t_ease) * ap[i].y + t_ease * bp[i].y};
-                ip.push(newp);
+                ip[i] = newp;
             }
 
             interp[key] = ip;
@@ -994,9 +1055,21 @@ function interpolate(a, b) {
 }
 
 function interpolate_colors_rgb(ac, bc, interp) {
-    let ic = [];
-    for (let i = 0; i < ac.length; i++) {
-        ic.push((1-interp) * ac[i] + interp * bc[i]);
+    let same = true;
+    for (let i = 0; i < 3; i++) {
+        if (ac[i] != bc[i]) {
+            same = false;
+        }
+    }
+
+    if (same) {
+        return ac;
+    }
+
+    let ic = new Array(3);
+
+    for (let i = 0; i < 3; i++) {
+        ic[i] = (1-interp) * ac[i] + interp * bc[i];
     }
 
     return ic;
@@ -1321,7 +1394,12 @@ function Shape(color, path) {
             return;
         }
 
-        let props = interpolate(a, b);
+        let props;
+        if (transition.transitioning) {
+            props = interpolate(a, b);
+        } else {
+            props = a;
+        }
 
         ctx.beginPath();
 
@@ -1511,7 +1589,12 @@ function Circle(color, pos) {
             return;
         }
 
-        let props = interpolate(a, b);
+        let props;
+        if (transition.transitioning) {
+            props = interpolate(a, b);
+        } else {
+            props = a;
+        }
 
         ctx.save();
 
@@ -1802,7 +1885,13 @@ function Text(text, pos) {
 
         let a = this.properties[frame];
         let b = this.properties[next_frame];
-        let i = interpolate(a, b);
+
+        let i;
+        if (transition.transitioning) {
+            i = interpolate(a, b);
+        } else {
+            i = a;
+        }
 
         let color = rgbToHex(i.c);
 
@@ -2029,8 +2118,9 @@ function Text(text, pos) {
             size = draw_fn(fn);
         } else {
             let N = t.length;
-            let plevel = 0;
             size = {w: N * char_size, h:char_size*2};
+
+            let plevel = 0;
             for (let i = 0; i < N; i++) {
                 if (i < this.cursor) {
                     if (t[i] in brackets) plevel += brackets[t[i]];
@@ -2039,6 +2129,7 @@ function Text(text, pos) {
                 ctx.fillText(t[i], i * char_size, 0);
             }
             
+            // draw red brackets
             if (this.is_selected() && plevel != 0) {
                 ctx.fillStyle = colors[1];
                 let p2 = plevel;
@@ -2440,7 +2531,13 @@ function Text(text, pos) {
         }
 
         let b = this.properties[next_frame];
-        let i = interpolate(a, b);
+
+        let i;
+        if (transition.transitioning) {
+            i = interpolate(a, b);
+        } else {
+            i = a;
+        }
 
         let pos = i.p;
 
@@ -2620,7 +2717,11 @@ function Camera() {
             return;
         }
 
-        this.props = interpolate(a, b);
+        if (transition.transitioning) {
+            this.props = interpolate(a, b);
+        } else {
+            this.props = a;
+        }
 
         // transform matrix T
         if (!this.props.rxyz) {
