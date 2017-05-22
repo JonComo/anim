@@ -1043,7 +1043,7 @@ function interpolate(a, b) {
             // interpolate colors
             let ac = a[key];
             let bc = b[key];
-            interp[key] = interpolate_colors_rgb(ac, bc, constrain(t_ease));
+            interp[key] = interpolate_colors(ac, bc, constrain(t_ease));
         } else if (key == "path") {
             // interpolate paths
             let ap = a[key];
@@ -1071,9 +1071,10 @@ function interpolate(a, b) {
     return interp;
 }
 
-function interpolate_colors_rgb(ac, bc, interp) {
+function interpolate_colors(ac, bc, interp) {
     let same = true;
-    for (let i = 0; i < 3; i++) {
+    let N = ac.length;
+    for (let i = 0; i < N; i++) {
         if (ac[i] != bc[i]) {
             same = false;
         }
@@ -1083,9 +1084,9 @@ function interpolate_colors_rgb(ac, bc, interp) {
         return ac;
     }
 
-    let ic = new Array(3);
+    let ic = new Array(N);
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < N; i++) {
         ic[i] = (1-interp) * ac[i] + interp * bc[i];
     }
 
@@ -1877,7 +1878,18 @@ function Text(text, pos) {
         if (key == "Enter") {
             this.selected = false;
             this.eval();
-            enter_select();
+            if (shift) {
+                // create a new text below this one
+                let p = this.properties[frame].p;
+                let newT = new Text("", {x: p.x, y: p.y + char_size*2});
+                objs.push(newT);
+                newT.select();
+                save_state();
+
+            } else {
+                enter_select();
+            }
+            
             return false;
         }
 
@@ -2114,7 +2126,9 @@ function Text(text, pos) {
             return false;
         }
 
-        this.dragged = true;
+        if (Math.abs(mouse.x - mouse_start.x) > char_size || Math.abs(mouse.y - mouse_start.y) > char_size) {
+            this.dragged = true;
+        }
 
         if (presenting) {
             if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
@@ -2191,14 +2205,12 @@ function Text(text, pos) {
         
         if (this.near_mouse) {
             if (!this.dragged) {
-                if (this.is_selected()) {
-                    // move cursor
-                    this.cursor = this.char_index_at_x(mouse.x);
-                    this.cursor_selection = this.cursor;
-                    this.constrain_cursors();
-                }
-                
                 this.select();
+
+                // move cursor
+                this.cursor = this.char_index_at_x(mouse.x);
+                this.cursor_selection = this.cursor;
+                this.constrain_cursors();
             }
         } else if (!shift && this.is_selected()) {
             this.selected = false;
@@ -2638,10 +2650,10 @@ function Text(text, pos) {
     }
 
     this.draw_border = function(ctx) {
-        ctx.strokeStyle = dark;
-        ctx.beginPath();
-        let pad = 4;
-        ctx.strokeRect(-pad, -this.size.h/2-pad, this.size.w+pad*2, this.size.h+pad*2);
+        ctx.save();
+        ctx.fillStyle = gray;
+        ctx.fillRect(0, this.size.h/2, this.size.w, 4);
+        ctx.restore();
     }
 
     this.render = function(ctx) {
