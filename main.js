@@ -144,8 +144,36 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
 }
 
 math.import({
+    loop: function(fn, count) { // function of index 0 to count-1
+        if (count <= 0) {
+            return;
+        }
+
+        for (let i = 0; i < count; i ++) {
+            fn(i);
+        }
+    },
+    fifo: function(matrix, value) {
+        matrix = matrix._data;
+        let first = matrix[0];
+        let N = matrix.length;
+        for (let i = 0; i < N-1; i++) {
+            matrix[i] = matrix[i+1];
+        }
+        matrix[N-1] = value;
+
+        return math.matrix(matrix);
+    },
+    push: function(matrix, value) {
+        matrix = matrix._data;
+        matrix.push(value);
+        return math.matrix(matrix);
+    },
+    dims: function(m) {
+        return math.matrix(m.size());
+    },
     surface: function(fn) {
-        let d = 20; let d2 = d/2;
+        let d = 21; let d2 = d/2;
         let dims = [d*d, 3];
         let m = cached(dims);
         let md = m._data;
@@ -154,8 +182,8 @@ math.import({
         let i = 0;
         for (let x = 0; x < d; x ++) {
             for (let z = 0; z < d; z ++) {
-                xin = (x-d2);
-                zin = (z-d2);
+                xin = (x-d2)+.5;
+                zin = (z-d2)+.5;
                 yout = fn(xin, zin);
                 md[i][0] = xin;
                 md[i][1] = yout;
@@ -183,18 +211,15 @@ math.import({
             }
 
             ctx.stroke();
-        }
-
-        for (let i = 0; i < d; i ++) {
 
             ctx.beginPath();
-            let xc = md[i][0];
-            let yc = md[i][1];
+            xc = md[x][0];
+            yc = md[x][1];
             ctx.moveTo(xc, yc);
 
-            for (let x = 0; x < dims[0]; x += d) {
-                xc = md[i+x][0];
-                yc = md[i+x][1];
+            for (let j = 0; j < dims[0]; j += d) {
+                xc = md[x+j][0];
+                yc = md[x+j][1];
 
                 ctx.lineTo(xc, yc);
             }
@@ -215,19 +240,10 @@ math.import({
         }
         return randn_bm();
     },
-    labelaxes: function(x,y,z) { // replace default camera axis names
+    axes: function(x,y,z) { // replace default camera axis names
         cam.axes_names = [x,y,z];
     },
-    block: function() { // exectutes string a for a in actions
-        let N = arguments.length;
-        for (var i = 0; i < N; i++) {
-            let expr = arguments[i];
-            if (typeof expr == "string") {
-                parser.eval(expr);
-            } else {
-                expr();
-            }
-        }
+    block: function() { // exectutes each argument
     },
     rotation: function(rx, ry, rz) { // creates a 3x3 rotation matrix
         return math.matrix(rotation_matrix(rx, ry, rz));
@@ -359,11 +375,11 @@ math.import({
             ctx.stroke();
         }
     },
-    if: function(string_x, string_a, string_b) { // if x == true then eval string_a else eval string_b
-        if (parser.eval(string_x)) {
-            return parser.eval(string_a);
+    if: function(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
+        if (fn_condition()) {
+            fn_a();
         } else {
-            return parser.eval(string_b);
+            fn_b();
         }
     },
     list: function(fn, array) { // [fn(v) for v in array]
@@ -564,7 +580,7 @@ function draw_r(o, p, d) {
             } else if (argc == 2) {
                 // draw on the left and the right
 
-                let center = true; // false -> bottom align
+                let center = false; // false -> bottom align
 
                 let s1 = draw_r(args[0], {x: 0, y: 0}, false);
                 let s2 = draw_r(args[1], {x: 0, y: 0}, false);
@@ -572,19 +588,19 @@ function draw_r(o, p, d) {
                 size.w = s1.w + text.length * char_size + char_pad + s2.w + char_pad;
                 size.h = Math.max(s1.h, s2.h);
 
-                let opp = {x: 0, y: 0};
-                if (center) {
-                    s1 = draw_r(args[0], {x: p.x, y: p.y + size.h/2 - s1.h/2}, d);
-                    opp = {x: p.x + s1.w + char_pad, y: p.y + size.h/2 - char_size};
-                    s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h/2 - s2.h/2}, d);
-                } else {
-                    // bottom align
-                    s1 = draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
-                    opp = {x: p.x + s1.w + char_pad, y: p.y + size.h - char_size*2};
-                    s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h - s2.h}, d);
-                }
-
                 if (d) {
+                    let opp = {x: 0, y: 0};
+                    if (center) {
+                        s1 = draw_r(args[0], {x: p.x, y: p.y + size.h/2 - s1.h/2}, d);
+                        opp = {x: p.x + s1.w + char_pad, y: p.y + size.h/2 - char_size};
+                        s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h/2 - s2.h/2}, d);
+                    } else {
+                        // bottom align
+                        s1 = draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
+                        opp = {x: p.x + s1.w + char_pad, y: p.y + size.h - char_size*2};
+                        s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h - s2.h}, d);
+                    }
+                    
                     if (text == "*") {
                         ctx.beginPath();
                         ctx.arc(opp.x + char_size/2, opp.y+char_size, 3, 0, pi2);
@@ -610,8 +626,10 @@ function draw_r(o, p, d) {
                 size.w = s1.w + s2.w;
                 size.h = s1.h + s2.h - char_size;
 
-                draw_r(a, {x: p.x, y: p.y + size.h - s1.h}, d);
-                draw_r(b, {x: p.x + s1.w, y: p.y}, d);
+                if (d) {
+                    draw_r(a, {x: p.x, y: p.y + size.h - s1.h}, d);
+                    draw_r(b, {x: p.x + s1.w, y: p.y}, d);
+                }
             }
         } else if (text == "/") {
             if (argc == 2) {
@@ -822,7 +840,7 @@ function draw_r(o, p, d) {
 
             if (d) {
                 ctx.save();
-                ctx.translate(p.x, p.y + s1.h/2 - char_size);
+                ctx.translate(p.x, p.y + s1.h - char_size*2);
                 draw_simple(text);
                 ctx.restore();
             }
@@ -859,13 +877,13 @@ function draw_simple(text) {
     return text.length * char_size;
 }
 
-let cache = {};
+let cache_fn = {};
 function draw_fn(fn) {
 
     let tree;
 
-    if (cache[fn]) {
-        tree = cache[fn];
+    if (cache_fn[fn]) {
+        tree = cache_fn[fn];
     } else {
         try {
             tree = math.parse(fn);
@@ -874,7 +892,7 @@ function draw_fn(fn) {
         }
 
         if (tree) {
-            cache[fn] = tree;
+            cache_fn[fn] = tree;
         }
     }
 
@@ -2024,7 +2042,15 @@ function Text(text, pos) {
 
         try {
             let val = c.eval(parser.scope);
+
             let type = typeof val;
+            
+            if (type == "number" && this.command == "i") {
+                // save value in properties
+                this.properties[frame]['ival'] = val;
+            }
+
+            // set display text
             if (type == "number") {
                 if (ctrl) {
                     // nothing
@@ -2035,23 +2061,7 @@ function Text(text, pos) {
                 
             } else if (type == "object" && val._data && val._data.length != 0) {
                 // prob a matrix, render dims
-                let d = val._data;
-                let dims = [];
-
-                while (d.length) {
-                    dims.push(d.length);
-                    d = d[0];
-                }
-
-                this.text_val = ' = [';
-                let N = dims.length;
-                for (let i = 0; i < N; i++) {
-                    this.text_val += dims[i];
-                    if (i != N - 1) {
-                        this.text_val += ', ';
-                    }
-                }
-                this.text_val += ']';
+                this.text_val = val.size();
             } else {
                 if (val) {
                     this.text_val = ' = ' + val.toString();
@@ -2114,8 +2124,8 @@ function Text(text, pos) {
         this.near_mouse = this.point_in_text_rect(mouse);
     };
 
-    this.slide_var_name = function() {
-        let var_name = this.args[0];
+    this.var_name = function() {
+        let var_name = this.args[0].split('=')[0];
         var_name = var_name.replace(/\s+/g, '');
         return var_name;
     }
@@ -2134,7 +2144,7 @@ function Text(text, pos) {
             if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
 
                 // change the value of the variable
-                let var_name = this.slide_var_name();
+                let var_name = this.var_name();
 
                 let old_val = 0;
                 try {
@@ -2148,10 +2158,12 @@ function Text(text, pos) {
                 }
 
                 let delta = (mouse.x - mouse_last.x)/grid_size;
+                if (meta) {
+                    delta *= .01;
+                }
 
                 let new_val = old_val + delta;
                 this.text_val = ' = ' + pretty_round(new_val);
-                this.properties[frame]['sval'] = new_val;
 
                 try {
                     parser.set(var_name, new_val);
@@ -2161,13 +2173,14 @@ function Text(text, pos) {
 
                 return true;
             }
-        } else if (this.is_selected()) {
+        } else if (this.is_selected() && this.near_mouse) {
             let p = props.p;
             
             this.cursor = this.char_index_at_x(mouse.x);
             this.cursor_selection = this.char_index_at_x(mouse_start.x);
 
             this.constrain_cursors();
+            this.dragged = true;
         } else if (tool == "select" && (this.near_mouse || this.is_selected())) {
             // shift it
             let p = props.p;
@@ -2181,6 +2194,10 @@ function Text(text, pos) {
     }
 
     this.mouse_up = function(evt) {
+        if (this.hidden()) {
+            return false;
+        }
+
         if (presenting) {
             if (this.near_mouse) {
                 // clicked, eval text
@@ -2304,6 +2321,20 @@ function Text(text, pos) {
         this.command = "";
         this.args = [];
         this.cargs = [];
+
+        if (text && text.length) {
+            // anonymous functions
+            let split = text.split("@");
+            let new_t = "";
+            let N = split.length;
+            for (let i = 0; i < N-1; i++) {
+                new_t += split[i] + "anon"+guid().slice(0,8)+"()=";
+            }
+            new_t += split[N-1]
+            text = new_t;
+        }
+
+        console.log(text);
 
         if (!text) {
             return;
@@ -2653,6 +2684,7 @@ function Text(text, pos) {
         ctx.save();
         ctx.fillStyle = gray;
         ctx.fillRect(0, this.size.h/2, this.size.w, 4);
+        ctx.fillRect(this.size.w/2-2,this.size.h/2+2,4,12);
         ctx.restore();
     }
 
@@ -2671,6 +2703,10 @@ function Text(text, pos) {
             i = interpolate(a, b);
         } else {
             i = a;
+        }
+
+        if (i.c[3] == 0) {
+            return;
         }
 
         let pos = i.p;
@@ -2720,11 +2756,11 @@ function Text(text, pos) {
             }
         }
 
-        if (c == "slide" && a && b) {
+        if (c == "i" && a && b) {
             // interpolate variable value! oh boy...
-            let var_name = this.slide_var_name();
-            let va = this.properties[frame]['sval'];
-            let vb = this.properties[next_frame]['sval'];
+            let var_name = this.var_name();
+            let va = this.properties[frame]['ival'];
+            let vb = this.properties[next_frame]['ival'];
             if (!isNaN(va) && !isNaN(vb)) {
                 let new_val = va * (1-t_ease) + vb * (t_ease);
                 this.text_val = " = " + pretty_round(new_val);
