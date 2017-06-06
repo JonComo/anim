@@ -2950,7 +2950,9 @@ function Camera() {
                 m = 1;
             } */
 
-            p[i] = [x * this.props.w * grid_size + this.props.p.x, -y * this.props.h * grid_size + this.props.p.y, z];
+            p[i][0] = x * this.props.w * grid_size + this.props.p.x;
+            p[i][1] = -y * this.props.h * grid_size + this.props.p.y;
+            p[i][2] = z;
         }
 
         return p;
