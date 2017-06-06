@@ -28,27 +28,17 @@ Add objects:
 
 Select objects with the select tool ( has rectangular selection ).
 
-Graph a function by typing
-
-graph: x
-
-In a text object.
-
 You can define functions in text objects by just writing them.
 
 f(x) = x^(2)
 
 Then graph it:
 
-graph: f(x)
-
-you can draw the tangent like so:
-
-tangent: f(x)
+graph(f)
 
 You can write expressions that are evaluated each frame by writing:
 
-expr: x = 2
+e: x = 2
 
 A counter:
 
@@ -56,7 +46,7 @@ A counter:
   x = 1
 
   Then in another write:
-  expr: x = x + 1
+  e: x = x + 1
   
 You can interact with a variable by using a slider:
 
