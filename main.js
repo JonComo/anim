@@ -6,7 +6,7 @@ var graph_guide = "#aaaaaa";
 var dark = "#000000";
 var light = "#ffffff";
 
-var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400"];
+var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", gray];
 
 var font_small = "26px Courier";
 var font_menu = "30px Courier";
@@ -581,24 +581,28 @@ function draw_r(o, p, d) {
                 // draw on the left and the right
 
                 let center = false; // false -> bottom align
+                let pad2 = char_pad * 2;
+                if (text == "*") {
+                    pad2 = 0;
+                }
 
                 let s1 = draw_r(args[0], {x: 0, y: 0}, false);
                 let s2 = draw_r(args[1], {x: 0, y: 0}, false);
 
-                size.w = s1.w + text.length * char_size + char_pad + s2.w + char_pad;
+                size.w = s1.w + text.length * char_size + 2*pad2 + s2.w;
                 size.h = Math.max(s1.h, s2.h);
 
                 if (d) {
                     let opp = {x: 0, y: 0};
                     if (center) {
                         s1 = draw_r(args[0], {x: p.x, y: p.y + size.h/2 - s1.h/2}, d);
-                        opp = {x: p.x + s1.w + char_pad, y: p.y + size.h/2 - char_size};
-                        s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h/2 - s2.h/2}, d);
+                        opp = {x: p.x + s1.w + pad2, y: p.y + size.h/2 - char_size};
+                        s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*char_size + pad2, y: p.y + size.h/2 - s2.h/2}, d);
                     } else {
                         // bottom align
                         s1 = draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
-                        opp = {x: p.x + s1.w + char_pad, y: p.y + size.h - char_size*2};
-                        s2 = draw_r(args[1], {x: p.x + s1.w + char_pad + text.length*char_size + char_pad, y: p.y + size.h - s2.h}, d);
+                        opp = {x: p.x + s1.w + pad2, y: p.y + size.h - char_size*2};
+                        s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*char_size + pad2, y: p.y + size.h - s2.h}, d);
                     }
                     
                     if (text == "*") {
@@ -872,7 +876,13 @@ function draw_r(o, p, d) {
 
 function draw_simple(text) {
     for (let i = 0; i < text.length; i++) {
-        ctx.fillText(text[i], i * char_size, 0);
+        if (text[i] == "*") {
+            ctx.beginPath();
+            ctx.arc(i * char_size + char_size/2, 0, 3, 0, pi2);
+            ctx.fill();
+        } else {
+            ctx.fillText(text[i], i * char_size, 0);
+        }
     }
     return text.length * char_size;
 }
@@ -2246,13 +2256,8 @@ function Text(text, pos) {
         return false;
     }
 
-    this.draw_text = function(ctx, props) {
-        let t = props.t;
+    this.draw_text = function(ctx, t) {
         let size;
-
-        let c = rgbToHex(props.c);
-        ctx.fillStyle = c;
-        ctx.strokeStyle = ctx.fillStyle;
 
         let draw_val = false;
         if (this.command == "e" || this.command == "slide") {
@@ -2264,23 +2269,24 @@ function Text(text, pos) {
             draw_val = true;
         }
 
-        if (!this.is_selected() && this.command == "f") {
+        if (this.command == "f" && !this.is_selected()) {
             let fn = t.slice(this.command.length+1); //+1 for semicolon
             size = draw_fn(fn);
         } else {
             let N = t.length;
             size = {w: N * char_size, h:char_size*2};
 
+            size = {w:draw_simple(t), h:char_size*2};
+
             let plevel = 0;
             for (let i = 0; i < N; i++) {
                 if (i < this.cursor) {
                     if (t[i] in brackets) plevel += brackets[t[i]];
                 }
-                
-                ctx.fillText(t[i], i * char_size, 0);
             }
             
             // draw red brackets
+            ctx.save();
             if (this.is_selected() && plevel != 0) {
                 ctx.fillStyle = colors[1];
                 let p2 = plevel;
@@ -2303,9 +2309,8 @@ function Text(text, pos) {
                     }
                 }
             }
+            ctx.restore();
         }
-
-        ctx.fillStyle = c;
 
         if (draw_val) {
             ctx.save();
@@ -2743,16 +2748,38 @@ function Text(text, pos) {
             ctx.rotate(i.r);
             ctx.scale(i.w, i.h);
 
-            if (b && b.c[3] != 0 && a.t != b.t && transition.transitioning) {
+            if (!b) {
+                b = a;
+            }
+
+            let fading_in = (a.c[3] == 0 && b.c[3] == 1);
+            let fading_out = (a.c[3] == 1 && b.c[3] == 0);
+
+            let at = a.t;
+            let bt = b.t;
+
+            if (transition.transitioning) {
+                if (fading_in) {
+                    at = b.t;
+                    bt = b.t;
+                } else if (fading_out) {
+                    at = a.t;
+                    bt = a.t;
+                }
+            }
+
+            let text_different = at != bt;
+
+            if (text_different && transition.transitioning) {
                 // changing text
                 let constrained = constrain(t_ease);
                 ctx.globalAlpha = 1-constrained;
-                this.draw_text(ctx, a);
+                this.draw_text(ctx, a.t);
                 ctx.globalAlpha = constrained;
-                this.draw_text(ctx, b);
+                this.draw_text(ctx, b.t);
             } else {
                 ctx.globalAlpha = i.c[3];
-                this.size = this.draw_text(ctx, i);
+                this.size = this.draw_text(ctx, at);
             }
         }
 
@@ -3255,12 +3282,22 @@ function Menu(pos) {
         }
     }));
 
-    this.buttons.push(new Button("clear props", {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button("del props all", {x: 0, y: 0}, function(b) {
         let N = objs.length;
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
             if (typeof obj.clear_all_props == "function") {
                 obj.clear_all_props();
+            }
+        }
+    }));
+
+    this.buttons.push(new Button("del props f-1", {x: 0, y: 0}, function(b) {
+        let N = objs.length;
+        for (let i = 0; i < N; i++) {
+            let obj = objs[i];
+            if (obj.properties && obj.properties[frame-1]) {
+                delete obj.properties[frame-1];
             }
         }
     }));
@@ -3356,7 +3393,7 @@ function Menu(pos) {
 
     for (let i = 0; i < this.buttons.length; i++) {
         let b = this.buttons[i];
-        b.pos = {x: this.pos.x, y: this.pos.y + i * grid_size/2};
+        b.pos = {x: this.pos.x, y: this.pos.y + i * grid_size*.6};
     }
 
     this.mouse_up = function(evt) {
