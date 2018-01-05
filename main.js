@@ -104,12 +104,12 @@ function cached(dims) {
 function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     let y = 0;
     let p; let gp;
-    let N = 100;
-    let points = cached([101, 3]);
+    let N = 400;
+    let points = cached([N+1, 3]);
     let pd = points._data;
 
     let i = 0;
-    for (let x = -10; x < 10; x += .2) {
+    for (let x = -10; x < 10; x += .05) {
         y = fn(x);
         y = Math.max(Math.min(y, 1000), -1000);
 
@@ -2050,6 +2050,8 @@ function Text(text, pos) {
         ctx.fillStyle = color;
         ctx.globalAlpha = i.c[3];
 
+        console.log(this.args);
+
         try {
             let val = c.eval(parser.scope);
 
@@ -2071,7 +2073,7 @@ function Text(text, pos) {
                 
             } else if (type == "object" && val._data && val._data.length != 0) {
                 // prob a matrix, render dims
-                this.text_val = val.size();
+                this.text_val = "-1";
             } else {
                 if (val) {
                     this.text_val = ' = ' + val.toString();
@@ -2151,37 +2153,41 @@ function Text(text, pos) {
         }
 
         if (presenting) {
-            if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
+            if (this.args && this.args[0]._data) {
 
-                // change the value of the variable
-                let var_name = this.var_name();
+            } else {
+                if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
 
-                let old_val = 0;
-                try {
-                    old_val = parser.eval(var_name);
-                } catch(e) {
+                    // change the value of the variable
+                    let var_name = this.var_name();
 
+                    let old_val = 0;
+                    try {
+                        old_val = parser.eval(var_name);
+                    } catch(e) {
+
+                    }
+
+                    if (isNaN(old_val)) {
+                        old_val = 0;
+                    }
+
+                    let delta = (mouse.x - mouse_last.x)/grid_size;
+                    if (meta) {
+                        delta *= .01;
+                    }
+
+                    let new_val = old_val + delta;
+                    this.text_val = ' = ' + pretty_round(new_val);
+
+                    try {
+                        parser.set(var_name, new_val);
+                    } catch (error) {
+                        console.log('slide error: ' + error);
+                    }
+
+                    return true;
                 }
-
-                if (isNaN(old_val)) {
-                    old_val = 0;
-                }
-
-                let delta = (mouse.x - mouse_last.x)/grid_size;
-                if (meta) {
-                    delta *= .01;
-                }
-
-                let new_val = old_val + delta;
-                this.text_val = ' = ' + pretty_round(new_val);
-
-                try {
-                    parser.set(var_name, new_val);
-                } catch (error) {
-                    console.log('slide error: ' + error);
-                }
-
-                return true;
             }
         } else if (this.is_selected() && this.near_mouse) {
             let p = props.p;
@@ -2311,6 +2317,7 @@ function Text(text, pos) {
             }
             ctx.restore();
         }
+
 
         if (draw_val) {
             ctx.save();
@@ -3878,8 +3885,8 @@ window.onload = function() {
         mouse_grid = constrain_to_grid(mouse);
         mouse_graph = cam.screen_to_graph(mouse);
 
-        parser.set('x', mouse_graph.x);
-        parser.set('y', mouse_graph.y);
+        parser.set('_x', mouse_graph.x);
+        parser.set('_y', mouse_graph.y);
 
         if (mouse_down) {
             let captured = false;
@@ -4044,7 +4051,7 @@ window.onload = function() {
             requestAnimationFrame(animate);
         }, 1000/fps);
 
-        parser.set('t', t);
+        parser.set('_frame', t);
 
         if (presenting) {
             mouse_time -= 1;

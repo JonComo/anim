@@ -23,6 +23,42 @@
         <h3>Selected objects:</h3>
         <textarea rows="4" cols="50" id="selected_objects_text"></textarea>
         <input type="submit" id="load_to_frame" value="Load to frame">
-        
+        <h2>Help:</h2>
+        <h3>THINGS TO DO WITH TEXT BOXES</h3>
+        "x=5" to assign a value to a variable<br>
+        "e:x=5" to repeatedly update x every frame<br>
+        "f(x)=sin(x)" to define a function<br>
+        "e:expression" to run expression each frame<br>
+        "slide:var_name" then present, and you can slide the box to change the variable value<br>
+        "e:graph(function_name)" to graph function_name(x)<br>
+        <h3>ANIMATION BASICS</h3>
+        create a text or circle or drawing<br>
+        change frames with the left and right arrow keys<br>
+        change the text or object's properties on the new frame<br>
+        enter presentation mode by hitting p<br>
+        left and right arrow keys will show animated transition<br>
+        escape presentation mode with ESC key<br>
+        <h3>CONTROL CAMERA</h3>
+        click camera or hit "c"<br>
+        click and drag to pan<br>
+        cmd+click and drag to rotate<br>
+        the camera will transition smoothly frame to frame<br>
+        <h3>FILES</h3>
+        save local will overwrite a local file in browser's cache<br>
+        load local clears your work and loads the cache file<br>
+        to save: enter a filename above and hit "save file"<br>
+        to load: hit load file and select your saved file<br>
+        as you edit if you make a mistake you can undo by hitting ctrl+z<br>
+        <h3>MORE FUNCTIONS</h3>
+        "L=range(a,b,c)" create array of values from a to b increment c<br>
+        "e:view(L, [x,y,z])" print matrix elements at position [x,y,z]<br>
+        "e:surface(func)" to graph y=func(x,z) as a grid of points<br>
+        "e:scatter(A)" A is n by 3 matrix of points to be scatter plotted<br>
+        "A=randn([a,b,c,...])" to create matrix of random normal values<br>
+        "A[1,2]" to index into matrix A with 1 based indexing, not zero! :-(<br>
+        <h3>SPECIAL VALUES</h3>
+        _x mouse x position, _y mouse y position<br>
+        _frame current frame (counts up indefinitely)<br>
+        _t frame transition from 0 to 1, _tt eased transition<br>
     </body>
 </html>
