@@ -11,6 +11,10 @@ var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", gray];
 var font_small = "26px Courier";
 var font_menu = "30px Courier";
 var font_anim = "40px Menlo";
+var isMac = navigator.platform.toUpperCase().indexOf('MAC')>=0;
+if (!isMac) {
+    font_anim = "40px Courier New";
+}
 
 var scale_factor = 2; // retina
 
