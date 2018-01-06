@@ -1871,7 +1871,7 @@ function Text(text, pos) {
         let key = evt.key;
         let text = this.properties[frame].t;
 
-        if (meta) {
+        if (meta || ctrl) {
             if (this.is_selected()) {
                 if (key == "c") {
                     // copy
@@ -2173,7 +2173,7 @@ function Text(text, pos) {
                     }
 
                     let delta = (mouse.x - mouse_last.x)/grid_size;
-                    if (meta) {
+                    if (meta || ctrl) {
                         delta *= .01;
                     }
 
@@ -2894,7 +2894,7 @@ function Camera() {
 
         let props = this.properties[frame];
 
-        if (meta) {
+        if (meta || ctrl) {
             // rotate
             let r = props.rxyz;
             r = [r[0] + (mouse.y - mouse_last.y)/100, r[1] + (mouse.x - mouse_last.x)/100, 0];
@@ -3713,6 +3713,7 @@ window.onload = function() {
 
     $(window).focus(function(){
         meta = false;
+        ctrl = false;
     });
 
     window.onkeydown = function(evt) {
@@ -3752,12 +3753,12 @@ window.onload = function() {
             }
         }
 
-        if (key == "z" && meta) {
+        if (key == "z" && (meta || ctrl)) {
             undo();
             return;
         }
 
-        if (key == "p" && ctrl) {
+        if ((meta || ctrl) && key == "Enter") {
             present();
             return true;
         }
