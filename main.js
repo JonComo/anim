@@ -2054,7 +2054,7 @@ function Text(text, pos) {
         ctx.fillStyle = color;
         ctx.globalAlpha = i.c[3];
 
-        console.log(this.args);
+        //console.log(this.args);
 
         try {
             let val = c.eval(parser.scope);
@@ -2350,7 +2350,7 @@ function Text(text, pos) {
             text = new_t;
         }
 
-        console.log(text);
+        //console.log(text);
 
         if (!text) {
             return;
