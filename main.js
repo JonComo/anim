@@ -379,6 +379,32 @@ math.import({
             ctx.stroke();
         }
     },
+    vect: function(x, y) {
+        a = cam.graph_to_screen(0, 0, 0);
+        b = cam.graph_to_screen(x, y, 0);
+        
+        a = {x: a[0], y: a[1]};
+        b = {x: b[0], y: b[1]};
+        
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+
+        let temp = b
+        b = a
+        a = temp
+        
+        // draw an arrow head
+        let theta = Math.atan2(a.y - b.y, a.x - b.x);
+
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(a.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(a.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
+        ctx.stroke();
+    },
     if: function(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
         if (fn_condition()) {
             fn_a();
