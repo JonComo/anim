@@ -379,9 +379,16 @@ math.import({
             ctx.stroke();
         }
     },
-    vect: function(x, y) {
+    vect: function(p) {
+        x = p._data[0];
+        y = p._data[1];
+        z = 0
+        if (p.size()[0] == 3) {
+            z = p._data[2];
+        }
+
         a = cam.graph_to_screen(0, 0, 0);
-        b = cam.graph_to_screen(x, y, 0);
+        b = cam.graph_to_screen(x, y, z);
         
         a = {x: a[0], y: a[1]};
         b = {x: b[0], y: b[1]};
