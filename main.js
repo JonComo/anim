@@ -147,9 +147,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     }
 }
 
-function para(f, g, h, tmin, tmax) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax
-    let y = 0;
-    let p; let gp;
+function para(r, tmin, tmax) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax
     let N = 300;
     let points = cached([N+1, 3]);
     let pd = points._data;
@@ -157,19 +155,19 @@ function para(f, g, h, tmin, tmax) { // graphs x=f(t) y=g(t) z=h(t) from tmin to
     let dt = (tmax-tmin)/N;
 
     let i = 0;
-    for (let t = tmin; t < tmax; t += dt) {
-        x = f(t);
-        y = g(t);
-        z = h(t);
+    let data;
 
-        x = Math.max(Math.min(x, 1000), -1000);
-        y = Math.max(Math.min(y, 1000), -1000);
-        z = Math.max(Math.min(z, 1000), -1000);
+    for (let t = tmin; t <= tmax; t += dt) {
+        data = r(t)._data;
 
-        pd[i][0] = x;
-        pd[i][1] = y;
-        pd[i][2] = z;
+        data[0] = Math.max(Math.min(data[0], 1000), -1000);
+        data[1] = Math.max(Math.min(data[1], 1000), -1000);
+        data[2] = Math.max(Math.min(data[2], 1000), -1000);
 
+        pd[i][0] = data[0];
+        pd[i][1] = data[1];
+        pd[i][2] = data[2];
+        
         i ++;
     }
 
@@ -332,7 +330,7 @@ math.import({
         let n = size[0];
         let points_d = points._data;
 
-        let psize = 4;
+        let psize = 8;
         if (arguments.length >= 2) {
             psize = arguments[1];
         }
@@ -372,11 +370,39 @@ math.import({
         }
         ctx.restore();
     },
+    point: function(a, size, color) { // point [x,y,z] size color[r,g,b]
+        let psize = 8;
+        if (size){ 
+            psize = size;
+        }
+
+        if (psize <= 0) {
+            return;
+        }
+
+        col = [0,0,0];
+        if (color) {
+            col = color._data;
+            col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
+        }
+
+        let cam_data = cam.graph_to_screen_mat(math.matrix([a]));
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+        ctx.strokeStyle = ctx.fillStyle;
+        ctx.arc(cam_data[0][0], cam_data[0][1], psize, 0, pi2);
+        ctx.stroke();
+        ctx.globalAlpha = .8;
+        ctx.fill();
+        ctx.restore();
+    },
     graph: function(fn) {
         graph(fn, 0, 1, 2);
     },
-    para: function(f, g, h, tmin, tmax) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
-        para(f, g, h, tmin, tmax);
+    para: function(r, tmin, tmax) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
+        para(r, tmin, tmax);
     },
     graphxy: function(fn) {
         graph(fn, 0, 1, 2);
@@ -384,8 +410,8 @@ math.import({
     graphxz: function(fn) {
         graph(fn, 0, 2, 1);
     },
-    graphzy: function(fn) {
-        graph(fn, 2, 1, 0);
+    graphyz: function(fn) {
+        graph(fn, 1, 2, 0);
     },
     lines: function(points, vector) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
         let N = points.size()[0];
@@ -2997,7 +3023,10 @@ function Camera() {
         if (meta || ctrl) {
             // rotate
             let r = props.rxyz;
-            r = [r[0] + (mouse.y - mouse_last.y)/100, r[1] + (mouse.x - mouse_last.x)/100, 0];
+            a = r[1] - (mouse.y - mouse_last.y)/100;
+            b = r[2] - (mouse.x - mouse_last.x)/100;
+
+            r = [0, a, b];
             props.rxyz = r;
         } else {
             // translate
@@ -3038,7 +3067,6 @@ function Camera() {
             this.props = a;
         }
 
-        // transform matrix T
         if (!this.props.rxyz) {
             this.props.rxyz = [0, 0, 0];
         }
@@ -3074,9 +3102,9 @@ function Camera() {
 
         let x; let y; let z; let m;
         for (let i = 0; i < n; i++) {
-            x = p[i][0];
-            y = p[i][1];
-            z = p[i][2];
+            x = p[i][1];
+            y = p[i][2];
+            z = p[i][0];
 
             /*
             m = z/20+1;
@@ -3986,8 +4014,8 @@ window.onload = function() {
         mouse_grid = constrain_to_grid(mouse);
         mouse_graph = cam.screen_to_graph(mouse);
 
-        parser.set('_x', mouse_graph.x);
-        parser.set('_y', mouse_graph.y);
+        parser.set('_y', mouse_graph.x);
+        parser.set('_z', mouse_graph.y);
 
         if (mouse_down) {
             let captured = false;
