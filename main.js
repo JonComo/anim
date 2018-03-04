@@ -2944,7 +2944,7 @@ function Text(text, pos) {
 
         if (this.is_selected()) {
             // draw cursor
-            ctx.fillRect(this.cursor * grid_size/2, -grid_size/2, 2, grid_size);
+            ctx.fillRect(this.cursor * char_size, -grid_size/2, 2, grid_size);
             if (this.is_text_selected()) {
                 // draw selection
                 let s = this.selection_indices();
@@ -3787,6 +3787,7 @@ window.onload = function() {
     ctx.lineWidth = 4;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
 
     var content = document.getElementById("content");
     content.appendChild(c);
