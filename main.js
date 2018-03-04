@@ -379,15 +379,39 @@ math.import({
             ctx.stroke();
         }
     },
-    vect: function(p) {
-        x = p._data[0];
-        y = p._data[1];
-        z = 0
-        if (p.size()[0] == 3) {
-            z = p._data[2];
+    vect: function(a, b) {
+        _x = 0;
+        _y = 0;
+        _z = 0;
+
+        x = 0;
+        y = 0;
+        z = 0;
+
+        if (!b) {
+            x = a._data[0];
+            y = a._data[1];
+            
+            if (a.size()[0] == 3) {
+                z = a._data[2];
+            }
+        } else {
+            _x = a._data[0];
+            _y = a._data[1];
+            
+            if (a.size()[0] == 3) {
+                _z = a._data[2];
+            }
+
+            x = b._data[0];
+            y = b._data[1];
+            
+            if (b.size()[0] == 3) {
+                z = b._data[2];
+            }
         }
 
-        a = cam.graph_to_screen(0, 0, 0);
+        a = cam.graph_to_screen(_x, _y, _z);
         b = cam.graph_to_screen(x, y, z);
         
         a = {x: a[0], y: a[1]};
@@ -397,19 +421,15 @@ math.import({
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
         ctx.stroke();
-
-        let temp = b
-        b = a
-        a = temp
         
         // draw an arrow head
-        let theta = Math.atan2(a.y - b.y, a.x - b.x);
+        let theta = Math.atan2(b.y - a.y, b.x - a.x);
 
         ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(a.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(a.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, b.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, b.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
         ctx.stroke();
     },
     if: function(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
