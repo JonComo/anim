@@ -2199,7 +2199,7 @@ function Text(text, pos) {
                 
             } else if (type == "object" && val._data && val._data.length != 0) {
                 // prob a matrix, render dims
-                this.text_val = "-1";
+                this.text_val = "";
             } else {
                 if (val) {
                     this.text_val = ' = ' + val.toString();
