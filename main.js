@@ -147,6 +147,46 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     }
 }
 
+function para(f, g, h, tmin, tmax) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax
+    let y = 0;
+    let p; let gp;
+    let N = 300;
+    let points = cached([N+1, 3]);
+    let pd = points._data;
+
+    let dt = (tmax-tmin)/N;
+
+    let i = 0;
+    for (let t = tmin; t < tmax; t += dt) {
+        x = f(t);
+        y = g(t);
+        z = h(t);
+
+        x = Math.max(Math.min(x, 1000), -1000);
+        y = Math.max(Math.min(y, 1000), -1000);
+        z = Math.max(Math.min(z, 1000), -1000);
+
+        pd[i][0] = x;
+        pd[i][1] = y;
+        pd[i][2] = z;
+
+        i ++;
+    }
+
+    points = cam.graph_to_screen_mat(points);
+
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+        p = points[i];
+        if (i == 0) {
+            ctx.moveTo(p[0], p[1]);
+        } else {
+            ctx.lineTo(p[0], p[1]);
+        }
+    }
+    ctx.stroke();
+}
+
 math.import({
     loop: function(fn, count) { // function of index 0 to count-1
         if (count <= 0) {
@@ -334,6 +374,9 @@ math.import({
     },
     graph: function(fn) {
         graph(fn, 0, 1, 2);
+    },
+    para: function(f, g, h, tmin, tmax) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
+        para(f, g, h, tmin, tmax);
     },
     graphxy: function(fn) {
         graph(fn, 0, 1, 2);
