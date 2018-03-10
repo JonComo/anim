@@ -2894,12 +2894,12 @@ function Camera() {
     function generate_ticks() {
         let ticks = [];
 
-        var R = math.range(-10,10,1);
+        var R = math.range(-10,11,1);
         let N = R.size()[0];
         let m = [];
-        let tick_size = .2;
+        let tick_size = 10;
 
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             
             for (let j = 0; j < N; j++) {
                 let t = R._data[j];
@@ -3402,6 +3402,11 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("camera", {x: 0, y: 0}, function(b) {
+        if (tool == "camera") {
+            // reset the camera rotation
+            cam.properties[frame].rxyz = [0,0,0];
+            cam.properties[frame].p = cam.default_props.p;
+        }
         tool = "camera";
     }));
 
@@ -3533,14 +3538,38 @@ function loop_frame(f) {
     return f;
 }
 
-function draw_grid(ctx) {
+function draw_axes(ctx) {
     if (!cam.R) {
         return;
     }
 
     ctx.save();
+
+
+    // draw gridlines
+    
+    ctx.strokeStyle = "#000000";
+    ctx.globalAlpha = 0.05;
+
+    let axis = cam.ticks[0];
+    axis = math.matrix(axis);
+    axis = cam.graph_to_screen_mat(axis);
+    let N = axis.length;
+    for (let j = 0; j < N; j += 2) {
+
+        if (j == 20 || j == 62) {
+            continue;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(axis[j][0], axis[j][1]);
+        ctx.lineTo(axis[j+1][0], axis[j+1][1]);
+        ctx.stroke();
+    }
+
+
     ctx.textAlign = 'center';
-    ctx.globalAlpha = .2;
+    ctx.globalAlpha = .5;
 
     // center
     let c = cam.graph_to_screen_mat(math.matrix([[0, 0, 0]]));
@@ -3564,7 +3593,7 @@ function draw_grid(ctx) {
     
     let colors = ["#FF0000", "#00FF00", "#0000FF"];
     
-    let N = axes.length;
+    N = axes.length;
     for (let i = 0; i < N; i ++) {
         ctx.fillStyle = colors[i%3];
         ctx.strokeStyle = colors[i%3];
@@ -3576,28 +3605,22 @@ function draw_grid(ctx) {
         ctx.moveTo(c[0][0], c[0][1]);
         ctx.lineTo(x, y);
         ctx.stroke();
-
-        if (i < 3) {
-            ctx.fillText(labels[i], x, y);
-        }
     }
 
-    /*
     for (let i = 0; i < 3; i++) {
+        x = axes[i][0];
+        y = axes[i][1];
+
+        ctx.beginPath();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.arc(x, y, 16, 0, 2*Math.PI);
+        ctx.globalAlpha = 1;
+        ctx.fill();
+
         ctx.fillStyle = colors[i%3];
         ctx.strokeStyle = colors[i%3];
-
-        let axis = cam.ticks[i];
-        axis = math.matrix(axis);
-        axis = cam.graph_to_screen_mat(axis);
-        let N = axis.length;
-        for (let j = 0; j < N; j += 2) {
-            ctx.beginPath();
-            ctx.moveTo(axis[j][0], axis[j][1]);
-            ctx.lineTo(axis[j+1][0], axis[j+1][1]);
-            ctx.stroke();
-        }
-    } */
+        ctx.fillText(labels[i], x, y);
+    }
 
     ctx.restore();
 }
@@ -4110,7 +4133,7 @@ window.onload = function() {
 
         cam.update_props();
 
-        draw_grid(ctx);
+        draw_axes(ctx);
 
         ctx.font = font_anim;
 
