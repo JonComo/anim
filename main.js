@@ -147,7 +147,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     }
 }
 
-function para(r, tmin, tmax) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax
+function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax, units shows markers every 1 increment in t
     let N = 300;
     let points = cached([N+1, 3]);
     let pd = points._data;
@@ -183,6 +183,43 @@ function para(r, tmin, tmax) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax
         }
     }
     ctx.stroke();
+
+    if (units) {
+        let num_dots = tmax-tmin;
+        num_dots = Math.floor(num_dots);
+        
+        if (num_dots > 0) {
+            let dots = cached([num_dots, 3]);
+            
+            let i = 0;
+
+            for (i=0; i < num_dots; i++) {
+                data = r(i+1)._data;
+        
+                    data[0] = Math.max(Math.min(data[0], 1000), -1000);
+                    data[1] = Math.max(Math.min(data[1], 1000), -1000);
+                    data[2] = Math.max(Math.min(data[2], 1000), -1000);
+            
+                    dots._data[i][0] = data[0];
+                    dots._data[i][1] = data[1];
+                    dots._data[i][2] = data[2];
+            }
+
+            dots = cam.graph_to_screen_mat(dots);
+
+
+            ctx.save();
+            for (let i = 0; i < num_dots; i++) {
+                p = dots[i];
+                
+                ctx.beginPath();
+                ctx.arc(p[0], p[1], 4, 0, pi2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
 }
 
 math.import({
@@ -230,6 +267,60 @@ math.import({
                 md[i][0] = xin;
                 md[i][1] = yout;
                 md[i][2] = zin;
+                i += 1;
+            }
+        }
+
+        md = cam.graph_to_screen_mat(m);
+        
+        i = 0;
+        for (let x = 0; x < d; x ++) {
+            ctx.beginPath();
+            let xc = md[i][0];
+            let yc = md[i][1];
+            ctx.moveTo(xc, yc);
+
+            for (let z = 0; z < d; z ++) {
+                xc = md[i][0];
+                yc = md[i][1];
+
+                ctx.lineTo(xc, yc);
+
+                i += 1;
+            }
+
+            ctx.stroke();
+
+            ctx.beginPath();
+            xc = md[x][0];
+            yc = md[x][1];
+            ctx.moveTo(xc, yc);
+
+            for (let j = 0; j < dims[0]; j += d) {
+                xc = md[x+j][0];
+                yc = md[x+j][1];
+
+                ctx.lineTo(xc, yc);
+            }
+
+            ctx.stroke();
+        }
+    },
+    surfacez: function(fn) {
+        let d = 21; let d2 = d/2;
+        let dims = [d*d, 3];
+        let m = cached(dims);
+        let md = m._data;
+
+        let a = 0; let b = 0;
+        let i = 0;
+        for (let x = 0; x < d; x ++) {
+            for (let z = 0; z < d; z ++) {
+                a = (x-d2)+.5;
+                b = (z-d2)+.5;
+                md[i][0] = a;
+                md[i][1] = b;
+                md[i][2] = fn(a, b);
                 i += 1;
             }
         }
@@ -401,8 +492,8 @@ math.import({
     graph: function(fn) {
         graph(fn, 0, 1, 2);
     },
-    para: function(r, tmin, tmax) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
-        para(r, tmin, tmax);
+    para: function(r, tmin, tmax, units) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
+        para(r, tmin, tmax, units);
     },
     graphxy: function(fn) {
         graph(fn, 0, 1, 2);
@@ -413,10 +504,11 @@ math.import({
     graphyz: function(fn) {
         graph(fn, 1, 2, 0);
     },
-    lines: function(points, vector) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
+    shape: function(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
         let N = points.size()[0];
         points = cam.graph_to_screen_mat(points);
 
+        ctx.save();
         ctx.beginPath();
         let p; let lastp;
         for (let i = 0; i < N; i ++) {
@@ -429,24 +521,15 @@ math.import({
 
             lastp = p;
         }
-
         ctx.stroke();
-
-        if (vector) {
-            
-            // draw an arrow head
-            let a = {x: points[N-1][0], y:points[N-1][1]};
-            let b = {x: points[N-2][0], y:points[N-2][1]};
-
-            let theta = Math.atan2(a.y - b.y, a.x - b.x);
-
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(a.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(a.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
-            ctx.stroke();
+        if (fill) {
+            col = fill._data;
+            col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
+            ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+            ctx.globalAlpha = .8;
+            ctx.fill();
         }
+        ctx.restore();
     },
     vect: function(a, b) {
         _x = 0;
@@ -3027,12 +3110,19 @@ function Camera() {
             b = r[2] - (mouse.x - mouse_last.x)/100;
 
             r = [0, a, b];
-            props.rxyz = r;
+            this.rotate(r);
         } else {
             // translate
             let p = props.p;
             let offset = {x: mouse_grid.x - mouse_grid_last.x, y: mouse_grid.y - mouse_grid_last.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
+        }
+    }
+
+    this.rotate = function(rxyz) {
+        let props = this.properties[frame];
+        if (props) {
+            props.rxyz = rxyz;
         }
     }
 
@@ -3483,11 +3573,11 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("camera", {x: 0, y: 0}, function(b) {
-        if (tool == "camera") {
-            // reset cam
-            cam.properties[frame] = copy(cam.default_props);
-        }
         tool = "camera";
+    }));
+
+    this.buttons.push(new Button("view xy", {x: 0, y: 0}, function(b) {
+        cam.rotate([-Math.PI/2,0,-Math.PI/2]);
     }));
 
     this.buttons.push(new Button("debug", {x: 0, y: 0}, function(b) {
