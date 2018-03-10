@@ -32,7 +32,9 @@ f(x) = x^(2)
 
 Then graph it:
 
-graph(f)
+e:graphxy(f)
+
+(click the view xy button in the menu to rotate the 3D coordinate axes to see your graph)
 
 You can write expressions that are evaluated each frame by writing:
 
