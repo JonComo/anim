@@ -2605,6 +2605,7 @@ function Text(text, pos) {
     this.parse_text(text);
 
     this.draw_tree = function(ctx, props) {
+        ctx.save();
 
         if (this.args.length != 1) {
             return;
@@ -2674,9 +2675,9 @@ function Text(text, pos) {
                         text = o.toString();
                     }
                     
-                    ctx.beginPath();
+                    /*ctx.beginPath();
                     ctx.arc(np.x, np.y, op_size, 0, pi2);
-                    ctx.stroke();
+                    ctx.stroke(); */
 
                     ctx.fillText(text, np.x, np.y);
 
@@ -2708,7 +2709,7 @@ function Text(text, pos) {
                     } else if (o.value) {
                         text = o.value;
                     } else if (o.content) {
-                        text = 'G';
+                        text = o.content;
                     } else {
                         text = '?';
                     }
@@ -2729,175 +2730,7 @@ function Text(text, pos) {
             stuff = next_stuff;
             p.y += yoff;
         }
-
         
-        // recursively draw it
-        /*
-        function render_tree(ctx, t, p, info) {
-            if (t.args) {
-                if (t.name && t.name.length) {
-                    ctx.fillText(t.name, p.x, p.y);
-                } else if (t.op && t.op.length) {
-                    ctx.fillText(t.op, p.x, p.y);
-                } else {
-                    ctx.fillText('op', p.x, p.y);
-                }
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, grid_size/2, 0, pi2);
-                ctx.stroke();
-
-                info[info.level] = t.args.length;
-                info.level += 1;
-
-                let x = 0;
-                for (let i = 0; i < t.args.length; i ++) {
-                    
-                    x = p.x + info.xo;
-                    info.xo = info.xo + grid_size;
-
-                    let np = {x: x, y: p.y + grid_size*2};
-                    let diff = {x: np.x-p.x, y: np.y - p.y};
-
-                    ctx.beginPath();
-                    ctx.moveTo(p.x + diff.x*.2, p.y + diff.y*.2);
-                    ctx.lineTo(p.x + diff.x*.8, p.y + diff.y*.8);
-                    ctx.stroke();
-
-                    render_tree(ctx, t.args[i], np, info);
-                }
-            } else if (t.content) {
-                render_tree(ctx, t.content, p, info);
-            } else {
-                
-                if (t.name && t.name.length) {
-                    ctx.fillText(t.name, p.x, p.y);
-                } else {
-                    ctx.fillText(t.value, p.x, p.y);
-                }
-            }
-        }
-
-        let info = {xo: 0, level:0};
-        render_tree(ctx, t, {x: props.p.x, y: props.p.y + grid_size}, info);
-        console.log(info); */
-    }
-
-    this.draw_tangent = function(ctx, props) {
-
-        ctx.save();
-
-        try {
-            let c = this.cargs[0];
-
-            ctx.translate(cam.props.p.x, cam.props.p.y);
-
-            let inx = mouse_graph.x;
-
-            parser.set('x', inx);
-            let p0 = {x: inx, y: -c.eval(parser.scope)};
-
-            inx += 0.0001;
-            parser.set('x', inx);
-            let p1 = {x: inx, y: -c.eval(parser.scope)};
-
-            let slope = (p1.y - p0.y)/(p1.x - p0.x);
-
-            let s = 100;
-            let p0_extend = {x: p0.x - s * grid_size, y: p0.y - s * grid_size * slope};
-            let p1_extend = {x: p0.x + s * grid_size, y: p0.y + s * grid_size * slope};
-
-            let path = [p0_extend, p1_extend];
-
-            // for (let xx = -uw; xx <= uw; xx += uw) {
-            //     let y = math.eval(expr, {x: xx});
-            //     y = Math.max(Math.min(y, 1000), -1000);
-            //     path.push({x: grid_size * xx, y: -grid_size * y});
-            // }
-
-            ctx.beginPath();
-
-            for (let i = 0; i < path.length; i++) {
-                let p = path[i];
-                
-                if (i == 0) {
-                    ctx.moveTo(p.x * grid_size * cam.props.w, p.y * grid_size * cam.props.h);
-                } else {
-                    ctx.lineTo(p.x * grid_size * cam.props.w, p.y * grid_size * cam.props.h);
-                }
-            }
-
-            ctx.stroke();
-
-        } catch (error) {
-        }
-
-        ctx.restore();
-    }
-
-    this.draw_contour = function(ctx, props) {
-        // contour: f, steps, step_size
-
-        if (this.args.length != 3) {
-            return;
-        }
-
-        ctx.save();
-
-        try {
-            ctx.fillStyle = rgbToHex(props.c);
-
-            let cexpr = this.cargs[0];
-            let steps = this.cargs[1].eval(parser.scope);
-            let step_size = this.cargs[2].eval(parser.scope);
-
-            let sx = mouse_graph.x;
-            let sy = mouse_graph.y;
-
-            parser.set('x', sx);
-            parser.set('y', sy);
-
-            let cont_v = cexpr.eval(parser.scope);
-
-            ctx.fillText(pretty_round(cont_v), mouse.x, mouse.y-grid_size/2);
-
-            ctx.beginPath();
-            let p = cam.graph_to_screen(sx, sy, 0);
-            ctx.moveTo(p[0], p[1]);
-
-            for (let i = 0; i < steps; i++) {
-                let grad = grad_2(cexpr, sx, sy);
-                let perp = [grad[1], -grad[0]];
-                let norm = Math.sqrt(perp[0]**2 + perp[1]**2);
-                perp = [step_size * perp[0] / norm, step_size * perp[1] / norm];
-
-                sx += perp[0];
-                sy += perp[1];
-
-                // auto correct
-                /*
-                for (let j = 0; j < 5; j++) {
-                    parser.set('x', sx);
-                    parser.set('y', sy);
-                    let new_v = cexpr.eval(parser.scope);
-
-                    let diff = new_v - cont_v;
-                    grad = grad_2(cexpr, sx, sy);
-                    sx -= .01 * diff * grad[0];
-                    sy -= .01 * diff * grad[1];
-                } */
-                
-                p = cam.graph_to_screen(sx, sy, 0);
-                ctx.lineTo(p[0], p[1]);
-            }
-
-            ctx.stroke();
-
-        } catch(e) {
-            console.log('contour error: ');
-            console.log(e);
-        }
-
         ctx.restore();
     }
 
@@ -2941,15 +2774,11 @@ function Text(text, pos) {
         let should_draw_text = true;
 
         let c = this.command;
-        if (c == "tangent") {
-            this.draw_tangent(ctx, i);
-        } else if (c == "tree") {
+        if (c == "tree") {
             this.draw_tree(ctx, i);
             if (presenting) {
                 should_draw_text = false;
             }
-        } else if (c == "contour") {
-            this.draw_contour(ctx, i);
         }
 
         if (presenting && (a.ph || (b && b.ph))) {
