@@ -2832,22 +2832,6 @@ function Text(text, pos) {
             }
         }
 
-        if (c == "i" && a && b) {
-            // interpolate variable value! oh boy...
-            let var_name = this.var_name();
-            let va = this.properties[frame]['ival'];
-            let vb = this.properties[next_frame]['ival'];
-            if (!isNaN(va) && !isNaN(vb)) {
-                let new_val = va * (1-t_ease) + vb * (t_ease);
-                this.text_val = " = " + pretty_round(new_val);
-                try {
-                    parser.set(var_name, new_val);
-                } catch(e) {
-
-                }
-            }
-        }
-
         if (c == "slide" && presenting && this.near_mouse && !this.hidden()) {
             // draw slider rect
             this.draw_border(ctx);
