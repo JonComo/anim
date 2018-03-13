@@ -2352,6 +2352,10 @@ function Text(text, pos) {
     }
 
     this.mouse_drag = function(evt) {
+        if (tool == "camera") {
+            return false;
+        }
+        
         let props = this.properties[frame];
         if (!props) {
             return false;
