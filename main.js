@@ -6,7 +6,7 @@ var graph_guide = "#aaaaaa";
 var dark = "#000000";
 var light = "#ffffff";
 
-var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", gray];
+var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", "#66E07A", gray];
 
 var font_small = "26px Courier";
 var font_menu = "30px Courier";
