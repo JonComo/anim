@@ -3039,24 +3039,46 @@ function Camera() {
         }
 
         p = math.multiply(p, this.R);
+
+        p = p.resize([n, 4]); // homogenous coords
+        for (let i = 0; i < n; i++) {
+            p._data[i][3] = 1;
+            p._data[i][2] += 30;
+        }
+
+        let cam_d = .1; // camera distance
+        p = math.multiply(p, [[1,0,0,0],
+                              [0,1,0,0],
+                              [0,0,1,0],
+                              [0,0,-1.0/cam_d,1]])
+        
         p = p._data;
 
+        for (let i = 0; i < n; i++) {
+            p[i][0] = 100 * p[i][0]/(p[i][2]);
+            p[i][1] = 100 * p[i][1]/(p[i][2]);
+
+            p[i][0] += this.props.p.x;
+            p[i][1] += this.props.p.y;
+        }
+
+        /*
         let x; let y; let z; let m;
         for (let i = 0; i < n; i++) {
             x = p[i][1];
             y = p[i][2];
             z = p[i][0];
 
-            /*
-            m = z/20+1;
-            if (m < 0) {
-                m = 1;
-            } */
+            
+            //m = z/20+1;
+            //if (m < 0) {
+            //   m = 1;
+            //}
 
             p[i][0] = x * this.props.w * grid_size + this.props.p.x;
             p[i][1] = -y * this.props.h * grid_size + this.props.p.y;
             p[i][2] = z;
-        }
+        } */
 
         return p;
     }
