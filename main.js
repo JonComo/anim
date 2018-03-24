@@ -1230,8 +1230,7 @@ function hexToRgb(hex) {
      ] : null;
 }
 
-function transform_props(key, props) {
-    let step = .2;
+function transform_props(key, props, step=.2) {
 
     if (key == "l") {
         props.w += step;
@@ -1887,6 +1886,7 @@ function Text(text, pos) {
     this.args = [];
     this.cargs = []; // compiled arguments
     this.text_val = "";
+    this.matrix_vals = [];
     this.near_mouse = false;
     this.size = {w:0, h:0}; // pixel width and height
 
@@ -2281,8 +2281,27 @@ function Text(text, pos) {
                 }
                 
             } else if (type == "object" && val._data && val._data.length != 0) {
-                // prob a matrix, render dims
-                this.text_val = "";
+                // prob a matrix, render entries
+                let t = [];
+
+                if (val._data) {
+                    val = val.map(function (value, index, matrix) {
+                        return pretty_round(value);
+                    });
+
+                    let d = val._data;
+                    if (val._size.length == 1) {
+                        t = [d.join(' ')];
+                    } else {
+                        for (let r = 0; r < d.length; r++) {
+                            t.push(d[r].join(' '));
+                        }
+                    }
+                }
+
+                this.matrix_vals = t;
+                this.text_val = null;
+
             } else {
                 if (val) {
                     this.text_val = ' = ' + val.toString();
@@ -2531,12 +2550,27 @@ function Text(text, pos) {
             ctx.restore();
         }
 
-
         if (draw_val) {
-            ctx.save();
-            ctx.translate(size.w, 0);
-            size.w = size.w + draw_simple(this.text_val);
-            ctx.restore();
+            if (this.matrix_vals.length != 0) {
+                ctx.save();
+                ctx.translate(size.w + grid_size, 0);
+
+                for (let i = 0; i < this.matrix_vals.length; i++) {
+                    ctx.textAlign = 'left';
+                    ctx.fillText(this.matrix_vals[i], 0, grid_size * i);
+                }
+
+                ;
+                size.w = size.w + grid_size + (this.matrix_vals[0].length + 1) * char_size;
+                size.h = this.matrix_vals.length * grid_size;
+                
+                ctx.restore();
+            } else {
+                ctx.save();
+                ctx.translate(size.w, 0);
+                size.w = size.w + draw_simple(this.text_val);
+                ctx.restore();
+            }
         }
 
         return size;
@@ -2605,8 +2639,6 @@ function Text(text, pos) {
             console.log(e);
         }
     }
-
-    this.parse_text(text);
 
     this.draw_tree = function(ctx, props) {
         ctx.save();
@@ -2872,6 +2904,8 @@ function Text(text, pos) {
 
         ctx.restore();
     }
+
+    this.parse_text(text);
 }
 
 function Camera() {
@@ -2949,7 +2983,7 @@ function Camera() {
         }
 
         let key = evt.key;
-        this.properties[frame] = transform_props(key, this.properties[frame]);
+        this.properties[frame] = transform_props(key, this.properties[frame], .01);
     }
 
     this.update_props = function() {
