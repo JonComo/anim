@@ -2909,7 +2909,7 @@ function Text(text, pos) {
 }
 
 function Camera() {
-    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1, rxyz: [0, 0, 0]};
+    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1, rxyz: [Math.PI, 0, 0]};
     this.properties = {};
     this.properties[frame] = copy(this.default_props);
 
@@ -2957,10 +2957,10 @@ function Camera() {
         if (meta || ctrl) {
             // rotate
             let r = props.rxyz;
-            a = r[1] - (mouse.y - mouse_last.y)/100;
-            b = r[2] - (mouse.x - mouse_last.x)/100;
+            a = r[0] + (mouse.y - mouse_last.y)/100;
+            b = r[1] - (mouse.x - mouse_last.x)/100;
 
-            r = [0, a, b];
+            r = [a, b, 0];
             this.rotate(r);
         } else {
             // translate
@@ -2983,7 +2983,7 @@ function Camera() {
         }
 
         let key = evt.key;
-        this.properties[frame] = transform_props(key, this.properties[frame], .01);
+        this.properties[frame] = transform_props(key, this.properties[frame], .2);
     }
 
     this.update_props = function() {
@@ -3046,20 +3046,24 @@ function Camera() {
             p._data[i][2] += 30;
         }
 
-        let cam_d = .1; // camera distance
-        p = math.multiply(p, [[1,0,0,0],
-                              [0,1,0,0],
-                              [0,0,1,0],
+        let w = 1;
+        let h = 1;
+
+        if (this.props) {
+            w = this.props.w;
+            h = this.props.h;
+        }
+
+        let cam_d = 1; // camera distance
+        p = math.multiply(p, [[w*1000,0,0,0],
+                              [0,h*1000,0,0],
+                              [0,0,1,    0],
                               [0,0,-1.0/cam_d,1]])
         
         p = p._data;
-
         for (let i = 0; i < n; i++) {
-            p[i][0] = 100 * p[i][0]/(p[i][2]);
-            p[i][1] = 100 * p[i][1]/(p[i][2]);
-
-            p[i][0] += this.props.p.x;
-            p[i][1] += this.props.p.y;
+            p[i][0] = p[i][0]/(p[i][2]) + this.props.p.x;
+            p[i][1] = p[i][1]/(p[i][2]) + this.props.p.y;
         }
 
         /*
@@ -3455,7 +3459,7 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("view xy", {x: 0, y: 0}, function(b) {
-        cam.rotate([-Math.PI/2,0,-Math.PI/2]);
+        cam.rotate([Math.PI, 0, 0]);
     }));
 
     this.buttons.push(new Button("debug", {x: 0, y: 0}, function(b) {
