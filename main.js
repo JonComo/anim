@@ -532,6 +532,11 @@ math.import({
         ctx.restore();
     },
     vect: function(a, b) {
+
+        if (!a) {
+            return;
+        }
+
         _x = 0;
         _y = 0;
         _z = 0;
@@ -539,6 +544,14 @@ math.import({
         x = 0;
         y = 0;
         z = 0;
+
+        if (a.re && a.im) {
+            a = math.matrix([a.re, a.im]);
+        }
+
+        if (b && b.re && b.im) {
+            b = math.matrix([b.re, b.im]);
+        }
 
         if (!b) {
             x = a._data[0];
@@ -2301,7 +2314,15 @@ function Text(text, pos) {
 
                 this.matrix_vals = t;
                 this.text_val = null;
-
+            } else if (val.re && val.im) {
+                if (val) {
+                    if (ctrl) {
+                        // nothing
+                        this.text_val = ' = ' + val.toString();
+                    } else {
+                        this.text_val = ' = ' + pretty_round(val.re).toString() + ' + ' + pretty_round(val.im).toString() +'i';
+                    }
+                }
             } else {
                 if (val) {
                     this.text_val = ' = ' + val.toString();
