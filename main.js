@@ -576,26 +576,7 @@ math.import({
             }
         }
 
-        a = cam.graph_to_screen(_x, _y, _z);
-        b = cam.graph_to_screen(x, y, z);
-        
-        a = {x: a[0], y: a[1]};
-        b = {x: b[0], y: b[1]};
-        
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-        
-        // draw an arrow head
-        let theta = Math.atan2(b.y - a.y, b.x - a.x);
-
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(b.x + Math.cos(theta - Math.PI*3/4) * grid_size/2, b.y + Math.sin(theta - Math.PI*3/4) * grid_size/2);
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(b.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, b.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
-        ctx.stroke();
+        draw_vect(_x, _y, _z, x, y, z);
     },
     if: function(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
         if (fn_condition()) {
@@ -693,6 +674,28 @@ math.import({
 
         return sigp(x);
     },
+    field: function(f, _n) { // plots a vector field using a grid
+        let n = 10;
+        
+        if (arguments.length == 2) {
+            n = _n-1;
+
+            if (n <= 0) {
+                n = 1;
+            }
+        }
+
+        let d = 20 / n;
+
+        for (let x = -10; x <= 10; x+=d) {
+            for (let y = -10; y <= 10; y+=d) {
+                for (let z = -10; z <= 10; z+=d) {
+                    let v = f(x,y,z)._data;
+                    draw_vect(x, y, z, x+v[0], y+v[1], z+v[2]);
+                }
+            }
+        }
+    }
 });
 
 // undo
@@ -1094,6 +1097,29 @@ function draw_r(o, p, d) {
     if (debug && d) ctx.strokeRect(p.x, p.y, size.w, size.h);
 
     return size;
+}
+
+function draw_vect(_x, _y, _z, x, y, z) {
+    a = cam.graph_to_screen(_x, _y, _z);
+    b = cam.graph_to_screen(x, y, z);
+    
+    a = {x: a[0], y: a[1]};
+    b = {x: b[0], y: b[1]};
+    
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    
+    // draw an arrow head
+    let theta = Math.atan2(b.y - a.y, b.x - a.x);
+
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x + Math.cos(theta - Math.PI*3/4) * 15, b.y + Math.sin(theta - Math.PI*3/4) * 15);
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x + Math.cos(theta + Math.PI*3/4) * 15, b.y + Math.sin(theta + Math.PI*3/4) * 15);
+    ctx.stroke();
 }
 
 function draw_simple(text) {
@@ -2318,7 +2344,7 @@ function Text(text, pos) {
                 if (val) {
                     if (ctrl) {
                         // nothing
-                        this.text_val = ' = ' + val.toString();
+                        this.text_val = ' = ' + val;
                     } else {
                         this.text_val = ' = ' + pretty_round(val.re).toString() + ' + ' + pretty_round(val.im).toString() +'i';
                     }
