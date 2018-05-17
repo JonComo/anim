@@ -674,15 +674,20 @@ math.import({
 
         return sigp(x);
     },
-    field: function(f, _n) { // plots a vector field using a grid
+    field: function(f, _n, _uv) { // plots a vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
         let n = 10;
+        let uv = false;
         
-        if (arguments.length == 2) {
+        if (arguments.length >= 2) {
             n = _n-1;
 
             if (n <= 0) {
                 n = 1;
             }
+        }
+
+        if (arguments.length >= 3 && _uv == true) {
+            uv = true;
         }
 
         let d = 20 / n;
@@ -691,9 +696,38 @@ math.import({
             for (let y = -10; y <= 10; y+=d) {
                 for (let z = -10; z <= 10; z+=d) {
                     let v = f(x,y,z)._data;
+                    if (uv) {
+                        let n = math.norm(v);
+                        v = [v[0]/n, v[1]/n, v[2]/n];
+                    }
+
                     draw_vect(x, y, z, x+v[0], y+v[1], z+v[2]);
                 }
             }
+        }
+    },
+    integral: function(f, a, b, _n) {
+        let n = 10000;
+        if (arguments.length >= 4) {
+            n = _n;
+        }
+
+        let dx = (b-a)/n;
+        let sum = 0;
+        for (let x = a; x <=b; x+= dx) {
+            sum += f(x) * dx;
+        }
+
+        return sum;
+    },
+    der: function(f, _h) { // return derivative approximation function _h = dx default .001
+        let h = .001;
+        if (arguments.length >= 2) {
+            h = _h;
+        }
+        
+        return function g(a) {
+            return (f(a+h)-f(a))/h;
         }
     }
 });
