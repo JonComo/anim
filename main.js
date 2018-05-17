@@ -479,16 +479,14 @@ math.import({
             col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
         }
 
-        let cam_data = cam.graph_to_screen_mat(math.matrix([a]));
+        let cam_data = cam.graph_to_screen_mat(math.matrix([a]))[0];
         
         ctx.save();
         ctx.beginPath();
         ctx.fillStyle = rgbToHex(math.multiply(col, 255));
-        ctx.strokeStyle = ctx.fillStyle;
-        ctx.arc(cam_data[0][0], cam_data[0][1], psize, 0, pi2);
-        ctx.stroke();
-        ctx.globalAlpha = .8;
+        ctx.arc(cam_data[0], cam_data[1], psize, 0, pi2);
         ctx.fill();
+
         ctx.restore();
     },
     graph: function(fn) {
@@ -707,6 +705,49 @@ math.import({
                 }
             }
         }
+    },
+    field_a: function(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
+        let n = 10;
+        let uv = false;
+        
+        let mod = .2;
+        let flo = (t/500)%mod;
+
+        if (arguments.length >= 3) {
+            n = _n-1;
+
+            if (n <= 0) {
+                n = 1;
+            }
+        }
+
+        if (arguments.length >= 4 && _uv == true) {
+            uv = true;
+        }
+
+        let d = 20 / n;
+
+        ctx.save();
+        ctx.globalAlpha = math.sin(flo/mod * math.PI);
+
+        for (let x = -10; x <= 10; x+=d) {
+            for (let y = -10; y <= 10; y+=d) {
+                for (let z = -10; z <= 10; z+=d) {
+                    let v = f(x,y,z)._data;
+                    if (uv) {
+                        let n = math.norm(v);
+                        v = [v[0]/n, v[1]/n, v[2]/n];
+                    }
+
+                    a = cam.graph_to_screen(x + flo*v[0], y + flo*v[1], z + flo*v[2]);
+
+                    ctx.beginPath();
+                    ctx.arc(a[0], a[1], 5, 0, pi2);
+                    ctx.fill();
+                }
+            }
+        }
+        ctx.restore();
     },
     integral: function(f, a, b, _n) {
         let n = 10000;
