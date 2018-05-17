@@ -64,6 +64,8 @@ var mouse_graph = {x: 0, y: 0};
 var brackets = {"(": 1, "[": 1, ")": -1, "]": -1};
 
 var t = 0; // time for parser
+var millis = 0;
+var date = new Date();
 
 var pi2 = 2 * Math.PI;
 
@@ -4227,6 +4229,7 @@ window.onload = function() {
         }, 1000/fps);
 
         parser.set('_frame', t);
+        parser.set('_millis', Date.now());
 
         if (presenting) {
             mouse_time -= 1;
