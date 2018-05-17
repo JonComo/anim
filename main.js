@@ -4232,7 +4232,9 @@ window.onload = function() {
             mouse_time -= 1;
         }
 
-        ctx.clearRect(0, 0, c.width, c.height);
+        if (!parser.get('_trace')) {
+            ctx.clearRect(0, 0, c.width, c.height);
+        }
 
         cam.update_props();
 
