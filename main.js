@@ -547,7 +547,7 @@ math.import({
         y = 0;
         z = 0;
 
-        if (a.re && a.im) {
+        if ('re' in a && a.im) {
             a = math.matrix([a.re, a.im]);
         }
 
@@ -2376,7 +2376,7 @@ function Text(text, pos) {
 
                 this.matrix_vals = t;
                 this.text_val = null;
-            } else if (val.re && val.im) {
+            } else if (val && 're' in val && val.im) {
                 if (val) {
                     if (ctrl) {
                         // nothing
