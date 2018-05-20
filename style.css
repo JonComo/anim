@@ -3,5 +3,20 @@ canvas {
 }
 
 body {
-    background: #aaaaaa;
+    background: #000000;
+    text-align: center;
+    color: #ffffff;
+}
+h1{
+	text-align: center;
+	color: #ffff00;
+}
+h2{
+	text-align: left;
+	color: #ffff00;
+}
+ol{
+	text-align: left;
+	color: #ffffff;
+	font-size: 16;
 }

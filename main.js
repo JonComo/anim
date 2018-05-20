@@ -6,11 +6,12 @@ var graph_guide = "#aaaaaa";
 var dark = "#000000";
 var light = "#ffffff";
 
-var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", gray];
+//V,I,B,G,Y,O,R,silver
+var colors = ["#4b0082","#ee82ee", "#0000ff","#adff2f","#ffff00","#ffa500","#ff0000","#cccccc",dark];
 
-var font_small = "26px Courier";
-var font_menu = "30px Courier";
-var font_anim = "40px Menlo";
+var font_small = "26px Conolas";
+var font_menu = "30px Conolas";
+var font_anim = "40px Conolas";
 
 var scale_factor = 2; // retina
 
@@ -26,7 +27,7 @@ var objs = [];
 var frames;
 var menu;
 var cam;
-var num_frames = 3;
+var num_frames = 5;
 var frame = 1; // current frame
 var next_frame;
 var playing;
@@ -37,7 +38,7 @@ var debug = false;
 var t_ease = 0;
 var t_steps = 60;
 
-var grid_size = 45;
+var grid_size = 50;
 var mouse_time = 0;
 var mouse_duration = 40;
 
@@ -1158,12 +1159,12 @@ function Button(text, pos, callback) {
         ctx.translate(this.pos.x, this.pos.y);
 
         if (this.hovering() || this.selected) {
-            ctx.scale(1.5, 1.5);
+            ctx.scale(1.7, 1.7);
         }
 
         if (this.color.length) {
             ctx.fillStyle = this.color;
-            ctx.fillRect(0, -grid_size/8, grid_size, grid_size/4);
+            ctx.fillRect(0, -grid_size/10, grid_size, grid_size/3);
         }
 
         ctx.textAlign = this.align;
@@ -3493,7 +3494,7 @@ function draw_grid(ctx) {
 
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.globalAlpha = .2;
+    ctx.globalAlpha = .5;
 
     // center
     let c = cam.graph_to_screen_mat(math.matrix([[0, 0, 0]]));
@@ -3647,7 +3648,7 @@ function draw_cursor() {
 window.onload = function() {
     
     c = document.createElement("canvas");
-    let w = 1280; let h = 720;
+    let w = 1000; let h = 600;
     c.width = w*scale_factor;
     c.height = h*scale_factor;
     c.style.width = w;
@@ -3752,7 +3753,7 @@ window.onload = function() {
             }
         }
 
-        if (key == "z" && meta) {
+        if (key == "z" && ctrl) {
             undo();
             return;
         }
