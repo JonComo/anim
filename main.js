@@ -749,6 +749,81 @@ math.import({
         }
         ctx.restore();
     },
+    parametric: function(f, _ur, _vr, _n, ucol, vcol) {
+        let n = 10;
+
+        if (_ur <= 0 || _vr <= 0 || n <= 0) {
+            return;
+        }
+
+        if (arguments.length >= 4) {
+            n = _n;
+        }
+
+        let color = false;
+        if (arguments.length >= 6) {
+            color = true;
+        }
+
+        let du = _ur/n;
+        let dv = _vr/n;
+
+        ctx.save();
+        ctx.strokeStyle = 'black';
+
+        let u = 0;
+        let v = 0;
+
+        // draw v lines
+        if (color) {
+            ctx.strokeStyle = vcol;
+        }
+
+        for (let i = 0; i <= n; i ++) {
+            u = du * i;
+
+            ctx.beginPath();
+            for (let j = 0; j <= n; j ++) {
+                v = dv * j;
+
+                let p = f(u, v)._data;
+                let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
+                if (v == 0) {
+                    ctx.moveTo(camp[0], camp[1]);
+                } else {
+                    ctx.lineTo(camp[0], camp[1]);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // draw u lines
+        if (color) {
+            ctx.strokeStyle = ucol;
+        }
+
+        for (let i = 0; i <= n; i ++) {
+            v = dv * i;
+
+            ctx.beginPath();
+            for (let j = 0; j <= n; j ++) {
+
+                u = du * j;
+                let p = f(u, v)._data;
+                let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
+                if (u == 0) {
+                    ctx.moveTo(camp[0], camp[1]);
+                } else {
+                    ctx.lineTo(camp[0], camp[1]);
+                }
+            }
+            ctx.stroke();
+        }
+
+        
+
+        ctx.restore();
+    },
     integral: function(f, a, b, _n) {
         let n = 10000;
         if (arguments.length >= 4) {
