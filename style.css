@@ -4,4 +4,9 @@ canvas {
 
 body {
     background: #aaaaaa;
+    margin: 0px;
+}
+
+#controls {
+    margin: 10px;
 }

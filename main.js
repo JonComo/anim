@@ -3912,7 +3912,7 @@ function draw_cursor() {
 window.onload = function() {
     
     c = document.createElement("canvas");
-    let w = 1280; let h = 720;
+    let w = window.innerWidth; let h = window.innerHeight;
     c.width = w*scale_factor;
     c.height = h*scale_factor;
     c.style.width = w;
