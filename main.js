@@ -1336,12 +1336,6 @@ function draw_fn(fn) {
     return size;
 }
 
-function function_before_i(text, c) {
-    text = text.slice(0, c);
-    let s = text.split(/[^A-Za-z]/);
-    return s.pop();
-}
-
 function get_mouse_pos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -2466,25 +2460,18 @@ function Text(text, pos) {
         ctx.fillStyle = color;
         ctx.globalAlpha = i.c[3];
 
-        //console.log(this.args);
-
         try {
             let val = c.eval(parser.scope);
 
             let type = typeof val;
-            
-            if (type == "number" && this.command == "i") {
-                // save value in properties
-                this.properties[frame]['ival'] = val;
-            }
 
             // set display text
             if (type == "number") {
                 if (ctrl) {
                     // nothing
-                    this.text_val = ' = ' + val;
+                    this.text_val = '=' + val;
                 } else {
-                    this.text_val = ' = ' + pretty_round(val);
+                    this.text_val = '=' + pretty_round(val);
                 }
                 
             } else if (type == "object" && val._data && val._data.length != 0) {
@@ -2512,14 +2499,14 @@ function Text(text, pos) {
                 if (val) {
                     if (ctrl) {
                         // nothing
-                        this.text_val = ' = ' + val;
+                        this.text_val = '=' + val;
                     } else {
-                        this.text_val = ' = ' + pretty_round(val.re).toString() + ' + ' + pretty_round(val.im).toString() +'i';
+                        this.text_val = '=' + pretty_round(val.re).toString() + ' + ' + pretty_round(val.im).toString() +'i';
                     }
                 }
             } else {
                 if (val) {
-                    this.text_val = ' = ' + val.toString();
+                    this.text_val = '=' + val.toString();
                 }
             }
         } catch (e) {
@@ -2625,7 +2612,7 @@ function Text(text, pos) {
                     }
 
                     let new_val = old_val + delta;
-                    this.text_val = ' = ' + pretty_round(new_val);
+                    this.text_val = '=' + pretty_round(new_val);
 
                     try {
                         parser.set(var_name, new_val);
@@ -2699,28 +2686,8 @@ function Text(text, pos) {
         this.dragged = false;
     }
 
-    this.graphing = function() {
-        let cs = ["tangent", "graph", "point", "scatter", "drag", "line", "contour"];
-
-        if (cs.indexOf(this.command) != -1) {
-            return true;
-        }
-
-        return false;
-    }
-
     this.draw_text = function(ctx, t) {
         let size;
-
-        let draw_val = false;
-        if (this.command == "e" || this.command == "slide") {
-            // draw the value
-            if (presenting) {
-                t = t.split(":")[1];
-            }
-
-            draw_val = true;
-        }
 
         if (this.command == "f" && !this.is_selected()) {
             let fn = t.slice(this.command.length+1); //+1 for semicolon
@@ -2765,27 +2732,21 @@ function Text(text, pos) {
             ctx.restore();
         }
 
-        if (draw_val) {
-            if (this.matrix_vals.length != 0) {
-                ctx.save();
-                ctx.translate(size.w + grid_size, 0);
+        if (this.matrix_vals.length != 0) {
+            ctx.save();
+            ctx.translate(size.w + grid_size, 0);
 
-                for (let i = 0; i < this.matrix_vals.length; i++) {
-                    ctx.textAlign = 'left';
-                    ctx.fillText(this.matrix_vals[i], 0, grid_size * i);
-                }
-
-                ;
-                size.w = size.w + grid_size + (this.matrix_vals[0].length + 1) * char_size;
-                size.h = this.matrix_vals.length * grid_size;
-                
-                ctx.restore();
-            } else {
-                ctx.save();
-                ctx.translate(size.w, 0);
-                size.w = size.w + draw_simple(this.text_val);
-                ctx.restore();
+            for (let i = 0; i < this.matrix_vals.length; i++) {
+                ctx.textAlign = 'left';
+                ctx.fillText(this.matrix_vals[i], 0, grid_size * i);
             }
+            
+            ctx.restore();
+        } else if (!this.selected && this.text_val && this.text_val.length && t.indexOf("=") == -1) {
+            ctx.save();
+            ctx.translate(size.w, 0);
+            size.w = size.w + draw_simple(this.text_val);
+            ctx.restore();
         }
 
         return size;
@@ -2796,8 +2757,8 @@ function Text(text, pos) {
         this.args = [];
         this.cargs = [];
 
+        // replace @ with anonymous fn name
         if (text && text.length) {
-            // anonymous functions
             let split = text.split("@");
             let new_t = "";
             let N = split.length;
@@ -2808,50 +2769,28 @@ function Text(text, pos) {
             text = new_t;
         }
 
-        //console.log(text);
-
         if (!text) {
             return;
-        } else if (text.indexOf(':') == -1) {
-            this.args = [text];
+        } else if (text.indexOf(':') != -1) {
+            let split = text.split(":");
+            this.command = split[0];
+            this.args = [split[1]];
+
             try {
                 this.cargs = math.compile(this.args);
             } catch(e) {
                 console.log('compile2 error: ');
                 console.log(e);
             }
-            return;
-        }
+        } else {
+            this.args = [text];
 
-        // find top level command and args
-        let N = text.length;
-        let p = 0;
-        let s = 0;
-
-        for (let i = 0; i < N; i++) {
-            let c = text[i];
-
-            if (c == "(" || c == "[") {
-                p += 1;
-            } else if (c == ")" || c == "]") {
-                p -= 1;
+            try {
+                this.cargs = math.compile(this.args);
+            } catch(e) {
+                console.log('compile2 error: ');
+                console.log(e);
             }
-
-            if (c == ':' && p == 0) {
-                this.command = text.slice(s, i);
-                s = i+1;
-            }else if (c == ',' && p == 0) {
-                this.args.push(text.slice(s, i));
-                s = i+1;
-            }
-        }
-
-        this.args.push(text.slice(s));
-        try {
-            this.cargs = math.compile(this.args);
-        } catch(e) {
-            console.log('compile error: ');
-            console.log(e);
         }
     }
 
@@ -3089,7 +3028,7 @@ function Text(text, pos) {
             this.draw_border(ctx);
         }
 
-        if (this.is_selected()) {
+        if (!presenting && this.is_selected()) {
             // draw cursor
             ctx.fillRect(this.cursor * char_size, -grid_size/2, 2, grid_size);
             if (this.is_text_selected()) {
@@ -3106,14 +3045,28 @@ function Text(text, pos) {
             }
 
             // draw function information
-            let fn = function_before_i(i.t, this.cursor);
-            if (fn.length && math[fn]) {
-                ctx.save();
-                ctx.translate(0, char_size*2);
-                ctx.scale(.5, .5);
-                ctx.globalAlpha = .5;
-                draw_simple((math[fn]+"").split("\n")[0]);
-                ctx.restore();
+            if (i.t) {
+                text = i.t.slice(0, this.cursor);
+                let fn = text.split(/[^A-Za-z]/).pop();
+
+                if (fn.length != 0) {
+                    let keys = Object.keys(math);
+                    let yoff = 0;
+                    for (let i = 0; i < keys.length; i++) {
+                        let key = keys[i];
+
+                        if (key.indexOf(fn) == 0) {
+                            ctx.save();
+                            ctx.translate(0, char_size*2 + yoff);
+                            ctx.scale(.5, .5);
+                            ctx.globalAlpha = .5;
+                            draw_simple(key + ": " + (math[key]+"").split("\n")[0]);
+                            ctx.restore();
+                            yoff += grid_size;
+                        }
+                    }
+                }
+                
             }
         }
 
@@ -3902,6 +3855,10 @@ function transition_with_next(next) {
             let obj = objs[i];
             if (typeof obj.parse_text == 'function') {
                 obj.parse_text(obj.properties[frame].t);
+            }
+
+            if (typeof obj.eval == 'function') {
+                obj.eval();
             }
         }
     });
