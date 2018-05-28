@@ -2733,7 +2733,7 @@ function Text(text, pos) {
             ctx.restore();
         }
 
-        if (this.matrix_vals.length != 0) {
+        if (t.indexOf("=") == -1 && this.matrix_vals.length != 0) {
             ctx.save();
             ctx.translate(size.w + grid_size, 0);
 
