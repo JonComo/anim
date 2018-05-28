@@ -112,17 +112,31 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     let p; let gp;
     let N = 400;
     let points = cached([N+1, 3]);
+    let asyms = cached([N+1, 1])._data;
     let pd = points._data;
 
+    let dx = 20/N;
+
     let i = 0;
-    for (let x = -10; x < 10; x += .05) {
+    let x = -10;
+    let y_last = fn(x)
+    for (; x < 10; x += dx) {
         y = fn(x);
-        y = Math.max(Math.min(y, 1000), -1000);
 
         pd[i][d1] = x;
-        pd[i][d2] = y;
+        pd[i][d2] = Math.max(Math.min(y, 10000), -10000);
         pd[i][d3] = 0;
 
+        asyms[i] = 0;
+        if (math.abs(y-y_last) > 20) {
+            // vertical asymptote
+            asyms[i] = 1;
+
+            pd[i-1][d2] = math.sign(pd[i-1][d2]) * 1000;
+            pd[i][d2] = math.sign(y) * 1000;
+        }
+
+        y_last = y;
         i ++;
     }
 
@@ -131,6 +145,14 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
         p = points[i];
+
+        if (asyms[i]) {
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(p[0], p[1]);
+            continue;
+        }
+
         if (i == 0) {
             ctx.moveTo(p[0], p[1]);
         } else {
@@ -138,15 +160,6 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
         }
     }
     ctx.stroke();
-
-    gp = {x: mouse_graph.x, y: fn(mouse_graph.x)};
-    if (ctrl && mouse_graph.x > -10 && mouse_graph.x < 10 && distance(mouse_graph, gp) < .2) {
-        p = cam.graph_to_screen(gp.x, gp.y, 0);
-        ctx.fillText('('+pretty_round(gp.x)+', '+pretty_round(gp.y)+')', p[0], p[1] - grid_size);
-        ctx.beginPath();
-        ctx.arc(p[0], p[1], point_size, 0, pi2);
-        ctx.fill();
-    }
 }
 
 function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax, units shows markers every 1 increment in t
@@ -489,14 +502,17 @@ math.import({
 
         ctx.restore();
     },
-    graph: function(fn) {
+    graph: function(fn) { // graphs y=f(x)
         graph(fn, 0, 1, 2);
     },
     para: function(r, tmin, tmax, units) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
         para(r, tmin, tmax, units);
     },
-    graphxy: function(fn) {
+    graphxy: function(fn) { // graphs y=f(x)
         graph(fn, 0, 1, 2);
+    },
+    graphyx: function(fn) { // graphs x=f(y)
+        graph(fn, 1, 0, 2);
     },
     graphxz: function(fn) {
         graph(fn, 0, 2, 1);
