@@ -486,17 +486,18 @@ math.import({
             return;
         }
 
-        col = [0,0,0];
         if (color) {
-            col = color._data;
-            col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
+            color = color._data;
+            color = [constrain(color[0]), constrain(color[1]), constrain(color[2])];
         }
 
         let cam_data = cam.graph_to_screen_mat(math.matrix([a]))[0];
         
         ctx.save();
         ctx.beginPath();
-        ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+        if (color) {
+            ctx.fillStyle = rgbToHex(math.multiply(color, 255));
+        }
         ctx.arc(cam_data[0], cam_data[1], psize, 0, pi2);
         ctx.fill();
 
