@@ -2802,7 +2802,7 @@ function Text(text, pos) {
             let new_t = "";
             let N = split.length;
             for (let i = 0; i < N-1; i++) {
-                new_t += split[i] + "anon"+guid().slice(0,8)+"()=";
+                new_t += split[i] + "anon"+guid().slice(0,8);
             }
             new_t += split[N-1]
             text = new_t;
