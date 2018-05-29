@@ -2462,7 +2462,8 @@ function Text(text, pos) {
             let val = c.eval(parser.scope);
 
             // only display the value if its not an assignment
-            if (math.parse(this.args[0]).type != "AssignmentNode") {
+            let op_type = math.parse(this.args[0]).type;
+            if (op_type.indexOf("Assignment") == -1) {
                 let type = typeof val;
 
                 // set display text
