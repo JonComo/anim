@@ -2461,50 +2461,53 @@ function Text(text, pos) {
         try {
             let val = c.eval(parser.scope);
 
-            let type = typeof val;
+            // only display the value if its not an assignment
+            if (math.parse(this.args[0]).type != "AssignmentNode") {
+                let type = typeof val;
 
-            // set display text
-            if (type == "number") {
-                if (ctrl) {
-                    // nothing
-                    this.text_val = '=' + val;
-                } else {
-                    this.text_val = '=' + pretty_round(val);
-                }
-                
-            } else if (type == "object" && val._data && val._data.length != 0) {
-                // prob a matrix, render entries
-                let t = [];
-
-                if (val._data) {
-                    val = val.map(function (value, index, matrix) {
-                        return pretty_round(value);
-                    });
-
-                    let d = val._data;
-                    if (val._size.length == 1) {
-                        t = [d.join(' ')];
-                    } else {
-                        for (let r = 0; r < d.length; r++) {
-                            t.push(d[r].join(' '));
-                        }
-                    }
-                }
-
-                this.matrix_vals = t;
-                this.text_val = null;
-            } else if (val && 're' in val && val.im) {
-                if (val) {
+                // set display text
+                if (type == "number") {
                     if (ctrl) {
                         // nothing
                         this.text_val = '=' + val;
                     } else {
-                        this.text_val = '=' + pretty_round(val.re).toString() + ' + ' + pretty_round(val.im).toString() +'i';
+                        this.text_val = '=' + pretty_round(val);
                     }
-                }
-            } else {
-                if (val) {
-                    this.text_val = '=' + val.toString();
+                    
+                } else if (type == "object" && val._data && val._data.length != 0) {
+                    // prob a matrix, render entries
+                    let t = [];
+
+                    if (val._data) {
+                        val = val.map(function (value, index, matrix) {
+                            return pretty_round(value);
+                        });
+
+                        let d = val._data;
+                        if (val._size.length == 1) {
+                            t = [d.join(' ')];
+                        } else {
+                            for (let r = 0; r < d.length; r++) {
+                                t.push(d[r].join(' '));
+                            }
+                        }
+                    }
+
+                    this.matrix_vals = t;
+                    this.text_val = null;
+                } else if (val && 're' in val && val.im) {
+                    if (val) {
+                        if (ctrl) {
+                            // nothing
+                            this.text_val = '=' + val;
+                        } else {
+                            this.text_val = '=' + pretty_round(val.re).toString() + ' + ' + pretty_round(val.im).toString() +'i';
+                        }
+                    }
+                } else {
+                    if (val) {
+                        this.text_val = '=' + val.toString();
+                    }
                 }
             }
         } catch (e) {
@@ -2730,7 +2733,7 @@ function Text(text, pos) {
             ctx.restore();
         }
 
-        if (t.indexOf("=") == -1 && this.matrix_vals.length != 0) {
+        if (this.matrix_vals.length != 0) {
             ctx.save();
             ctx.translate(size.w + grid_size, 0);
 
@@ -2740,7 +2743,7 @@ function Text(text, pos) {
             }
             
             ctx.restore();
-        } else if (!this.selected && this.text_val && this.text_val.length && t.indexOf("=") == -1) {
+        } else if (!this.selected && this.text_val && this.text_val.length) {
             ctx.save();
             ctx.translate(size.w, 0);
             size.w = size.w + draw_simple(this.text_val);
