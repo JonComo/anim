@@ -506,7 +506,7 @@ math.import({
     graph: function(fn) { // graphs y=f(x)
         graph(fn, 0, 1, 2);
     },
-    para: function(r, tmin, tmax, units) { // graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
+    paral: function(r, tmin, tmax, units) { // parametric line, graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
         para(r, tmin, tmax, units);
     },
     graphxy: function(fn) { // graphs y=f(x)
@@ -723,7 +723,7 @@ math.import({
             }
         }
     },
-    field_a: function(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
+    fielda: function(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
         let n = 10;
         let uv = false;
         
@@ -766,7 +766,7 @@ math.import({
         }
         ctx.restore();
     },
-    parametric: function(f, _ur, _vr, _n, ucol, vcol) {
+    paras: function(r, _ur, _vr, _n=1, f) { // parametric surface r(u,v) with optional field f
         let n = 10;
 
         if (_ur <= 0 || _vr <= 0 || n <= 0) {
@@ -777,24 +777,13 @@ math.import({
             n = _n;
         }
 
-        let color = false;
-        if (arguments.length >= 6) {
-            color = true;
-        }
-
         let du = _ur/n;
         let dv = _vr/n;
 
         ctx.save();
-        ctx.strokeStyle = 'black';
 
         let u = 0;
         let v = 0;
-
-        // draw v lines
-        if (color) {
-            ctx.strokeStyle = vcol;
-        }
 
         for (let i = 0; i <= n; i ++) {
             u = du * i;
@@ -803,7 +792,7 @@ math.import({
             for (let j = 0; j <= n; j ++) {
                 v = dv * j;
 
-                let p = f(u, v)._data;
+                let p = r(u, v)._data;
                 let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
                 if (v == 0) {
                     ctx.moveTo(camp[0], camp[1]);
@@ -814,11 +803,6 @@ math.import({
             ctx.stroke();
         }
 
-        // draw u lines
-        if (color) {
-            ctx.strokeStyle = ucol;
-        }
-
         for (let i = 0; i <= n; i ++) {
             v = dv * i;
 
@@ -826,7 +810,7 @@ math.import({
             for (let j = 0; j <= n; j ++) {
 
                 u = du * j;
-                let p = f(u, v)._data;
+                let p = r(u, v)._data;
                 let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
                 if (u == 0) {
                     ctx.moveTo(camp[0], camp[1]);
@@ -837,7 +821,20 @@ math.import({
             ctx.stroke();
         }
 
-        
+        if (f) {
+            for (let i = 0; i <= n; i ++) {
+                u = du * i;
+    
+                for (let j = 0; j <= n; j ++) {
+                    v = dv * j;
+    
+                    let p = r(u, v)._data;
+                    
+                    let vect = f(p[0], p[1], p[2])._data;
+                    draw_vect(p[0], p[1], p[2], p[0]+vect[0], p[1]+vect[1], p[2]+vect[2]);
+                }
+            }
+        }
 
         ctx.restore();
     },
