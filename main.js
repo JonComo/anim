@@ -766,31 +766,31 @@ math.import({
         }
         ctx.restore();
     },
-    paras: function(r, _ur, _vr, _n=1, f) { // parametric surface r(u,v) with optional field f
+    paras: function(r, _urs, _ure, _vrs, _vre, _n=1, f) { // parametric surface r(u,v) with optional field f
         let n = 10;
 
-        if (_ur <= 0 || _vr <= 0 || n <= 0) {
+        if ((_ure-_urs) <= 0 || (_vre-_vrs) <= 0 || n <= 0) {
             return;
         }
 
-        if (arguments.length >= 4) {
+        if (arguments.length >= 6) {
             n = _n;
         }
 
-        let du = _ur/n;
-        let dv = _vr/n;
+        let du = (_ure-_urs)/n;
+        let dv = (_vre-_vrs)/n;
 
         ctx.save();
 
-        let u = 0;
-        let v = 0;
+        let u = _urs;
+        let v = _vrs;
 
         for (let i = 0; i <= n; i ++) {
-            u = du * i;
+            u = _urs + du * i;
 
             ctx.beginPath();
             for (let j = 0; j <= n; j ++) {
-                v = dv * j;
+                v = _vrs + dv * j;
 
                 let p = r(u, v)._data;
                 let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
@@ -804,12 +804,12 @@ math.import({
         }
 
         for (let i = 0; i <= n; i ++) {
-            v = dv * i;
+            v = _vrs + dv * i;
 
             ctx.beginPath();
             for (let j = 0; j <= n; j ++) {
 
-                u = du * j;
+                u = _urs + du * j;
                 let p = r(u, v)._data;
                 let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
                 if (u == 0) {
@@ -823,10 +823,10 @@ math.import({
 
         if (f) {
             for (let i = 0; i <= n; i ++) {
-                u = du * i;
+                u = _urs + du * i;
     
                 for (let j = 0; j <= n; j ++) {
-                    v = dv * j;
+                    v = _vrs + dv * j;
     
                     let p = r(u, v)._data;
                     
@@ -861,6 +861,135 @@ math.import({
         return function g(a) {
             return (f(a+h)-f(a))/h;
         }
+    },
+    elefield: function(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
+        charges = charges._data;
+
+        if (arguments.length == 1) {
+            n = 5;
+            let d = 20 / n;
+            let p = [0, 0];
+            let pl = 5; // path length
+
+            //let move = ((millis % 1000) /1000 * .5 + .5);
+            //console.log(move);
+            
+            for (let x = -10; x <= 10; x+=d) {
+                for (let y = -10; y <= 10; y+=d) {
+                    for (let z = -10; z <= 10; z+=d) {
+                        
+                        var xp = x;
+                        var yp = y
+                        var zp = z;
+
+                        for (let j = 0; j <= pl; j++) {
+                            
+                            ctx.beginPath();
+                            p = cam.graph_to_screen(xp, yp, zp);
+                            ctx.moveTo(p[0], p[1]);
+                            let dead = false;
+
+                            // add up forces from charges
+                            for (let i = 0; i < charges.length; i+= 4) {
+                                let q = charges[i];
+                                let cx = charges[i+1];
+                                let cy = charges[i+2];
+                                let cz = charges[i+3];
+
+                                let v = [xp-cx, yp-cy, zp-cz];
+                                let len = math.norm(v);
+                                let l2 = len*len;
+
+                                let c = math.coulomb.value*q/len/l2;
+
+                                if (len > 2) {
+                                    xp += c*v[0];
+                                    yp += c*v[1];
+                                    zp += c*v[2];
+                                } else {
+                                    j = pl;
+                                    dead = true;
+                                }
+                            }
+
+                            if (dead == false) {
+                                p = cam.graph_to_screen(xp, yp, zp);
+                                ctx.strokeStyle = rgbToHex([math.round((pl-j)/pl * 255), 0, math.round(j/pl * 255)]);
+                                ctx.lineTo(p[0], p[1]);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (arguments.length == 2) {
+            // calculate field at the provided location
+            loc = location._data;
+
+            var xp = loc[0];
+            var yp = loc[1];
+            var zp = loc[2];
+
+            var xt = 0;
+            var yt = 0;
+            var zt = 0;
+
+            // add up forces from charges
+            for (let i = 0; i < charges.length; i+= 4) {
+                let q = charges[i];
+                let cx = charges[i+1];
+                let cy = charges[i+2];
+                let cz = charges[i+3];
+
+                let v = [xp-cx, yp-cy, zp-cz];
+                let len = math.norm(v);
+                let l2 = len*len;
+                
+                let c = math.coulomb.value*q/len/l2; //math.coulomb.value*
+
+                xt += c * v[0];
+                yt += c * v[1];
+                zt += c * v[2];
+            }
+
+            return [xt, yt, zt];
+        }
+    },
+    eleforce: function(charges, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
+        charges = charges._data;
+
+        var oc = charges[j*4];
+        var xp = charges[j*4+1];
+        var yp = charges[j*4+2];
+        var zp = charges[j*4+3];
+
+        var fx = 0;
+        var fy = 0;
+        var fz = 0;
+
+        // add up forces from charges
+        for (let i = 0; i < charges.length; i+= 4) {
+            if (i == j * 4) {
+                continue;
+            }
+
+            let q = charges[i];
+            let cx = charges[i+1];
+            let cy = charges[i+2];
+            let cz = charges[i+3];
+
+            let v = [xp-cx, yp-cy, zp-cz];
+            let len = math.norm(v);
+            let l2 = len*len;
+            
+            let c = math.coulomb.value*q*oc/len/l2; //math.coulomb.value*
+
+            fx += c * v[0];
+            fy += c * v[1];
+            fz += c * v[2];
+        }
+
+        return [fx, fy, fz];
     }
 });
 
@@ -4320,7 +4449,8 @@ window.onload = function() {
         }, 1000/fps);
 
         parser.set('_frame', t);
-        parser.set('_millis', Date.now());
+        millis = Date.now();
+        parser.set('_millis', millis);
 
         if (presenting) {
             mouse_time -= 1;
