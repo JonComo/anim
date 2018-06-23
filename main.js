@@ -238,6 +238,12 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
 }
 
 math.import({
+    rad: function(deg) { // converts to radians
+        return deg * math.pi/180;
+    },
+    deg: function(rad) { // converts to degrees
+        return rad * 180.0 / math.pi;
+    },
     loop: function(fn, count) { // function of index 0 to count-1
         if (count <= 0) {
             return;
