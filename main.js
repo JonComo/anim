@@ -868,6 +868,56 @@ math.import({
             return (f(a+h)-f(a))/h;
         }
     },
+    nnet: function(layers) {
+        layers = layers._data;
+
+        loc = function(i, j, units) {
+            let pad = 2;
+            return cam.graph_to_screen(pad * units/2 - pad/2 - i*pad, j*pad, 0);
+        }
+
+        ctx.save();
+        ctx.globalAlpha = .4;
+
+        // connections
+        for (let j = 0; j < layers.length-1; j++) {
+            let units = layers[j];
+            let units_next = layers[j+1];
+            
+            
+            for (let i = 0; i < units; i++) {
+                let p = loc(i, j, units);
+
+                for (let k = 0; k < units_next; k++) {
+
+                    let p2 = loc(k, j+1, units_next);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(p[0], p[1]);
+                    ctx.lineTo(p2[0], p2[1]);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        ctx.globalAlpha = 1;
+
+        // neurons
+        for (let j = 0; j < layers.length; j++) {
+            let units = layers[j];
+
+            for (let i = 0; i < units; i++) {
+                let p = loc(i, j, units);
+                ctx.beginPath();
+                ctx.arc(p[0], p[1], 14, 0, 2*Math.PI);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        ctx.restore();
+    },
     elefield: function(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
         charges = charges._data;
 
