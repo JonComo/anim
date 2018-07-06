@@ -918,6 +918,9 @@ math.import({
 
         ctx.restore();
     },
+    int: function(n) {
+        return n | 0;
+    },
     elefield: function(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
         charges = charges._data;
 
