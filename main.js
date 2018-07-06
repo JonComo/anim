@@ -35,7 +35,6 @@ var cam;
 var num_frames = 3;
 var frame = 1; // current frame
 var next_frame;
-var playing;
 var rendering = false;
 var presenting = false;
 var debug = false;
@@ -3691,6 +3690,15 @@ function Frames(pos) {
             return true;
         }
 
+        if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) != -1) {
+            if (!transition.transitioning) {
+                transition_with_next(Number(key));
+                return true;
+            }
+
+            return false;
+        }
+
         return false;
     }
 
@@ -4147,7 +4155,7 @@ function transition_with_next(next) {
     next_frame = next;
     change_frames();
     let steps = t_steps;
-    if (!presenting) {
+    if (!presenting || meta || ctrl) {
         // make it instant when menu open
         steps = 0;
     }
@@ -4373,13 +4381,6 @@ window.onload = function() {
             tools = {'t': 'text', 's': 'shape', 'c': 'camera', 'v': 'vector'};
             if (key in tools) {
                 tool = tools[key];
-            }
-        }
-
-        
-        if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) != -1) {
-            if (!transition.transitioning) {
-                transition_with_next(Number(key));
             }
         }
     };
@@ -4682,10 +4683,6 @@ window.onload = function() {
         draw_cursor();
         
         transition.update();
-
-        if (playing) {
-            transition_with_next(loop_frame(frame + 1));
-        }
 
         t += 1;
     }
