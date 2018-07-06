@@ -8,6 +8,7 @@ var light = "#ffffff";
 
 var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", "#66E07A", gray];
 
+var font_matrix = "30px Courier";
 var font_small = "26px Courier";
 var font_menu = "30px Courier";
 var font_anim = "40px Menlo";
@@ -15,6 +16,9 @@ var isMac = navigator.platform.toUpperCase().indexOf('MAC')>=0;
 if (!isMac) {
     font_anim = "40px Courier New";
 }
+
+var error_timer = 0;
+var error_text = "";
 
 var scale_factor = 2; // retina
 
@@ -1052,6 +1056,12 @@ math.import({
         return [fx, fy, fz];
     }
 });
+
+function report_error(e) {
+    console.log(e);
+    error_timer = 100;
+    error_text = e;
+}
 
 // undo
 var states = [];
@@ -2666,24 +2676,7 @@ function Text(text, pos) {
                     
                 } else if (type == "object" && val._data && val._data.length != 0) {
                     // prob a matrix, render entries
-                    let t = [];
-
-                    if (val._data) {
-                        val = val.map(function (value, index, matrix) {
-                            return pretty_round(value);
-                        });
-
-                        let d = val._data;
-                        if (val._size.length == 1) {
-                            t = [d.join(' ')];
-                        } else {
-                            for (let r = 0; r < d.length; r++) {
-                                t.push(d[r].join(' '));
-                            }
-                        }
-                    }
-
-                    this.matrix_vals = t;
+                    this.matrix_vals = val._data;
                     this.text_val = null;
                 } else if (val && 're' in val && val.im) {
                     if (val) {
@@ -2925,12 +2918,44 @@ function Text(text, pos) {
 
         if (this.matrix_vals.length != 0) {
             ctx.save();
-            ctx.translate(size.w + grid_size, 0);
+            ctx.translate(size.w, 0);
+            ctx.fillText("=", 0, 0);
+            ctx.translate(130, 0);
+            ctx.textAlign = "right";
+            
+            ctx.font = font_matrix;
+
+            let wpad = grid_size * 3;
+
+            let height = this.matrix_vals.length * grid_size;
+            let width = this.matrix_vals[0].length * wpad;
 
             for (let i = 0; i < this.matrix_vals.length; i++) {
-                ctx.textAlign = 'left';
-                ctx.fillText(this.matrix_vals[i], 0, grid_size * i);
+                let row = this.matrix_vals[i];
+
+                for (let j = 0; j < row.length; j++) {
+                    ctx.fillText(pretty_round(this.matrix_vals[i][j]), j * wpad, i * grid_size);
+                }
             }
+
+            let sx = -100;
+            let sy = -22;
+
+            ctx.lineWidth = 3.5;
+            
+            ctx.beginPath();
+            ctx.moveTo(sx + 7, sy);
+            ctx.lineTo(sx, sy);
+            ctx.lineTo(sx, sy + height);
+            ctx.lineTo(sx + 7, sy + height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(sx + width - 7, sy);
+            ctx.lineTo(sx + width, sy);
+            ctx.lineTo(sx + width, sy + height);
+            ctx.lineTo(sx + width - 7, sy + height);
+            ctx.stroke();
             
             ctx.restore();
         } else if (!this.selected && this.text_val && this.text_val.length) {
@@ -2970,8 +2995,7 @@ function Text(text, pos) {
             try {
                 this.cargs = math.compile(this.args);
             } catch(e) {
-                console.log('compile2 error: ');
-                console.log(e);
+                //report_error(e);
             }
         } else {
             this.args = [text];
@@ -4024,10 +4048,6 @@ function draw_axes(ctx) {
     }
 
     if (csys_style == "3d" || csys_style == "flat") {
-        if (!cam.R) {
-            return;
-        }
-
         // draw gridlines
         ctx.strokeStyle = "#DDDDDD";
 
@@ -4109,7 +4129,10 @@ function draw_axes(ctx) {
             ctx.lineTo(x, y);
             ctx.stroke();
         }
-    
+        
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 0;
+        
         for (let i = 0; i < 3; i++) {
             x = axes[i][0];
             y = axes[i][1];
@@ -4117,7 +4140,6 @@ function draw_axes(ctx) {
             ctx.beginPath();
             ctx.fillStyle = '#FFFFFF';
             ctx.arc(x, y, 16, 0, 2*Math.PI);
-            ctx.globalAlpha = 1;
             ctx.fill();
     
             ctx.fillStyle = colors[i%3];
@@ -4678,6 +4700,14 @@ window.onload = function() {
         if (!presenting) {
             frames.render(ctx);
             menu.render(ctx);
+        }
+
+        if (error_timer > 0) {
+            ctx.save();
+            ctx.fillStyle = "red";
+            ctx.fillText(error_text, 250, 30);
+            ctx.restore();
+            error_timer -= 1;
         }
 
         draw_cursor();
