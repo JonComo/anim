@@ -23,6 +23,8 @@ var point_size = 6;
 
 var c;
 var ctx;
+var win_width, win_height;
+
 var formula_text;
 
 var animator;
@@ -877,7 +879,7 @@ math.import({
         }
 
         ctx.save();
-        ctx.globalAlpha = .4;
+        ctx.strokeStyle = "#DDDDDD";
 
         // connections
         for (let j = 0; j < layers.length-1; j++) {
@@ -900,7 +902,7 @@ math.import({
             }
         }
 
-        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
 
         // neurons
         for (let j = 0; j < layers.length; j++) {
@@ -3267,9 +3269,10 @@ function Text(text, pos) {
 }
 
 function Camera() {
-    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1, rxyz: [0, 0, 0]};
+    this.default_props = {p: {x:c.width/2, y:c.height/2}, w: 1, h: 1, rxyz: [0, 0, 0], style: "3d"};
     this.properties = {};
     this.properties[frame] = copy(this.default_props);
+    this.dragging_rotate = false;
 
     function generate_ticks() {
         let ticks = [];
@@ -3305,6 +3308,44 @@ function Camera() {
 
     this.ticks = generate_ticks();
 
+    this.style = function() {
+        let props = this.properties[frame];
+        if (props) {
+            return props.style;
+        }
+
+        return null;
+    }
+
+    this.set_style = function(style) {
+        let props = this.properties[frame];
+        if (props) {
+            props.style = style;
+            return true;
+        }
+
+        return false;
+    }
+
+    this.mouse_down = function(evt) {
+        if (meta || ctrl) {
+            let props = this.properties[frame];
+            if (!props) {
+                return false;
+            }
+
+            let dx = mouse.x - props.p.x;
+            let dy = mouse.y - props.p.y;
+
+            let dist = dx * dx + dy * dy;
+            this.dragging_rotate = dist > 100000;
+
+            return true;
+        }
+
+        return false;
+    }
+
     this.mouse_drag = function(evt) {
         if (tool != "camera") {
             return;
@@ -3315,10 +3356,26 @@ function Camera() {
         if (meta || ctrl) {
             // rotate
             let r = props.rxyz;
-            a = r[1] - (mouse.y - mouse_last.y)/100;
-            b = r[2] - (mouse.x - mouse_last.x)/100;
 
-            r = [0, a, b];
+            if (!this.dragging_rotate) {
+                a = r[1] - (mouse.y - mouse_last.y)/100;
+                b = r[2] - (mouse.x - mouse_last.x)/100;
+                r = [r[0], a, b];
+                
+            } else {
+                let angle = math.atan2(mouse.y - props.p.y, mouse.x - props.p.x);
+                let angle2 = math.atan2(mouse_last.y - props.p.y, mouse_last.x - props.p.x);
+                let c = (angle - angle2);
+
+                if (Math.abs(c) > 1) {
+                    c = 0;
+                }
+
+                c += r[0];
+
+                r = [c, r[1], r[2]];
+            }
+
             this.rotate(r);
         } else {
             // translate
@@ -3790,6 +3847,23 @@ function Menu(pos) {
         tool = "camera";
     }));
 
+    this.buttons.push(new Button("csys", {x: 0, y: 0}, function(b) {
+        let csys_style = cam.style();
+
+        if (csys_style == "3d") {
+            cam.set_style("flat");
+            cam.properties[frame].w = 1.5;
+            cam.properties[frame].h = 1.5;
+            cam.rotate([-Math.PI/2,0,-Math.PI/2]);
+        } else if (csys_style == "flat") {
+            cam.set_style("none");
+        } else if (csys_style == "none") {
+            cam.set_style("3d");
+            cam.properties[frame].w = 1;
+            cam.properties[frame].h = 1;
+        }
+    }));
+
     this.buttons.push(new Button("view xy", {x: 0, y: 0}, function(b) {
         cam.rotate([-Math.PI/2,0,-Math.PI/2]);
     }));
@@ -3919,87 +3993,129 @@ function loop_frame(f) {
 }
 
 function draw_axes(ctx) {
-    if (!cam.R) {
-        return;
-    }
-
     ctx.save();
 
+    csys_style = cam.style();
+    props = cam.properties[frame];
 
-    // draw gridlines
-    
-    ctx.strokeStyle = "#000000";
-    ctx.globalAlpha = 0.05;
+    // do a fade in and out
+    if (transition.transitioning) {
+        csys_next_style = cam.properties[next_frame].style;
 
-    let axis = cam.ticks[0];
-    axis = math.matrix(axis);
-    axis = cam.graph_to_screen_mat(axis);
-    let N = axis.length;
-    for (let j = 0; j < N; j += 2) {
+        if (csys_next_style != null && csys_next_style != csys_style) {
+            // changing text
+            let constrained = constrain(t_ease);
+            ctx.globalAlpha = Math.cos(constrained * 2 * Math.PI) / 2 + .5;
+            if (constrained >= .5) {
+                csys_style = csys_next_style;
+                if (cam.properties[next_frame]) {
+                    props = cam.properties[next_frame];
+                }
+            }
+        }
+    }
 
-        if (j == 20 || j == 62) {
-            continue;
+    if (csys_style == "3d" || csys_style == "flat") {
+        if (!cam.R) {
+            return;
         }
 
-        ctx.beginPath();
-        ctx.moveTo(axis[j][0], axis[j][1]);
-        ctx.lineTo(axis[j+1][0], axis[j+1][1]);
-        ctx.stroke();
-    }
+        // draw gridlines
+        ctx.strokeStyle = "#DDDDDD";
 
+        if (csys_style == "3d") {
+            let axis = cam.ticks[0];
+            axis = math.matrix(axis);
+            axis = cam.graph_to_screen_mat(axis);
+            let N = axis.length;
+            for (let j = 0; j < N; j += 2) {
+        
+                if (j == 20 || j == 62) {
+                    continue;
+                }
+        
+                ctx.beginPath();
+                ctx.moveTo(axis[j][0], axis[j][1]);
+                ctx.lineTo(axis[j+1][0], axis[j+1][1]);
+                ctx.stroke();
+            }
+        } else {
+            let w = win_width * 2;
+            let h = win_height * 2;
 
-    ctx.textAlign = 'center';
-    ctx.globalAlpha = .5;
+            let dx = grid_size * props.w;
+            let dy = grid_size * props.h;
 
-    // center
-    let c = cam.graph_to_screen_mat(math.matrix([[0, 0, 0]]));
+            let p = cam.graph_to_screen(0, 0, 0);
 
-    // axes
-    let axes = math.matrix([[10, 0, 0],
-                [0, 10, 0],
-                [0, 0, 10],
-                [-10, 0, 0],
-                [0, -10, 0],
-                [0, 0, -10]]);
+            for (let x = p[0] % dx; x < w; x += dx) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
 
-    axes = cam.graph_to_screen_mat(axes);
+            for (let y = p[1] % dy; y < h; y += dy) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
 
-    let labels;
-    if (cam.axes_names) {
-        labels = cam.axes_names;
-    } else {
-        labels = ['x', 'y', 'z'];
-    }
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = "#000000";
+
+        // center
+        let c = cam.graph_to_screen(0, 0, 0);
     
-    let colors = ["#FF0000", "#00FF00", "#0000FF"];
+        // axes
+        let axes = math.matrix([[10, 0, 0],
+                    [0, 10, 0],
+                    [0, 0, 10],
+                    [-10, 0, 0],
+                    [0, -10, 0],
+                    [0, 0, -10]]);
     
-    N = axes.length;
-    for (let i = 0; i < N; i ++) {
-        ctx.fillStyle = colors[i%3];
-        ctx.strokeStyle = colors[i%3];
-
-        x = axes[i][0];
-        y = axes[i][1];
-
-        ctx.beginPath();
-        ctx.moveTo(c[0][0], c[0][1]);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    }
-
-    for (let i = 0; i < 3; i++) {
-        x = axes[i][0];
-        y = axes[i][1];
-
-        ctx.beginPath();
-        ctx.fillStyle = '#FFFFFF';
-        ctx.arc(x, y, 16, 0, 2*Math.PI);
-        ctx.globalAlpha = 1;
-        ctx.fill();
-
-        ctx.fillStyle = colors[i%3];
-        ctx.strokeStyle = colors[i%3];
-        ctx.fillText(labels[i], x, y);
+        axes = cam.graph_to_screen_mat(axes);
+    
+        let labels;
+        if (cam.axes_names) {
+            labels = cam.axes_names;
+        } else {
+            labels = ['x', 'y', 'z'];
+        }
+        
+        let colors = ["#FF0000", "#00FF00", "#0000FF"];
+        
+        N = axes.length;
+        for (let i = 0; i < N; i ++) {
+            ctx.fillStyle = colors[i%3];
+            ctx.strokeStyle = colors[i%3];
+    
+            x = axes[i][0];
+            y = axes[i][1];
+    
+            ctx.beginPath();
+            ctx.moveTo(c[0], c[1]);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+    
+        for (let i = 0; i < 3; i++) {
+            x = axes[i][0];
+            y = axes[i][1];
+    
+            ctx.beginPath();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.arc(x, y, 16, 0, 2*Math.PI);
+            ctx.globalAlpha = 1;
+            ctx.fill();
+    
+            ctx.fillStyle = colors[i%3];
+            ctx.strokeStyle = colors[i%3];
+            ctx.fillText(labels[i], x, y);
+        }
     }
 
     ctx.restore();
@@ -4101,11 +4217,12 @@ function draw_cursor() {
 window.onload = function() {
     
     c = document.createElement("canvas");
-    let w = window.innerWidth; let h = window.innerHeight;
-    c.width = w*scale_factor;
-    c.height = h*scale_factor;
-    c.style.width = w;
-    c.style.height = h;
+    win_width = window.innerWidth; 
+    win_height = window.innerHeight;
+    c.width = win_width*scale_factor;
+    c.height = win_height*scale_factor;
+    c.style.width = win_width;
+    c.style.height = win_height;
 
     ctx = c.getContext("2d");
     ctx.fillStyle = dark;
@@ -4296,6 +4413,10 @@ window.onload = function() {
             math.compile('click()').eval(parser.scope);
         } catch(e) {
 
+        }
+
+        if (cam.mouse_down(evt)) {
+            return;
         }
 
         if (presenting) {
