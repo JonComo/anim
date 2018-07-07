@@ -873,16 +873,20 @@ math.import({
             return (f(a+h)-f(a))/h;
         }
     },
-    nnet: function(layers) {
+    nnet: function(layers, p) { // Draws a neural net layers = [1, 2, 3, 2, 1] pos = [1, 2, 3]
         layers = layers._data;
+        let pos = [0, 0, 0];
+
+        if (p && p._data.length == 3) {
+            pos = p._data;
+        }
 
         loc = function(i, j, units) {
             let pad = 2;
-            return cam.graph_to_screen(pad * units/2 - pad/2 - i*pad, j*pad, 0);
+            return cam.graph_to_screen(pos[0] + pad * units/2 - pad/2 - i*pad, pos[1] + j*pad, pos[2]);
         }
 
         ctx.save();
-        ctx.strokeStyle = "#DDDDDD";
 
         // connections
         for (let j = 0; j < layers.length-1; j++) {
@@ -905,7 +909,7 @@ math.import({
             }
         }
 
-        ctx.strokeStyle = "#000000";
+        ctx.fillStyle = 'white';
 
         // neurons
         for (let j = 0; j < layers.length; j++) {
@@ -915,7 +919,6 @@ math.import({
                 let p = loc(i, j, units);
                 ctx.beginPath();
                 ctx.arc(p[0], p[1], 14, 0, 2*Math.PI);
-                ctx.fillStyle = 'white';
                 ctx.fill();
                 ctx.stroke();
             }
@@ -4025,6 +4028,10 @@ function loop_frame(f) {
 }
 
 function draw_axes(ctx) {
+    if (!cam.R) {
+        return;
+    }
+    
     ctx.save();
 
     csys_style = cam.style();
