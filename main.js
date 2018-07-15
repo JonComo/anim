@@ -3592,6 +3592,20 @@ function load(evt) {
     reader.readAsText(f);
 }
 
+function save_local() {
+    localStorage.setItem('page', state_to_string());
+}
+
+function load_local() {
+    // Grab the objects from storage
+    let page = localStorage.getItem('page');
+    if (page && page.length) {
+        console.log(page);
+        console.log('loaded local');
+        str_to_state(page);
+    }
+}
+
 function text_array_to_objs(arr, keep_animation) {
     
     let new_objs = [];
@@ -3924,15 +3938,11 @@ function Menu(pos) {
 
     this.buttons.push(new Button("save local", {x: 0, y: 0}, function(b) {
         // Put the object into storage
-        localStorage.setItem('page', state_to_string());
+        save_local();
     }));
 
     this.buttons.push(new Button("load local", {x: 0, y: 0}, function(b) {
-        // Put the object into storage
-        let page = localStorage.getItem('page');
-        if (page && page.length) {
-            str_to_state(page);
-        }
+        load_local();
     }));
 
     for (let i = 0; i < colors.length; i++) {
