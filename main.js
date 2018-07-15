@@ -873,22 +873,31 @@ math.import({
             return (f(a+h)-f(a))/h;
         }
     },
-    nnet: function(layers, p) { // Draws a neural net layers = [1, 2, 3, 2, 1] pos = [1, 2, 3]
+    nnet: function(layers, _pos, _high_conn, _high_neur) { // Draws a neural net layers = [1, 2, 3, 2, 1]
         layers = layers._data;
-        let pos = [0, 0, 0];
+        let pad = 120;
+        let pos = [0, 0];
+        if (arguments.length >= 2) {
+            pos = _pos._data;
+        }
 
-        if (p && p._data.length == 3) {
-            pos = p._data;
+        let tl = parser.eval("text_loc");
+        if (tl) {
+            pos = [tl[0] + pos[0], tl[1] + pos[1]];
         }
 
         loc = function(i, j, units) {
-            let pad = 2;
-            return cam.graph_to_screen(pos[0] + pad * units/2 - pad/2 - i*pad, pos[1] + j*pad, pos[2]);
+            let pad2 = 120;
+            return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
+            //return [pos[0] + pad2 * units/2 - pad2/2 - i*pad2, pos[1] - pad2*2 - j*pad2];
         }
 
         ctx.save();
 
         // connections
+        let high_conn = [];
+        let high_neur = [];
+
         for (let j = 0; j < layers.length-1; j++) {
             let units = layers[j];
             let units_next = layers[j+1];
@@ -900,6 +909,43 @@ math.import({
                 for (let k = 0; k < units_next; k++) {
 
                     let p2 = loc(k, j+1, units_next);
+
+                    /*
+                    let vline = [p2[0] - p[0], p2[1] - p[1]];
+                    let mvect = [mouse.x - p[0], mouse.y - p[1]];
+
+                    let dot = mvect[0] * vline[0] + mvect[1] * vline[1];
+
+                    let vlen = math.norm(vline);
+                    let total_len = vlen * math.norm(mvect);
+
+                    if (dot > total_len * .998 && dot < vlen*vlen) {
+                        ctx.strokeStyle = "red";
+                    } else {
+                        ctx.strokeStyle = "black";
+                    } */
+
+                    ctx.strokeStyle = "black";
+
+                    if (high_conn.length == 0) {
+                        let dx1 = p[0] - mouse.x;
+                        let dy1 = p[1] - mouse.y;
+
+                        let dx2 = p2[0] - mouse.x;
+                        let dy2 = p2[1] - mouse.y;
+
+                        let d1 = math.sqrt(dx1*dx1 + dy1*dy1);
+                        let d2 = math.sqrt(dx2*dx2 + dy2*dy2);
+
+                        let vline = [p2[0] - p[0], p2[1] - p[1]];
+                        let vlen = math.norm(vline);
+
+                        if (d1 + d2 < vlen + 1) {
+                            ctx.strokeStyle = "red";
+                            high_conn = [i, k]; // unit to unit
+                            high_neur = [[i, j], [k, j+1]];
+                        }
+                    }
                     
                     ctx.beginPath();
                     ctx.moveTo(p[0], p[1]);
@@ -917,6 +963,28 @@ math.import({
 
             for (let i = 0; i < units; i++) {
                 let p = loc(i, j, units);
+
+                ctx.strokeStyle = "black";
+                if (high_conn.length != 0) {
+                    if (j == 0) {
+                        if (high_conn[0] == i) {
+                            ctx.strokeStyle = "red";
+                        }
+                    } else if (j == 1) {
+                        if (high_conn[1] == i) {
+                            ctx.strokeStyle = "red";
+                        }
+                    }
+                } else {
+                    let dx = mouse.x - p[0];
+                    let dy = mouse.y - p[1];
+                    
+                    if (dx*dx + dy*dy < 400) {
+                        ctx.strokeStyle = "red";
+                        high_neur = [[i, j]];
+                    }
+                }
+
                 ctx.beginPath();
                 ctx.arc(p[0], p[1], 14, 0, 2*Math.PI);
                 ctx.fill();
@@ -925,6 +993,10 @@ math.import({
         }
 
         ctx.restore();
+
+        if (arguments.length >= 3) {
+            return [high_conn, high_neur];
+        }
     },
     int: function(n) {
         return n | 0;
@@ -1057,6 +1129,90 @@ math.import({
         }
 
         return [fx, fy, fz];
+    },
+    vismult: function(W, x) { // visualize matrix vector multiplication
+        let pad = 120;
+
+        let tl = parser.eval('text_loc');
+        let loc = [tl[0] + pad/2, tl[1] + pad];
+
+        let result = math.multiply(W, x);
+        
+        ctx.save();
+
+        ctx.textAlign = "center";
+
+        let rp = [loc[0], loc[1]];
+        let Wp = [loc[0] + pad*3/2, loc[1]];
+        let xp = [loc[0] + pad*4/2 + W._size[1] * pad, loc[1] + (W._size[0]-1)*pad/2-(x._size[0]-1)*pad/2];
+
+        let netx = -pad;
+        let nety = (W._size[0]-1)*pad/2 + pad;
+
+        let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([netx, nety]), true);
+        let high_conn = high[0];
+        let high_neur = high[1];
+
+        let is_h_conn = high_conn.length;
+        let is_h_neur = high_neur.length;
+
+        for (let i = 0; i < result._size[0]; i++) {
+            let p = [rp[0], rp[1] + i*pad];
+            ctx.fillStyle = "black";
+            ctx.font = font_small;
+
+            for (let n = 0; n < high_neur.length; n ++) {
+                let highn = high_neur[n];
+                if (highn[1] == 1 && highn[0] == i) {
+                    ctx.fillStyle = "red";
+                    ctx.font = font_anim;
+                }
+            }
+
+            ctx.fillText(pretty_round(result._data[i]), p[0], p[1]);
+        }
+
+        for (let i = 0; i < W._size[0]; i++) {
+            for (let j = 0; j < W._size[1]; j++) {
+                let p = [Wp[0] + j*pad, Wp[1] + i*pad];
+                ctx.fillStyle = "black";
+                ctx.font = font_small;
+
+                if (is_h_conn && high_conn[0] == j && high_conn[1] == i) {
+                    ctx.fillStyle = "red";
+                    ctx.font = font_anim;
+                }
+
+                ctx.fillText(pretty_round(W._data[i][j]), p[0], p[1]);
+            }
+        }
+
+        for (let i = 0; i < x._size[0]; i++) {
+            let p = [xp[0], xp[1] + i * pad];
+            ctx.fillStyle = "black";
+            ctx.font = font_small;
+
+            for (let n = 0; n < high_neur.length; n ++) {
+                let highn = high_neur[n];
+                if (highn[1] == 0 && highn[0] == i) {
+                    ctx.fillStyle = "red";
+                    ctx.font = font_anim;
+                }
+            }
+
+            ctx.fillText(pretty_round(x._data[i]), p[0], p[1]);
+        }
+
+        ctx.fillStyle = "black";
+        ctx.font = font_anim;
+        ctx.fillText("=", rp[0] + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
+        ctx.fillText("*", Wp[0] + (W._size[1]-1)*pad + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
+
+        draw_brackets(rp[0]-pad/2, rp[1]-pad/4, pad, result._size[0] * pad - pad/2);
+        draw_brackets(Wp[0]-pad/2, Wp[1]-pad/4, W._size[1] * pad, W._size[0] * pad - pad/2);
+        draw_brackets(xp[0]-pad/2, xp[1]-pad/4, pad, x._size[0] * pad - pad/2);
+
+        ctx.restore();
     }
 });
 
@@ -1487,6 +1643,24 @@ function draw_vect(_x, _y, _z, x, y, z) {
     ctx.lineTo(b.x + Math.cos(theta - Math.PI*3/4) * 15, b.y + Math.sin(theta - Math.PI*3/4) * 15);
     ctx.moveTo(b.x, b.y);
     ctx.lineTo(b.x + Math.cos(theta + Math.PI*3/4) * 15, b.y + Math.sin(theta + Math.PI*3/4) * 15);
+    ctx.stroke();
+}
+
+function draw_brackets(sx, sy, width, height) {
+    ctx.lineWidth = 3.5;
+    
+    ctx.beginPath();
+    ctx.moveTo(sx + 7, sy);
+    ctx.lineTo(sx, sy);
+    ctx.lineTo(sx, sy + height);
+    ctx.lineTo(sx + 7, sy + height);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(sx + width - 7, sy);
+    ctx.lineTo(sx + width, sy);
+    ctx.lineTo(sx + width, sy + height);
+    ctx.lineTo(sx + width - 7, sy + height);
     ctx.stroke();
 }
 
@@ -2661,6 +2835,7 @@ function Text(text, pos) {
         ctx.globalAlpha = i.c[3];
 
         try {
+            parser.set("text_loc", [i.p.x, i.p.y]);
             let val = c.eval(parser.scope);
 
             // only display the value if its not an assignment or constant
@@ -2942,24 +3117,7 @@ function Text(text, pos) {
                 }
             }
 
-            let sx = -100;
-            let sy = -22;
-
-            ctx.lineWidth = 3.5;
-            
-            ctx.beginPath();
-            ctx.moveTo(sx + 7, sy);
-            ctx.lineTo(sx, sy);
-            ctx.lineTo(sx, sy + height);
-            ctx.lineTo(sx + 7, sy + height);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(sx + width - 7, sy);
-            ctx.lineTo(sx + width, sy);
-            ctx.lineTo(sx + width, sy + height);
-            ctx.lineTo(sx + width - 7, sy + height);
-            ctx.stroke();
+            draw_brackets(-100, -22, width, height);
             
             ctx.restore();
         } else if (!this.selected && this.text_val && this.text_val.length) {
