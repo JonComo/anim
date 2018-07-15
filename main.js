@@ -2663,9 +2663,10 @@ function Text(text, pos) {
         try {
             let val = c.eval(parser.scope);
 
-            // only display the value if its not an assignment
+            // only display the value if its not an assignment or constant
             let op_type = math.parse(this.args[0]).type;
-            if (op_type.indexOf("Assignment") == -1) {
+            
+            if (op_type.indexOf("Assignment") == -1 && op_type != "ConstantNode") {
                 let type = typeof val;
 
                 // set display text
