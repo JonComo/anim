@@ -3559,9 +3559,9 @@ function str_to_state(str) {
 
     objs = text_array_to_objs(arr, true);
 
-    if (dict.cam) {
+    if (dict.cam && dict.cam.properties) {
         cam = new Camera();
-        cam.properties = dict.cam;
+        cam.properties = dict.cam.properties;
         cam.update_props();
     }
 }
@@ -3600,8 +3600,6 @@ function load_local() {
     // Grab the objects from storage
     let page = localStorage.getItem('page');
     if (page && page.length) {
-        console.log(page);
-        console.log('loaded local');
         str_to_state(page);
     }
 }
