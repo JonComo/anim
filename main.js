@@ -3547,13 +3547,22 @@ function str_to_state(str) {
     let dict = JSON.parse(str);
     let arr = dict["objs"];
 
-    num_frames = dict["num_frames"];
-    frame = dict["frame"];
-    frames.create_buttons();
+    if (dict["num_frames"]) {
+        num_frames = dict["num_frames"];
+    }
+
+    if (dict["frame"]) {
+        frame = dict["frame"];
+        frames.create_buttons();
+    }
 
     objs = text_array_to_objs(arr, true);
-    cam = new Camera();
-    cam.properties = dict.cam.properties;
+
+    if (dict.cam) {
+        cam = new Camera();
+        cam.properties = dict.cam;
+        cam.update_props();
+    }
 }
 
 function save(objs) {
