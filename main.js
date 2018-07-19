@@ -532,10 +532,10 @@ math.import({
     graphyz: function(fn) {
         graph(fn, 1, 2, 0);
     },
-    shape: function(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
+    draw: function(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
         let N = points.size()[0];
         points = cam.graph_to_screen_mat(points);
-
+        
         ctx.save();
         ctx.beginPath();
         let p; let lastp;
@@ -1213,6 +1213,84 @@ math.import({
         draw_brackets(xp[0]-pad/2, xp[1]-pad/4, pad, x._size[0] * pad - pad/2);
 
         ctx.restore();
+    },
+    magfield: function(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+
+        n = 5;
+        let d = 20 / n;
+
+        let b_at = function(x, y, z, path, current) {
+            path = path._data;
+
+            let b = math.zeros(3);
+            let c = current * math.magneticConstant.value / 4.0 / math.PI; // u0 I / 4 / pi
+
+            for (let i = 0; i < path.length-1; i += 1) {
+                let p1 = path[i];
+                let p2 = path[i+1];
+
+                let r = math.subtract([x, y, z], p1);
+                let rnorm = math.norm(r);
+                r = math.multiply(r, 1/rnorm);
+
+                let ds = math.subtract(p2, p1);
+                let db = math.cross(ds, r);
+                db = math.multiply(db, 1/math.pow(rnorm, 2));
+
+                b = math.add(b, db);
+            }
+
+            return math.multiply(b, c);
+        };
+
+        if (arguments.length >= 3) {
+            at_point = at_point._data;
+            let b = b_at(at_point[0], at_point[1], at_point[2], path, current);
+            
+            return b;
+        } else {
+            for (let x = -10; x <= 10; x+=d) {
+                for (let y = -10; y <= 10; y+=d) {
+                    for (let z = -10; z <= 10; z+=d) {
+    
+                        let b = b_at(x, y, z, path, current);
+    
+                        if (math.norm(b) > .1) {
+                            b = b._data;
+                            draw_vect(x, y, z, x + b[0], y+b[1], z+b[2]);
+                        }
+                    }
+                }
+            }
+        }
+        
+    },
+    circle: function(_p, r, _n) {
+        let n = 10;
+        if (arguments.length >= 3) {
+            n = _n;
+        }
+
+        let path = [];
+        for (let i = 0; i <= n; i++) {
+            let t = i/n * 2 * math.PI;
+            let p = math.add(_p, [math.cos(t)*r, math.sin(t)*r, 0]);
+            path.push(p);
+        }
+
+        return math.matrix(path);
+    },
+    zer: function() {
+        return [0, 0, 0];
+    },
+    linspace: function(a, b, steps) {
+        let path = [];
+
+        for (let t = 0; t <= 1; t += 1/steps) {
+            path.push(math.add(math.multiply(a, (1-t)),  math.multiply(t, b)));
+        }
+
+        return math.matrix(path);
     }
 });
 
@@ -2803,6 +2881,7 @@ function Text(text, pos) {
         }
 
         this.text_val = "";
+        this.matrix_vals = [];
         let expr = "";
 
         if (this.new) {
@@ -3109,11 +3188,19 @@ function Text(text, pos) {
             let height = this.matrix_vals.length * grid_size;
             let width = this.matrix_vals[0].length * wpad;
 
+            if (typeof this.matrix_vals[0] == "number") {
+                width = wpad;
+            }
+
             for (let i = 0; i < this.matrix_vals.length; i++) {
                 let row = this.matrix_vals[i];
 
-                for (let j = 0; j < row.length; j++) {
-                    ctx.fillText(pretty_round(this.matrix_vals[i][j]), j * wpad, i * grid_size);
+                if (typeof row == "number") {
+                    ctx.fillText(pretty_round(row), 0, i * grid_size, wpad/2);
+                } else {
+                    for (let j = 0; j < row.length; j++) {
+                        ctx.fillText(pretty_round(row[j]), j * wpad, i * grid_size, wpad/2);
+                    }
                 }
             }
 
