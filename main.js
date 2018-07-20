@@ -1305,10 +1305,13 @@ math.import({
 
         var utterThis = new SpeechSynthesisUtterance(text);
         utterThis.voice = voices[voice];
+        synth.cancel();
         synth.speak(utterThis);
     },
     enableVolMeter: function () {
-        initVolumeMeter();
+        if (!meter) {
+            initVolumeMeter();
+        }
     }
 });
 
