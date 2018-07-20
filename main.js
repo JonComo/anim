@@ -1296,7 +1296,7 @@ math.import({
 
         return math.matrix(path);
     },
-    say: function(text, _voice) {
+    say: function(text, _voice, _rate, _pitch) { // text to speech
         let voice = 11;
 
         if (_voice) {
@@ -1304,6 +1304,16 @@ math.import({
         }
 
         var utterThis = new SpeechSynthesisUtterance(text);
+        utterThis.pitch = .8;
+
+        if (arguments.length >= 3) {
+            utterThis.rate = _rate;
+        }
+
+        if (arguments.length >= 4) {
+            utterThis.pitch = _pitch;
+        }
+
         utterThis.voice = voices[voice];
         synth.cancel();
         synth.speak(utterThis);
