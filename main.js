@@ -60,6 +60,7 @@ var new_line;
 var text_copied;
 
 var mouse_down = false;
+var tab = false;
 var ctrl = false;
 var meta = false;
 var shift = false;
@@ -1322,6 +1323,15 @@ math.import({
         if (!meter) {
             initVolumeMeter();
         }
+    },
+    traceToggle: function() { // enable or disable canvas clearing
+        try {
+            parser.eval("_trace");
+        } catch (e) {
+            parser.set("_trace", false);
+        }
+
+        parser.set("_trace", !parser.eval("_trace"));
     }
 });
 
@@ -2791,6 +2801,34 @@ function Text(text, pos) {
             return false;
         }
 
+        if (tab) {
+            // auto complete
+            let fn = text.split(/[^A-Za-z]/).pop();
+
+            if (fn.length != 0) {
+                let keys = Object.keys(math);
+
+                for (let i = 0; i < keys.length; i++) {
+                    let key = keys[i];
+
+                    if (key.indexOf(fn) == 0) {
+                        
+                        let new_text = text.split(fn)[0] + keys[i];
+                        if ((math[key]+"").split("\n")[0].indexOf("(") != -1) {
+                            new_text += "(";
+                        }
+                    
+                        this.change_text(new_text);
+                        this.cursor = new_text.length;
+                        this.cursor_selection = this.cursor;
+                        break;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         if (key == "Escape") {
             this.selected = false;
             return false;
@@ -3423,7 +3461,7 @@ function Text(text, pos) {
         ctx.save();
         ctx.fillStyle = gray;
         ctx.fillRect(0, this.size.h/2, this.size.w, 4);
-        ctx.fillRect(this.size.w/2-2,this.size.h/2+2,4,12);
+        //ctx.fillRect(this.size.w/2-2,this.size.h/2+2,4,12);
         ctx.restore();
     }
 
@@ -3547,6 +3585,7 @@ function Text(text, pos) {
                 if (fn.length != 0) {
                     let keys = Object.keys(math);
                     let yoff = 0;
+
                     for (let i = 0; i < keys.length; i++) {
                         let key = keys[i];
 
@@ -3561,7 +3600,6 @@ function Text(text, pos) {
                         }
                     }
                 }
-                
             }
         }
 
@@ -4639,6 +4677,10 @@ window.onload = function() {
             enter_select();
         }
 
+        if (key == "Tab") {
+            tab = true;
+        }
+
         if (key == "Meta") {
             meta = true;
         }
@@ -4717,6 +4759,11 @@ window.onload = function() {
 
     window.onkeyup = function(evt) {
         let key = evt.key;
+
+        if (key == "Tab") {
+            tab = false;
+        }
+
         if (key == "Meta") {
             meta = false;
         }
