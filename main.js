@@ -43,6 +43,10 @@ var rendering = false;
 var presenting = false;
 var debug = false;
 
+// speech synthesis
+var synth;
+var voices;
+
 var t_ease = 0;
 var t_steps = 60;
 
@@ -1291,6 +1295,20 @@ math.import({
         }
 
         return math.matrix(path);
+    },
+    say: function(text, _voice) {
+        let voice = 11;
+
+        if (_voice) {
+            voice = _voice;
+        }
+
+        var utterThis = new SpeechSynthesisUtterance(text);
+        utterThis.voice = voices[voice];
+        synth.speak(utterThis);
+    },
+    enableVolMeter: function () {
+        initVolumeMeter();
     }
 });
 
@@ -4532,6 +4550,13 @@ window.onload = function() {
     ctx.textBaseline = 'middle';
     ctx.lineJoin = 'round';
 
+    // speech synth
+    synth = window.speechSynthesis; // speech synthesis
+    window.speechSynthesis.onvoiceschanged = function() {
+        voices = window.speechSynthesis.getVoices();
+        
+    };
+
     var content = document.getElementById("content");
     content.appendChild(c);
 
@@ -4924,6 +4949,9 @@ window.onload = function() {
         parser.set('_frame', t);
         millis = Date.now();
         parser.set('_millis', millis);
+        if (meter) {
+            parser.set('_vol', meter.volume);
+        }
 
         if (presenting) {
             mouse_time -= 1;
