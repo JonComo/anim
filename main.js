@@ -894,8 +894,8 @@ math.import({
 
         loc = function(i, j, units) {
             let pad2 = 120;
-            return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
-            //return [pos[0] + pad2 * units/2 - pad2/2 - i*pad2, pos[1] - pad2*2 - j*pad2];
+            //return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
+            return [pos[0] - pad2 * units/2 + pad2/2 + i*pad2, -pad + pos[1] - j*pad2];
         }
 
         ctx.save();
@@ -947,7 +947,7 @@ math.import({
                         let vlen = math.norm(vline);
 
                         if (d1 + d2 < vlen + 1) {
-                            ctx.strokeStyle = "red";
+                            ctx.strokeStyle = "green";
                             high_conn = [i, k]; // unit to unit
                             high_neur = [[i, j], [k, j+1]];
                         }
@@ -974,7 +974,7 @@ math.import({
                 if (high_conn.length != 0) {
                     if (j == 0) {
                         if (high_conn[0] == i) {
-                            ctx.strokeStyle = "red";
+                            ctx.strokeStyle = "blue";
                         }
                     } else if (j == 1) {
                         if (high_conn[1] == i) {
@@ -986,7 +986,12 @@ math.import({
                     let dy = mouse.y - p[1];
                     
                     if (dx*dx + dy*dy < 400) {
-                        ctx.strokeStyle = "red";
+                        if (j == 0) {
+                            ctx.strokeStyle = "blue";
+                        } else {
+                            ctx.strokeStyle = "red";
+                        }
+                        
                         high_neur = [[i, j]];
                     }
                 }
@@ -1137,10 +1142,17 @@ math.import({
         return [fx, fy, fz];
     },
     vismult: function(W, x) { // visualize matrix vector multiplication
+        if (!W || !x) {
+            return;
+        }
+
         let pad = 120;
 
         let tl = parser.eval('text_loc');
         let loc = [tl[0] + pad/2, tl[1] + pad];
+        
+        let rows = W._size[0];
+        let cols = W._size[1];
 
         let result = math.multiply(W, x);
         
@@ -1152,8 +1164,8 @@ math.import({
         let Wp = [loc[0] + pad*3/2, loc[1]];
         let xp = [loc[0] + pad*4/2 + W._size[1] * pad, loc[1] + (W._size[0]-1)*pad/2-(x._size[0]-1)*pad/2];
 
-        let netx = -pad;
-        let nety = (W._size[0]-1)*pad/2 + pad;
+        let netx = -pad/2 * math.max(rows, cols) - pad/4;
+        let nety = pad/2 * rows + pad*2;
 
         let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([netx, nety]), true);
         let high_conn = high[0];
@@ -1185,7 +1197,7 @@ math.import({
                 ctx.font = font_small;
 
                 if (is_h_conn && high_conn[0] == j && high_conn[1] == i) {
-                    ctx.fillStyle = "red";
+                    ctx.fillStyle = "green";
                     ctx.font = font_anim;
                 }
 
@@ -1201,7 +1213,7 @@ math.import({
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
                 if (highn[1] == 0 && highn[0] == i) {
-                    ctx.fillStyle = "red";
+                    ctx.fillStyle = "blue";
                     ctx.font = font_anim;
                 }
             }
