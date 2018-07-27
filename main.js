@@ -49,7 +49,7 @@ var synth;
 var voices;
 
 var t_ease = 0;
-var t_steps = 60;
+var t_steps = 40;
 
 var grid_size = 45;
 var mouse_time = 0;
@@ -3017,9 +3017,7 @@ function Text(text, pos) {
             this.parse_text(this.properties[frame].t);
         }
 
-        let c = this.cargs[0];
-
-        if (!c) {
+        if (!this.cargs[0]) {
             return;
         }
 
@@ -3041,9 +3039,19 @@ function Text(text, pos) {
         ctx.fillStyle = color;
         ctx.globalAlpha = i.c[3];
 
+        if (transition.transitioning) {
+            if (a.t != b.t) {
+                // text is diff, cross fade result
+                //ctx.globalAlpha = -math.cos(t_percent*2*math.PI-math.PI)/2 + .5;
+                if (t_percent > .5) {
+                    this.parse_text(this.properties[next_frame].t);
+                }
+            }
+        }
+
         try {
             parser.set("text_loc", [i.p.x, i.p.y]);
-            let val = c.eval(parser.scope);
+            let val = this.cargs[0].eval(parser.scope);
 
             // only display the value if its not an assignment or constant
             let op_type = math.parse(this.args[0]).type;
