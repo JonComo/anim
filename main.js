@@ -42,6 +42,7 @@ var next_frame;
 var rendering = false;
 var presenting = false;
 var debug = false;
+var view_frame = false;
 
 // speech synthesis
 var synth;
@@ -4239,6 +4240,10 @@ function Menu(pos) {
         cam.rotate([-Math.PI/2,0,-Math.PI/2]);
     }));
 
+    this.buttons.push(new Button("1920x1080", {x: 0, y:0}, function(b){
+        view_frame = !view_frame;
+    }));
+
     this.buttons.push(new Button("debug", {x: 0, y: 0}, function(b) {
         debug = !debug;
     }));
@@ -5058,17 +5063,28 @@ window.onload = function() {
         if (!presenting) {
             frames.render(ctx);
             menu.render(ctx);
-        }
 
-        if (error_timer > 0) {
-            ctx.save();
-            ctx.fillStyle = "red";
-            ctx.fillText(error_text, 250, 30);
-            ctx.restore();
-            error_timer -= 1;
+            if (error_timer > 0) {
+                ctx.save();
+                ctx.fillStyle = "red";
+                ctx.fillText(error_text, 250, 30);
+                ctx.restore();
+                error_timer -= 1;
+            }
         }
 
         draw_cursor();
+
+        if (view_frame) {
+            ctx.save();
+            ctx.strokeStyle = "black";
+            ctx.beginPath();
+            let w = 1928; // +8 pixels for padding
+            let h = 1088;
+            ctx.rect(win_width - w/2, win_height - h/2, w, h);
+            ctx.stroke();
+            ctx.restore();
+        }
         
         transition.update();
 
