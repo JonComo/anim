@@ -948,7 +948,7 @@ math.import({
 
                         if (d1 + d2 < vlen + 1) {
                             ctx.strokeStyle = "green";
-                            high_conn = [i, k]; // unit to unit
+                            high_conn = [i, k, j]; // unit i to unit k in layer j
                             high_neur = [[i, j], [k, j+1]];
                         }
                     }
@@ -971,16 +971,30 @@ math.import({
                 let p = loc(i, j, units);
 
                 ctx.strokeStyle = "black";
+
+                // if we have a highlighted connection and we're in the right layer
                 if (high_conn.length != 0) {
-                    if (j == 0) {
+
+                    if (high_conn[2] == j) {
                         if (high_conn[0] == i) {
-                            ctx.strokeStyle = "blue";
+                            if (j == 0) {
+                                ctx.strokeStyle = "blue";
+                            } else {
+                                ctx.strokeStyle = "red";
+                            }
                         }
-                    } else if (j == 1) {
+                    } else if (high_conn[2] == j-1) {
                         if (high_conn[1] == i) {
-                            ctx.strokeStyle = "red";
+                            if (j == 0) {
+                                ctx.strokeStyle = "blue";
+                            } else {
+                                ctx.strokeStyle = "red";
+                            }
                         }
                     }
+
+                    
+
                 } else {
                     let dx = mouse.x - p[0];
                     let dy = mouse.y - p[1];
@@ -1141,7 +1155,7 @@ math.import({
 
         return [fx, fy, fz];
     },
-    vismult: function(W, x) { // visualize matrix vector multiplication
+    vismult: function(W, x, _visdot) { // visualize matrix vector multiplication
         if (!W || !x) {
             return;
         }
@@ -1177,58 +1191,86 @@ math.import({
         for (let i = 0; i < result._size[0]; i++) {
             let p = [rp[0], rp[1] + i*pad];
             ctx.fillStyle = "black";
-            ctx.font = font_small;
 
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
                 if (highn[1] == 1 && highn[0] == i) {
                     ctx.fillStyle = "red";
-                    ctx.font = font_anim;
                 }
             }
 
-            ctx.fillText(pretty_round(result._data[i]), p[0], p[1]);
+            ctx.fillText(pretty_round_one(result._data[i]), p[0], p[1]);
         }
 
         for (let i = 0; i < W._size[0]; i++) {
             for (let j = 0; j < W._size[1]; j++) {
                 let p = [Wp[0] + j*pad, Wp[1] + i*pad];
-                ctx.fillStyle = "black";
-                ctx.font = font_small;
-
-                if (is_h_conn && high_conn[0] == j && high_conn[1] == i) {
-                    ctx.fillStyle = "green";
-                    ctx.font = font_anim;
+                
+                if (_visdot) {
+                    p = [Wp[0] + pad/2 + j*pad * 2, Wp[1] + i*pad];
                 }
 
-                ctx.fillText(pretty_round(W._data[i][j]), p[0], p[1]);
+                ctx.fillStyle = "black";
+
+                var should_high = false;
+                if (is_h_conn && high_conn[0] == j && high_conn[1] == i) {
+                    should_high = true;
+                }
+
+                if (_visdot) {
+                    if (should_high) {
+                        ctx.fillStyle = "green";
+                    }
+                    ctx.fillText(pretty_round_one(W._data[i][j]), p[0]-pad/2, p[1]);
+                    if (should_high) {
+                        ctx.fillStyle = "blue";
+                    }
+                    ctx.fillText(pretty_round_one(x._data[j]), p[0]+pad/2, p[1]);
+
+                    ctx.fillStyle = "black";
+                    ctx.fillText("*", p[0], p[1]);
+
+                    if (j < W._size[1]-1) {
+                        ctx.fillStyle = "black";
+                        ctx.fillText("+", p[0] + pad, p[1]);
+                    }
+                } else {
+                    if (should_high) {
+                        ctx.fillStyle = "green";
+                    }
+                    ctx.fillText(pretty_round_one(W._data[i][j]), p[0], p[1]);
+                }
             }
         }
 
-        for (let i = 0; i < x._size[0]; i++) {
-            let p = [xp[0], xp[1] + i * pad];
-            ctx.fillStyle = "black";
-            ctx.font = font_small;
+        if (!_visdot) {
+            for (let i = 0; i < x._size[0]; i++) {
+                let p = [xp[0], xp[1] + i * pad];
+                ctx.fillStyle = "black";
 
-            for (let n = 0; n < high_neur.length; n ++) {
-                let highn = high_neur[n];
-                if (highn[1] == 0 && highn[0] == i) {
-                    ctx.fillStyle = "blue";
-                    ctx.font = font_anim;
+                for (let n = 0; n < high_neur.length; n ++) {
+                    let highn = high_neur[n];
+                    if (highn[1] == 0 && highn[0] == i) {
+                        ctx.fillStyle = "blue";
+                    }
                 }
-            }
 
-            ctx.fillText(pretty_round(x._data[i]), p[0], p[1]);
+                ctx.fillText(pretty_round_one(x._data[i]), p[0], p[1]);
+            }
         }
 
         ctx.fillStyle = "black";
-        ctx.font = font_anim;
         ctx.fillText("=", rp[0] + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
-        ctx.fillText("*", Wp[0] + (W._size[1]-1)*pad + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
 
         draw_brackets(rp[0]-pad/2, rp[1]-pad/4, pad, result._size[0] * pad - pad/2);
-        draw_brackets(Wp[0]-pad/2, Wp[1]-pad/4, W._size[1] * pad, W._size[0] * pad - pad/2);
-        draw_brackets(xp[0]-pad/2, xp[1]-pad/4, pad, x._size[0] * pad - pad/2);
+
+        if (_visdot) {
+            draw_brackets(Wp[0]-pad/2, Wp[1]-pad/4, W._size[1] * pad * 2, W._size[0] * pad - pad/2);
+        } else {
+            draw_brackets(Wp[0]-pad/2, Wp[1]-pad/4, W._size[1] * pad, W._size[0] * pad - pad/2);
+            ctx.fillText("*", Wp[0] + (W._size[1]-1)*pad + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
+            draw_brackets(xp[0]-pad/2, xp[1]-pad/4, pad, x._size[0] * pad - pad/2);
+        }
 
         ctx.restore();
     },
@@ -1425,6 +1467,10 @@ function Animator(fps, canvas, frames, callback) {
 
 function pretty_round(num) {
     return (Math.round(num*100)/100).toFixed(2);
+}
+
+function pretty_round_one(num) {
+    return (Math.round(num*10)/10).toFixed(1);
 }
 
 function draw_r(o, p, d) {
