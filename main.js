@@ -33,9 +33,11 @@ var formula_text;
 
 var animator;
 var objs = [];
+var selected_objs = [];
 var frames;
 var menu;
 var cam;
+var pen;
 var num_frames = 3;
 var frame = 1; // current frame
 var next_frame;
@@ -50,6 +52,8 @@ var voices;
 
 var t_ease = 0;
 var t_steps = 40;
+var t_percent = 0;
+var t_in_out = 1.0;
 
 var grid_size = 45;
 var mouse_time = 0;
@@ -883,6 +887,9 @@ math.import({
         layers = layers._data;
         let pad = 120;
         let pos = [0, 0];
+
+        let radius = 14;
+
         if (arguments.length >= 2) {
             pos = _pos._data;
         }
@@ -1011,7 +1018,7 @@ math.import({
                 }
 
                 ctx.beginPath();
-                ctx.arc(p[0], p[1], 14, 0, 2*Math.PI);
+                ctx.arc(p[0], p[1], radius, 0, 2*Math.PI);
                 ctx.fill();
                 ctx.stroke();
             }
@@ -1387,6 +1394,201 @@ math.import({
         }
 
         parser.set("_trace", !parser.eval("_trace"));
+    },
+    farmer: function() {
+        let x = 0;
+        let y = 0;
+
+        let tl = parser.eval("text_loc");
+        if (tl) {
+            x = tl[0]; 
+            y = tl[1];
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + -1.25, y + -224.5);
+        ctx.rotate(0);
+        ctx.scale(4.000000000000001, 4.000000000000001);
+        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + -41.25, y + -214.5);
+        ctx.rotate(6.2831853071795845);
+        ctx.scale(0.6000000000000001, 0.6000000000000001);
+        ctx.arc(0, 0, 20, 1.1102230246251565e-16, 3.141592653589795, false);
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + 38.75, y + -214.5);
+        ctx.rotate(-6.2831853071795845);
+        ctx.scale(0.6000000000000001, 0.6000000000000001);
+        ctx.arc(0, 0, 20, 1.1102230246251565e-16, 3.141592653589795, false);
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + -1.25, y + -184.5);
+        ctx.rotate(0);
+        ctx.scale(0.6000000000000001, 0.6000000000000001);
+        ctx.arc(0, 0, 20, 1.1102230246251565e-16, 3.141592653589795, false);
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -1.25, y + -99.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-20, -45);
+        ctx.lineTo(-40, 45);
+        ctx.lineTo(40, 45);
+        ctx.lineTo(20, -45);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -21.25, y + -34.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(0, -20);
+        ctx.lineTo(0, 20);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + 18.75, y + -34.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(0, -20);
+        ctx.lineTo(0, 20);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -36.25, y + -114.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(15, -30);
+        ctx.lineTo(-15, 30);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + 33.75, y + -114.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-15, -30);
+        ctx.lineTo(15, 30);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -57.91666666666674, y + -167.83333333333337);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-23.333333333333258, -56.66666666666663);
+        ctx.lineTo(-13.333333333333258, 33.33333333333337);
+        ctx.lineTo(36.66666666666674, 23.33333333333337);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + 55.41666666666674, y + -167.83333333333337);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(23.333333333333258, -56.66666666666663);
+        ctx.lineTo(13.333333333333258, 33.33333333333337);
+        ctx.lineTo(-36.66666666666674, 23.33333333333337);
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + -71.25, y + -304.5);
+        ctx.rotate(-1.308996938995747);
+        ctx.scale(4.000000000000001, 3.400000000000001);
+        ctx.arc(0, 0, 20, 1.308996938995747, 3.141592653589795, false);
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + 68.75, y + -304.5);
+        ctx.rotate(-2.0943951023931953);
+        ctx.scale(4.000000000000001, -3.800000000000001);
+        ctx.arc(0, 0, 20, 1.308996938995747, 2.8797932657906453, false);
+        ctx.restore();
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -86.25, y + -219.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(5, -5);
+        ctx.lineTo(-5, 5);
+        ctx.stroke();
+        ctx.restore();
+        
+        
+
+
+
+
+        
     }
 });
 
@@ -2339,7 +2541,6 @@ function Shape(color, path) {
         c.x /= path.length;
         c.y /= path.length;
 
-        ctx.save();
         ctx.translate(c.x, c.y);
         ctx.rotate(props.r);
         ctx.scale(props.w, props.h);
@@ -2388,8 +2589,46 @@ function Shape(color, path) {
             ctx.moveTo(a.x - c.x, a.y - c.y);
             ctx.lineTo(a.x - c.x + Math.cos(theta + Math.PI*3/4) * grid_size/2, a.y - c.y + Math.sin(theta + Math.PI*3/4) * grid_size/2);
         }
+    }
 
-        ctx.restore();
+    this.generate_javascript = function() {
+        let cp = cam.properties[frame].p;
+
+        let props = this.properties[frame];
+        let path = props.path;
+        let c = {x: 0, y: 0};
+        
+        for (let i = 0; i < path.length; i++) {
+            c.x += path[i].x;
+            c.y += path[i].y;
+        }
+
+        c.x /= path.length;
+        c.y /= path.length;
+
+        js = "";
+        js += "ctx.save();\n";
+        js += "ctx.globalAlpha = " + props.c[3] + ";\n";
+        js += "ctx.strokeStyle = \"" + rgbToHex(props.c) + "\";\n";
+        js += "ctx.translate(x + " + (c.x - cp.x) + ", y + " + (c.y - cp.y) + ");\n";
+        js += "ctx.rotate(" + props.r + ");\n";
+        js += "ctx.scale(" + props.w + ", " + props.h + ");\n";
+        js += "ctx.beginPath();\n";
+
+        for (let i = 0; i < path.length; i++) {
+            let p = path[i];
+            
+            if (i == 0) {
+                js += "ctx.moveTo(" + (p.x - c.x) + ", " + (p.y - c.y) + ");\n";
+            } else {
+                js += "ctx.lineTo(" + (p.x - c.x) + ", " + (p.y - c.y) + ");\n";
+            }
+        }
+
+        js += "ctx.stroke();\n";
+        js += "ctx.restore();\n";
+
+        return js;
     }
 
     this.render = function(ctx) {
@@ -2408,16 +2647,12 @@ function Shape(color, path) {
             props = a;
         }
 
-        ctx.beginPath();
-
-        this.draw_path(props);
-
         ctx.save();
+        ctx.beginPath();
         ctx.globalAlpha = props.c[3];
-
         ctx.strokeStyle = rgbToHex(props.c);
+        this.draw_path(props);
         ctx.stroke();
-
         ctx.restore();
     }
 }
@@ -2587,6 +2822,32 @@ function Circle(color, pos) {
         ctx.restore();
     }
 
+    this.generate_javascript = function() {
+        let props = this.properties[frame];
+        let p = props.p;
+        let cp = cam.properties[frame].p;
+
+        let js = "";
+
+        js += "ctx.save();\n"
+        js += "ctx.beginPath();\n";
+        js += "ctx.translate(x + " + (p.x - cp.x) + ", y + " + (p.y - cp.y) + ");\n"
+        js += "ctx.rotate(" + props.r + ");\n"
+        js += "ctx.scale(" + props.w + ", " + props.h +");\n"
+        js += "ctx.arc(0, 0, 20, " + props.a_s + ", " + props.a_e + ", false);\n";
+
+        js += "ctx.restore();\n";
+
+        js += "ctx.save();\n";
+
+        js += "ctx.globalAlpha = " + props.c[3] + ";\n";
+        js += "ctx.strokeStyle = \"" + rgbToHex(props.c) + "\";\n";
+        js += "ctx.stroke();\n";
+        js += "ctx.restore();\n";
+
+        return js;
+    }
+
     this.render = function(ctx) {
 
         let a = this.properties[frame];
@@ -2603,13 +2864,16 @@ function Circle(color, pos) {
             props = a;
         }
 
-        ctx.save();
 
         ctx.beginPath();
-        ctx.fillStyle = "#ffffff";
         this.draw_ellipse(props, ctx);
+
+        ctx.save();
+
+        ctx.fillStyle = "#ffffff";
         ctx.globalAlpha = props.c[3];
         ctx.strokeStyle = rgbToHex(props.c);
+        
         ctx.stroke();
 
         ctx.restore();
@@ -2903,7 +3167,6 @@ function Text(text, pos) {
                 objs.push(newT);
                 newT.select();
                 save_state();
-
             } else {
                 enter_select();
             }
@@ -3903,7 +4166,7 @@ function save_state() {
 }
 
 function undo() {
-    if (states.length > 0) {
+    if (states.length > 1) {
         states = states.splice(0, states.length-1);
         str_to_state(states[states.length-1]);
     }
@@ -3922,29 +4185,34 @@ function guidIndex(objs, obj) {
 }
 
 function state_to_string() {
-    return JSON.stringify({"num_frames": num_frames, "frame": frame, "objs": objs, "cam": cam});
+    return JSON.stringify({"num_frames": num_frames, "frame": frame, "objs": objs, "cam": cam, "pen": pen});
 }
 
 function str_to_state(str) {
     let dict = JSON.parse(str);
-    let arr = dict["objs"];
+    let arr = dict.objs;
 
-    if (dict["num_frames"]) {
-        num_frames = dict["num_frames"];
+    if (dict.num_frames) {
+        num_frames = dict.num_frames;
     }
 
-    if (dict["frame"]) {
-        frame = dict["frame"];
+    if (dict.frame) {
+        frame = dict.frame;
         frames.create_buttons();
     }
 
-    objs = text_array_to_objs(arr, true);
+    if (dict.pen) {
+        pen = new Pen();
+        pen.drawings = dict.pen.drawings;
+    }
 
     if (dict.cam && dict.cam.properties) {
         cam = new Camera();
         cam.properties = dict.cam.properties;
         cam.update_props();
     }
+
+    objs = text_array_to_objs(arr, true);
 }
 
 function save(objs) {
@@ -4182,6 +4450,10 @@ function Menu(pos) {
         tool = "text";
     }));
 
+    this.buttons.push(new Button("pen", {x: 0, y: 0}, function(b) {
+        tool = "pen";
+    }));
+
     this.buttons.push(new Button("split", {x: 0, y: 0}, function(b) {
         let N = objs.length;
         for (let i = 0; i < N; i++) {
@@ -4333,6 +4605,8 @@ function Menu(pos) {
         let b = new Button("", {x: 0, y: 0}, function(b) {
             let rgb = hexToRgb(colors[i]);
 
+            pen.set_color(rgb);
+
             for (let i = 0; i < objs.length; i++) {
                 let obj = objs[i];
                 if (typeof obj.set_color === "function") {
@@ -4387,6 +4661,7 @@ function Transition() {
 
         t_percent = 0.0;
         t_ease = 0.0;
+        t_in_out = 1.0;
         this.steps = steps;
         this.target_frame = target_frame;
         this.transitioning = true;
@@ -4397,12 +4672,14 @@ function Transition() {
         if (this.transitioning) {
             this.step += 1;
             t_percent = this.step / this.steps;
+            t_in_out = -math.cos(t_percent*2*math.PI-math.PI)/2 + .5;
             parser.set('_t', t_percent);
             t_ease = ease_in_out(t_percent);
             parser.set('_tt', t_ease);
             t_ease = sigmoid(t_percent, 1.2, -.4, 14) - sigmoid(t_percent, .2, -.6, 15);
             if (this.step >= this.steps) {
                 t_percent = 1.0;
+                t_in_out = 1.0;
                 t_ease = 1.0;
                 this.completion(this.target_frame);
                 this.step = 0;
@@ -4410,6 +4687,166 @@ function Transition() {
             }
         }
     }
+}
+
+function Pen() {
+    this.drawings = {};
+    this.path = [];
+    this.path_nearby_idx = -1;
+    this.color;
+
+    this.onkeydown = function(evt) {
+        if (tool == "pen" && evt.key == "Esc") {
+            tool = "select";
+        } else if (evt.key == "p") {
+            tool = "pen";
+        }
+
+        if (tool == "pen" && evt.key == "Backspace") {
+            // delete path nearby mouse
+            if (this.path_nearby_idx != -1) {
+                this.drawings[frame].splice(this.path_nearby_idx, 1);
+            }
+        }
+    };
+
+    this.mouse_down = function() {
+        if (tool == "pen") {
+            this.path = [];
+            return true;
+        }
+
+        return false;
+    };
+
+    this.mouse_move = function() {
+        if (tool == "pen") {
+            this.path_nearby_idx = -1;
+
+            if (mouse_down) {
+                this.path.push([mouse.x, mouse.y]);
+            }
+
+            let drawing = this.drawings[frame];
+            if (drawing) {
+                for (let i = 0; i < drawing.length; i++) {
+                    let path = drawing[i];
+
+                    let x = path[0][0];
+                    let y = path[0][1];
+
+                    let xd = mouse.x - x;
+                    let yd = mouse.y - y;
+
+                    if (xd*xd + yd*yd < 200) {
+                        this.path_nearby_idx = i;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    };
+
+    this.mouse_up = function() {
+        if (tool == "pen") {
+            // add path to drawing
+            if (!this.drawings[frame]) {
+                this.drawings[frame] = [];
+            }
+
+            this.drawings[frame].push({"p": this.path, "c": this.color});
+            this.path = [];
+
+            return true;
+        }
+
+        return false;
+    };
+
+    this.set_color = function(rgb) {
+        this.color = rgb;
+    }
+
+    this.render = function() {
+
+        ctx.save();
+
+        let draw_path = function(_path) {
+            ctx.beginPath();
+            let path = _path.p;
+            let c = _path.c;
+
+            ctx.strokeStyle = c;
+
+            for (let j = 0; j < path.length; j++) {
+                let x = path[j][0];
+                let y = path[j][1];
+
+                if (j == 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+        };
+
+        let frame_to_draw = frame;
+
+        if (transition.transitioning) {
+            // fade in out
+            ctx.globalAlpha = -math.cos(t_percent*2*math.PI-math.PI)/2 + .5;
+            if (t_percent > .5) {
+                frame_to_draw = next_frame;
+            }
+
+            if (!this.drawings[next_frame]) {
+                // fade out
+                ctx.globalAlpha = 1-t_percent;
+                frame_to_draw = frame;
+            }
+        }
+
+        if (this.drawings[frame_to_draw]) {
+            // draw the drawing
+            for (let i = 0; i < this.drawings[frame_to_draw].length; i ++) {
+                let path = this.drawings[frame_to_draw][i];
+                
+                if (!presenting) {
+                    ctx.globalAlpha = 1;
+                    if (this.path_nearby_idx == i) {
+                        ctx.globalAlpha = .5;
+                    }
+                }
+
+                draw_path(path);
+            }
+        }
+
+        if (this.path && this.path.length) {
+            draw_path(this.path);
+        }
+
+        if (!presenting) {
+            // onion skin
+            ctx.globalAlpha = .5;
+            if (frame > 1) {
+                if (this.drawings[frame-1]) {
+                    // draw the drawing
+                    for (let i = 0; i < this.drawings[frame-1].length; i ++) {
+                        let path = this.drawings[frame-1][i];
+                        draw_path(path);
+                    }
+                }
+            }
+        }
+
+        ctx.restore();
+    };
 }
 
 function constrain_frame(f) {
@@ -4616,7 +5053,24 @@ function enter_select() {
 }
 
 function draw_cursor() {
-    if (presenting && mouse_time > 0) {
+    if (presenting && tool == "pen") {
+        let pad = 20;
+
+        ctx.save();
+
+        ctx.translate(mouse.x, mouse.y);
+
+        ctx.strokeStyle = dark;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(pad/2, pad);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-pad/2, pad);
+
+        ctx.stroke();
+        ctx.restore();
+    } else if (presenting && mouse_time > 0) {
         // draw a cursor
 
         let mx = mouse.x;
@@ -4718,6 +5172,20 @@ window.onload = function() {
         }
     };
 
+    document.getElementById("gen_js").onclick = function(evt) {
+        let js = "";
+
+        for (let i = 0; i < selected_objs.length; i++) {
+            let obj = selected_objs[i];
+            if (obj.generate_javascript) {
+                let s = obj.generate_javascript();
+                js += s + "\n";
+            }
+        }
+
+        document.getElementById("output").value = js;
+    };
+
     objs = [];
 
     transition = new Transition();
@@ -4729,6 +5197,7 @@ window.onload = function() {
 
     menu = new Menu({x: grid_size/4, y: grid_size/2});
     cam = new Camera();
+    pen = new Pen();
 
     $(window).focus(function(){
         meta = false;
@@ -4738,7 +5207,7 @@ window.onload = function() {
     window.onkeydown = function(evt) {
         let key = evt.key;
 
-        if (presenting && tool != "camera" && key == "Escape") {
+        if (key == "Escape" && presenting && tool != "camera" && tool != "pen") {
             presenting = false;
             document.body.style.cursor = '';
             return false;
@@ -4815,6 +5284,7 @@ window.onload = function() {
         }
 
         cam.onkeydown(evt);
+        pen.onkeydown(evt);
 
         if (key == " ") {
             return false;
@@ -4868,6 +5338,10 @@ window.onload = function() {
             return;
         }
 
+        if (pen.mouse_down(evt)) {
+            return;
+        }
+
         if (presenting) {
             return false;
         }
@@ -4914,6 +5388,10 @@ window.onload = function() {
         parser.set('_y', mouse_graph.x);
         parser.set('_z', mouse_graph.y);
 
+        if (pen.mouse_move(evt)) {
+            return;
+        }
+
         if (mouse_down) {
             let captured = false;
             let N = objs.length;
@@ -4940,7 +5418,6 @@ window.onload = function() {
             mouse_time = mouse_duration;
         }
 
-
         mouse_last = get_mouse_pos(c, evt);
         mouse_grid_last = constrain_to_grid(mouse);
     };
@@ -4951,6 +5428,11 @@ window.onload = function() {
         }
 
         mouse_down = false;
+
+        if (pen.mouse_up(evt)) {
+            save_state();
+            return;
+        }
 
         if (presenting) {
             // maybe tap some text
@@ -5036,7 +5518,7 @@ window.onload = function() {
             xx2 = Math.max(x, x2);
             yy2 = Math.max(y, y2);
 
-            let selected_objs = [];
+            selected_objs = [];
 
             for (let i = 0; i < objs.length; i++) {
                 let obj = objs[i];
@@ -5138,6 +5620,8 @@ window.onload = function() {
                 error_timer -= 1;
             }
         }
+
+        pen.render();
 
         draw_cursor();
 
