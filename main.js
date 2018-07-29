@@ -8,7 +8,6 @@ var light = "#ffffff";
 
 var colors = ["#000000", "#E74C3C", "#2980B9", "#FFA400", "#66E07A", gray];
 
-var font_matrix = "30px Courier";
 var font_small = "26px Courier";
 var font_menu = "30px Courier";
 var font_anim = "40px Menlo";
@@ -83,6 +82,7 @@ var millis = 0;
 var date = new Date();
 
 var pi2 = 2 * Math.PI;
+var mat_num_width = 140; // matrix max number width
 
 // fn drawing
 let char_size = grid_size/2;
@@ -1159,117 +1159,137 @@ math.import({
 
         return [fx, fy, fz];
     },
-    vismult: function(W, x, _visdot) { // visualize matrix vector multiplication
-
-        let pad = 120;
+    vismult: function(W, x) { // visualize matrix vector multiplication
+        let pad = 24;
 
         let props = parser.eval("text_props");
-        let loc = [props.p.x + pad/2, props.p.y + pad];
-        
+        let loc = [props.p.x, props.p.y + pad];
+
+        let result = math.multiply(W, x);
+
+        let xformat = format_matrix(x._data);
+        let rformat = format_matrix(result._data);
+        let Wformat = format_matrix(W._data);
+
+        let rsize = matrix_size(rformat);
+        let Wsize = matrix_size(format_matrix(W._data));
+        let xsize = matrix_size(xformat);
+
+        // draw neural network
         let rows = W._size[0];
         let cols = W._size[1];
 
-        let result = math.multiply(W, x);
-        
-        ctx.save();
-
-        ctx.textAlign = "center";
-
-        let rp = [loc[0], loc[1]];
-        let Wp = [loc[0] + pad*3/2, loc[1]];
-        let xp = [loc[0] + pad*4/2 + W._size[1] * pad, loc[1] + (W._size[0]-1)*pad/2-(x._size[0]-1)*pad/2];
-
-        let netx = -pad/2 * math.max(rows, cols) - pad/4;
-        let nety = pad/2 * rows + pad*2;
-
-        let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([netx, nety]), true);
+        let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
         let high_conn = high[0];
         let high_neur = high[1];
 
-        let is_h_conn = high_conn.length;
+        // draw matrices
 
-        for (let i = 0; i < result._size[0]; i++) {
-            let p = [rp[0], rp[1] + i*pad];
+        // draw result matrix
+        ctx.save();
+        
+        ctx.font = font_anim;
+
+        ctx.translate(loc[0], loc[1]);
+        draw_matrix(rformat, function(i, j) {
             ctx.fillStyle = "black";
-
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
                 if (highn[1] == 1 && highn[0] == i) {
                     ctx.fillStyle = "red";
                 }
             }
-
-            ctx.fillText(pretty_round_one(result._data[i]), p[0], p[1]);
-        }
-
-        for (let i = 0; i < W._size[0]; i++) {
-            for (let j = 0; j < W._size[1]; j++) {
-                let p = [Wp[0] + j*pad, Wp[1] + i*pad];
-                
-                if (_visdot) {
-                    p = [Wp[0] + pad/2 + j*pad * 2, Wp[1] + i*pad];
-                }
-
-                ctx.fillStyle = "black";
-
-                var should_high = false;
-                if (is_h_conn && high_conn[0] == j && high_conn[1] == i) {
-                    should_high = true;
-                }
-
-                if (_visdot) {
-                    if (should_high) {
-                        ctx.fillStyle = "green";
-                    }
-                    ctx.fillText(pretty_round_one(W._data[i][j]), p[0]-pad/2, p[1]);
-                    if (should_high) {
-                        ctx.fillStyle = "blue";
-                    }
-                    ctx.fillText(pretty_round_one(x._data[j]), p[0]+pad/2, p[1]);
-
-                    ctx.fillStyle = "black";
-                    ctx.fillText("*", p[0], p[1]);
-
-                    if (j < W._size[1]-1) {
-                        ctx.fillStyle = "black";
-                        ctx.fillText("+", p[0] + pad, p[1]);
-                    }
-                } else {
-                    if (should_high) {
-                        ctx.fillStyle = "green";
-                    }
-                    ctx.fillText(pretty_round_one(W._data[i][j]), p[0], p[1]);
-                }
-            }
-        }
-
-        if (!_visdot) {
-            for (let i = 0; i < x._size[0]; i++) {
-                let p = [xp[0], xp[1] + i * pad];
-                ctx.fillStyle = "black";
-
-                for (let n = 0; n < high_neur.length; n ++) {
-                    let highn = high_neur[n];
-                    if (highn[1] == 0 && highn[0] == i) {
-                        ctx.fillStyle = "blue";
-                    }
-                }
-
-                ctx.fillText(pretty_round_one(x._data[i]), p[0], p[1]);
-            }
-        }
+        });
 
         ctx.fillStyle = "black";
-        ctx.fillText("=", rp[0] + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
+        ctx.fillText("=", rsize[0] + pad, rsize[1]/2);
 
-        draw_brackets(rp[0]-pad/2, rp[1]-pad/4, pad, result._size[0] * pad - pad/2);
+        // draw W matrix
+        ctx.translate(rsize[0] + pad*3, 0);
+        draw_matrix(Wformat, function(i, j) {
+            ctx.fillStyle = "black";
+            if (high_conn.length && high_conn[0] == j && high_conn[1] == i) {
+                ctx.fillStyle = "green";
+            }
+        });
 
-        if (_visdot) {
-            draw_brackets(Wp[0]-pad/2, Wp[1]-pad/4, W._size[1] * pad * 2, W._size[0] * pad - pad/2);
-        } else {
-            draw_brackets(Wp[0]-pad/2, Wp[1]-pad/4, W._size[1] * pad, W._size[0] * pad - pad/2);
-            ctx.fillText("*", Wp[0] + (W._size[1]-1)*pad + pad*3/4, rp[1] + (result._size[0]-1)*pad/2);
-            draw_brackets(xp[0]-pad/2, xp[1]-pad/4, pad, x._size[0] * pad - pad/2);
+        ctx.fillText("*", Wsize[0] + pad, rsize[1]/2);
+
+        // draw x matrix
+        ctx.translate(Wsize[0] + pad*3, rsize[1]/2-xsize[1]/2);
+        draw_matrix(xformat, function(i,j) {
+            ctx.fillStyle = "black";
+
+            for (let n = 0; n < high_neur.length; n ++) {
+                let highn = high_neur[n];
+                if (highn[1] == 0 && highn[0] == i) {
+                    ctx.fillStyle = "blue";
+                }
+            }
+        });
+
+        ctx.restore();
+    },
+    visdot: function(W, x) { // visualize matrix vector multiplication but as dot products
+        let pad = 24;
+
+        let props = parser.eval("text_props");
+        let loc = [props.p.x, props.p.y + pad];
+
+        let result = math.multiply(W, x);
+
+        let rformat = format_matrix(result._data);
+        let rsize = matrix_size(rformat);
+
+        // draw neural network
+        let rows = W._size[0];
+        let cols = W._size[1];
+
+        let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
+        let high_conn = high[0];
+        let high_neur = high[1];
+
+        // draw matrices
+
+        // draw result matrix
+        ctx.save();
+
+        ctx.font = font_anim;
+
+        ctx.translate(loc[0], loc[1]);
+        draw_matrix(rformat, function(i, j) {
+            ctx.fillStyle = "black";
+            for (let n = 0; n < high_neur.length; n ++) {
+                let highn = high_neur[n];
+                if (highn[1] == 1 && highn[0] == i) {
+                    ctx.fillStyle = "red";
+                }
+            }
+        });
+
+        ctx.fillStyle = "black";
+        ctx.fillText("=", rsize[0] + pad, rsize[1]/2);
+
+        // draw dot prod matrix
+        ctx.translate(rsize[0] + pad*3, 0);
+        let dp = [];
+
+        let round = pretty_round_one;
+        if (ctrl) {
+            round = pretty_round;
+        }
+
+        for (let i = 0; i < W._data.length; i ++) {
+            let text = "";
+
+            for (let j = 0; j < W._data[0].length; j ++) {
+                text += round(W._data[i][j]) + "*" + round(x._data[j]);
+                if (j < W._data[0].length-1) {
+                    text += " + ";
+                }
+            }
+
+            ctx.fillText(text, 0, i * grid_size + 20);
         }
 
         ctx.restore();
@@ -2568,6 +2588,77 @@ function draw_fn(fn) {
     return size;
 }
 
+function matrix_size(matrix) {
+    if (matrix && matrix.length == 0) {
+        return;
+    }
+
+    let pad = 24;
+
+    return [matrix[0].length * (mat_num_width + pad), matrix.length * grid_size];
+}
+
+function draw_matrix(matrix, color_ij) {
+    ctx.save();
+    ctx.textAlign = "right";
+
+    let pad = 24;
+
+    let shift = 0;
+    if (ctrl) {
+        shift = 24;
+    }
+
+    let max_width = mat_num_width - 20;
+
+    for (let i = 0; i < matrix.length; i ++) {
+        for (let j = 0; j < matrix[i].length; j++) {
+            if (color_ij) {
+                color_ij(i, j);
+            }
+            ctx.fillText(matrix[i][j], j * (mat_num_width + pad) + 124 + shift, i * grid_size + 20, max_width);
+        }
+    }
+
+    size = matrix_size(matrix);
+    draw_brackets(0, 0, size[0], size[1]);
+
+    ctx.restore();
+}
+
+function format_matrix(matrix) {
+    if (matrix.length == 0) {
+        return null;
+    }
+
+    // format for display
+    let formatted = [];
+    let round = pretty_round_one;
+    
+    if (ctrl) {
+        round = pretty_round;
+    }
+    
+    if (typeof matrix[0] == "number") {
+        // array
+        for (let i = 0; i < matrix.length; i ++) {
+            formatted.push([round(matrix[i])]);
+        }
+    } else {
+        // matrix
+        for (let i = 0; i < matrix.length; i ++) {
+            let row = [];
+            for (let j = 0; j < matrix[i].length; j++) {
+                row.push(round(matrix[i][j]));
+            }
+
+            formatted.push(row);
+        }
+    }
+
+    return formatted;
+}
+
 function get_mouse_pos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -3051,7 +3142,6 @@ function Shape(color, path) {
                 let b = between(p1, p2);
                 let d = distance(p1, p2) / grid_size;
                 d = Math.round(d * 10) / 10;
-                ctx.font = font_small;
                 ctx.fillText(d, b.x - c.x, b.y - c.y);
             }
         }
@@ -4050,33 +4140,11 @@ function Text(text, pos) {
             ctx.save();
             ctx.translate(size.w, 0);
             ctx.fillText("=", 0, 0);
-            ctx.translate(130, 0);
-            ctx.textAlign = "right";
-            
-            ctx.font = font_matrix;
+            ctx.translate(135, 0);
 
-            let wpad = grid_size * 3;
-
-            let height = this.matrix_vals.length * grid_size;
-            let width = this.matrix_vals[0].length * wpad;
-
-            if (typeof this.matrix_vals[0] == "number") {
-                width = wpad;
-            }
-
-            for (let i = 0; i < this.matrix_vals.length; i++) {
-                let row = this.matrix_vals[i];
-
-                if (typeof row == "number") {
-                    ctx.fillText(pretty_round(row), 0, i * grid_size, wpad/2);
-                } else {
-                    for (let j = 0; j < row.length; j++) {
-                        ctx.fillText(pretty_round(row[j]), j * wpad, i * grid_size, wpad/2);
-                    }
-                }
-            }
-
-            draw_brackets(-100, -22, width, height);
+            ctx.translate(-100, -20);
+            let formatted = format_matrix(this.matrix_vals);
+            draw_matrix(formatted);
             
             ctx.restore();
         } else if (!this.selected && this.text_val && this.text_val.length) {
