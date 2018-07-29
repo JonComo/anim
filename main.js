@@ -1160,9 +1160,6 @@ math.import({
         return [fx, fy, fz];
     },
     vismult: function(W, x, _visdot) { // visualize matrix vector multiplication
-        if (!W || !x) {
-            return;
-        }
 
         let pad = 120;
 
@@ -1190,7 +1187,6 @@ math.import({
         let high_neur = high[1];
 
         let is_h_conn = high_conn.length;
-        let is_h_neur = high_neur.length;
 
         for (let i = 0; i < result._size[0]; i++) {
             let p = [rp[0], rp[1] + i*pad];
@@ -1407,60 +1403,52 @@ math.import({
 
         ctx.save();
         ctx.beginPath();
-        ctx.translate(x + -1.25, y + -224.5);
+        ctx.translate(x + -1.25, y + -211);
         ctx.rotate(0);
         ctx.scale(4.000000000000001, 4.000000000000001);
         ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.beginPath();
-        ctx.translate(x + -41.25, y + -214.5);
+        ctx.translate(x + -41.25, y + -201);
         ctx.rotate(6.2831853071795845);
         ctx.scale(0.6000000000000001, 0.6000000000000001);
         ctx.arc(0, 0, 20, 1.1102230246251565e-16, 3.141592653589795, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.beginPath();
-        ctx.translate(x + 38.75, y + -214.5);
+        ctx.translate(x + 38.75, y + -201);
         ctx.rotate(-6.2831853071795845);
         ctx.scale(0.6000000000000001, 0.6000000000000001);
         ctx.arc(0, 0, 20, 1.1102230246251565e-16, 3.141592653589795, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.beginPath();
-        ctx.translate(x + -1.25, y + -184.5);
+        ctx.translate(x + -1.25, y + -171);
         ctx.rotate(0);
         ctx.scale(0.6000000000000001, 0.6000000000000001);
         ctx.arc(0, 0, 20, 1.1102230246251565e-16, 3.141592653589795, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
+        ctx.restore();
         ctx.stroke();
-        ctx.restore();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + -1.25, y + -99.5);
+        ctx.translate(x + -1.25, y + -86);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
@@ -1468,126 +1456,118 @@ math.import({
         ctx.lineTo(-40, 45);
         ctx.lineTo(40, 45);
         ctx.lineTo(20, -45);
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + -21.25, y + -34.5);
+        ctx.translate(x + -21.25, y + -21);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
         ctx.moveTo(0, -20);
         ctx.lineTo(0, 20);
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + 18.75, y + -34.5);
+        ctx.translate(x + 18.75, y + -21);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
         ctx.moveTo(0, -20);
         ctx.lineTo(0, 20);
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + -36.25, y + -114.5);
+        ctx.translate(x + -36.25, y + -101);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
         ctx.moveTo(15, -30);
         ctx.lineTo(-15, 30);
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + 33.75, y + -114.5);
+        ctx.translate(x + 33.75, y + -101);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
         ctx.moveTo(-15, -30);
         ctx.lineTo(15, 30);
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + -57.91666666666674, y + -167.83333333333337);
+        ctx.translate(x + -57.91666666666674, y + -154.33333333333331);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
-        ctx.moveTo(-23.333333333333258, -56.66666666666663);
-        ctx.lineTo(-13.333333333333258, 33.33333333333337);
-        ctx.lineTo(36.66666666666674, 23.33333333333337);
-        ctx.stroke();
+        ctx.moveTo(-23.333333333333258, -56.666666666666686);
+        ctx.lineTo(-13.333333333333258, 33.333333333333314);
+        ctx.lineTo(36.66666666666674, 23.333333333333314);
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + 55.41666666666674, y + -167.83333333333337);
+        ctx.translate(x + 55.41666666666674, y + -154.33333333333331);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
-        ctx.moveTo(23.333333333333258, -56.66666666666663);
-        ctx.lineTo(13.333333333333258, 33.33333333333337);
-        ctx.lineTo(-36.66666666666674, 23.33333333333337);
-        ctx.stroke();
+        ctx.moveTo(23.333333333333258, -56.666666666666686);
+        ctx.lineTo(13.333333333333258, 33.333333333333314);
+        ctx.lineTo(-36.66666666666674, 23.333333333333314);
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.beginPath();
-        ctx.translate(x + -71.25, y + -304.5);
+        ctx.translate(x + -71.25, y + -291);
         ctx.rotate(-1.308996938995747);
         ctx.scale(4.000000000000001, 3.400000000000001);
         ctx.arc(0, 0, 20, 1.308996938995747, 3.141592653589795, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.stroke();
         ctx.restore();
-        
+        ctx.stroke();
+
         ctx.save();
         ctx.beginPath();
-        ctx.translate(x + 68.75, y + -304.5);
+        ctx.translate(x + 68.75, y + -291);
         ctx.rotate(-2.0943951023931953);
         ctx.scale(4.000000000000001, -3.800000000000001);
         ctx.arc(0, 0, 20, 1.308996938995747, 2.8797932657906453, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
+        ctx.restore();
         ctx.stroke();
-        ctx.restore();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + -86.25, y + -219.5);
+        ctx.translate(x + -86.25, y + -206);
         ctx.rotate(0);
         ctx.scale(1, 1);
         ctx.beginPath();
         ctx.moveTo(5, -5);
         ctx.lineTo(-5, 5);
+        ctx.restore();
         ctx.stroke();
+
         ctx.restore();
-        
-        
-        ctx.restore();
-
-
-
         
     },
     drawComputer: function() {
@@ -1855,19 +1835,23 @@ math.import({
         ctx.translate(-x, -y);
 
         ctx.save();
+        ctx.beginPath();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
         ctx.translate(x + 0, y + 6.25);
         ctx.rotate(0);
-        ctx.scale(1, 1);
-        ctx.beginPath();
+        if (meter && meter.volume > 0) {
+            ctx.scale(1 + meter.volume*8, 1 + meter.volume*8);
+        } else {
+            ctx.scale(1, 1);
+        }
         ctx.moveTo(0, -27);
         ctx.lineTo(-45, 6.75);
         ctx.lineTo(0, 40.5);
         ctx.lineTo(45, 6.75);
         ctx.lineTo(0, -27);
-        ctx.stroke();
         ctx.restore();
+        ctx.stroke();
 
         ctx.save();
         ctx.beginPath();
@@ -1875,12 +1859,10 @@ math.import({
         ctx.rotate(0);
         ctx.scale(1.7999999999999998, 1.7999999999999998);
         ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
-        ctx.restore();
-        ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.stroke();
         ctx.restore();
+        ctx.stroke();
 
         ctx.save();
         ctx.beginPath();
@@ -1933,6 +1915,157 @@ math.import({
         ctx.strokeStyle = "#000000";
         ctx.stroke();
         ctx.restore();
+
+        ctx.restore();
+    },
+    drawDog: function() {
+        ctx.save();
+
+        let props = parser.eval("text_props");
+        let x = props.p.x;
+        let y = props.p.y;
+
+        ctx.translate(x, y);
+        ctx.rotate(props.r);
+        ctx.scale(props.w, props.h);
+        ctx.translate(-x, -y);
+
+
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -23.25, y + -117.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-48, -32);
+        ctx.lineTo(72, -32);
+        ctx.lineTo(72, 48);
+        ctx.lineTo(-48, 48);
+        ctx.lineTo(-48, -32);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + -51.25, y + -149.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1.4);
+        ctx.arc(0, 0, 20, 0, 3.141592653589795, false);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + 28.75, y + -149.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1.4);
+        ctx.arc(0, 0, 20, 0, 3.141592653589795, false);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.translate(x + -42.5, y + -109.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.fillStyle = "#000000";
+        ctx.fillText("-", 0, 0);
+        ctx.fillText(".", 22.5, 0);
+        ctx.fillText("-", 45, 0);
+        ctx.restore();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -16.25, y + -94.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(5, -5);
+        ctx.lineTo(-5, 5);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -6.25, y + -94.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-5, -5);
+        ctx.lineTo(5, 5);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -3.75, y + -34.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-37.5, -35);
+        ctx.lineTo(-47.5, 35);
+        ctx.lineTo(52.5, 35);
+        ctx.lineTo(32.5, -35);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -26.25, y + -24.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(5, -25);
+        ctx.lineTo(-5, 25);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + 63.75, y + -19.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(-15, 20);
+        ctx.lineTo(15, -20);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -1.25, y + -24.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(0, -25);
+        ctx.lineTo(0, 25);
+        ctx.restore();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + 18.75, y + -24.75);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.beginPath();
+        ctx.moveTo(0, -25);
+        ctx.lineTo(0, 25);
+        ctx.restore();
+        ctx.stroke();
+        
+        
+        
 
         ctx.restore();
     }
@@ -2373,7 +2506,6 @@ function draw_vect(_x, _y, _z, x, y, z) {
 }
 
 function draw_brackets(sx, sy, width, height) {
-    ctx.lineWidth = 3.5;
     
     ctx.beginPath();
     ctx.moveTo(sx + 7, sy);
@@ -2971,8 +3103,8 @@ function Shape(color, path) {
             }
         }
 
-        js += "ctx.stroke();\n";
         js += "ctx.restore();\n";
+        js += "ctx.stroke();\n";
 
         return js;
     }
@@ -3181,15 +3313,10 @@ function Circle(color, pos) {
         js += "ctx.rotate(" + props.r + ");\n"
         js += "ctx.scale(" + props.w + ", " + props.h +");\n"
         js += "ctx.arc(0, 0, 20, " + props.a_s + ", " + props.a_e + ", false);\n";
-
-        js += "ctx.restore();\n";
-
-        js += "ctx.save();\n";
-
         js += "ctx.globalAlpha = " + props.c[3] + ";\n";
         js += "ctx.strokeStyle = \"" + rgbToHex(props.c) + "\";\n";
-        js += "ctx.stroke();\n";
         js += "ctx.restore();\n";
+        js += "ctx.stroke();\n";
 
         return js;
     }
@@ -4280,6 +4407,34 @@ function Text(text, pos) {
         }
 
         ctx.restore();
+    }
+
+    this.generate_javascript = function() {
+        let props = this.properties[frame];
+        let p = props.p;
+        let cp = cam.properties[frame].p;
+        let text = props.t;
+
+        let js = "";
+        js += "ctx.save();\n";
+        js += "ctx.translate(x + " + (p.x - cp.x) + ", y + " + (p.y - cp.y) + ");\n"
+        js += "ctx.rotate(" + props.r + ");\n"
+        js += "ctx.scale(" + props.w + ", " + props.h +");\n"
+        js += "ctx.fillStyle = \"" + rgbToHex(props.c) + "\";\n";
+
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] == "*") {
+                js += "ctx.beginPath();\n";
+                js += "ctx.arc(" + (i * char_size + char_size/2) + ", 0, 3, 0, " + pi2 + ");\n";
+                js += "ctx.fill();\n";
+            } else {
+                js += "ctx.fillText(\"" + text[i] + "\", " + (i * char_size) + ", 0);\n";
+            }
+        }
+
+        js += "ctx.restore();\n";
+
+        return js;
     }
 
     this.parse_text(text);
