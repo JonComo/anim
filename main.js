@@ -5759,7 +5759,42 @@ window.onload = function() {
             }
         }
 
-        document.getElementById("output").value = js;
+        document.getElementById("generic").value = js;
+    };
+
+    document.getElementById("gen_script").onclick = function(evt) {
+        let script = document.getElementById("generic").value;
+        script = script.split("\n");
+
+        let s_clean = [];
+        for (let i = 0; i < script.length; i++) {
+            let s = script[i];
+            if (s.length != 0) {
+                s_clean.push(s);
+            }
+        }
+
+        script = s_clean;
+
+        let t = new Text("", {x: 20, y: win_height*2 - 60});
+        t.properties[frame].w = .6;
+        t.properties[frame].h = .6;
+        objs.push(t);
+
+        for (let i = 0; i < script.length; i++) {
+            let s = script[i];
+            let fr = i + 1;
+            if (!t.properties[fr]) {
+                t.properties[fr] = copy(t.properties[fr-1]);
+            }
+
+            t.properties[fr].t = s;
+        }
+
+        num_frames = script.length;
+        frames.create_buttons();
+
+        save_state();
     };
 
     objs = [];
@@ -6209,6 +6244,23 @@ window.onload = function() {
             let h = 1088;
             ctx.rect(win_width - w/2, win_height - h/2, w, h);
             ctx.stroke();
+
+            if (!presenting) {
+                ctx.globalAlpha = .1;
+
+                ctx.beginPath();
+                ctx.moveTo(win_width - w/2, win_height);
+                ctx.lineTo(win_width + w/2, win_height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(win_width, win_height - h/2);
+                ctx.lineTo(win_width, win_height + h/2);
+                ctx.stroke();
+
+                ctx.globalAlpha = 1;
+            }
+
             ctx.restore();
         }
         
