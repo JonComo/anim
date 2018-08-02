@@ -1828,7 +1828,7 @@ math.import({
 
         ctx.restore();
     },
-    drawRobo: function() {
+    drawFace: function() {
         ctx.save();
 
         let props = parser.eval("text_props");
@@ -1842,85 +1842,90 @@ math.import({
 
         ctx.save();
         ctx.beginPath();
+        ctx.translate(x + -56.25, y + -53.5);
+        ctx.rotate(0);
+        ctx.scale(1, 1);
+        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
+        ctx.restore();
+        ctx.stroke();
+        
+        // pupil
+        ctx.save();
+        ctx.beginPath();
+        let angle = math.atan2(mouse.y-y+53.5, mouse.x-x+56.25);
+        ctx.translate(x + -56.25, y + -53.5);
+        ctx.rotate(angle);
+        ctx.translate(8, 0);
+        ctx.scale(1, 1);
+        ctx.arc(0, 0, 10, 0, 6.283185307179586, false);
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.translate(x + 0, y + 6.25);
+        ctx.restore();
+        ctx.stroke();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x + 56.25, y + -53.5);
         ctx.rotate(0);
-        if (meter && meter.volume > 0) {
-            ctx.scale(1 + meter.volume*8, 1 + meter.volume*8);
+        ctx.scale(1, 1);
+        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.restore();
+        ctx.stroke();
+
+        // pupil
+        ctx.save();
+        ctx.beginPath();
+        angle = math.atan2(mouse.y-y+53.5, mouse.x-x-56.25);
+        ctx.translate(x + 56.25, y + -53.5);
+        ctx.rotate(angle);
+        ctx.translate(8, 0);
+        ctx.scale(1, 1);
+        ctx.arc(0, 0, 10, 0, 6.283185307179586, false);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.restore();
+        ctx.stroke();
+
+
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#000000";
+        ctx.translate(x + -8.4375, y + 11.1875);
+        ctx.rotate(0);
+        if (meter && meter.volume) {
+            ctx.scale(1-meter.volume*2, 1+meter.volume*2);
         } else {
             ctx.scale(1, 1);
         }
-        ctx.moveTo(0, -27);
-        ctx.lineTo(-45, 6.75);
-        ctx.lineTo(0, 40.5);
-        ctx.lineTo(45, 6.75);
-        ctx.lineTo(0, -27);
+        ctx.beginPath();
+        ctx.moveTo(-25.3125, -8.4375);
+        ctx.lineTo(42.1875, -8.4375);
+        ctx.lineTo(8.4375, 25.3125);
+        ctx.lineTo(-25.3125, -8.4375);
         ctx.restore();
         ctx.stroke();
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.translate(x + -67.5, y + -65.75);
-        ctx.rotate(0);
-        ctx.scale(1.7999999999999998, 1.7999999999999998);
-        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = "#000000";
-        ctx.restore();
-        ctx.stroke();
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.translate(x + 67.5, y + -65.75);
-        ctx.rotate(0);
-        ctx.scale(1.7999999999999998, 1.7999999999999998);
-        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
-        ctx.restore();
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.translate(x + 0, y + -54.5);
-        ctx.rotate(0);
-        ctx.scale(6.800000000000003, 6.600000000000003);
-        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
-        ctx.restore();
-        ctx.save();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = "#000000";
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.translate(x + -67.5, y + -54.5);
+        ctx.translate(x + 0, y + -36.625);
         ctx.rotate(0);
         ctx.scale(1, 1);
-        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
-        ctx.restore();
-        ctx.save();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = "#000000";
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.save();
         ctx.beginPath();
-        ctx.translate(x + 67.5, y + -54.5);
-        ctx.rotate(0);
-        ctx.scale(1, 1);
-        ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
+        let np = 28.125;
+        if (meter && meter.volume) {
+            np -= meter.volume * 20;
+        }
+        ctx.moveTo(0, -28.125);
+        ctx.lineTo(0, np);
+        ctx.lineTo(0-15, 28.125-15);
+        ctx.moveTo(0, np);
+        ctx.lineTo(0+15, 28.125-15);
         ctx.restore();
-        ctx.save();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = "#000000";
         ctx.stroke();
-        ctx.restore();
+
 
         ctx.restore();
     },
@@ -4369,6 +4374,14 @@ function Text(text, pos) {
 
         let pos = i.p;
 
+        if (b && b.c[3] > a.c[3]) {
+            // fade in, use final position always
+            pos = b.p;
+        } else if (b && b.c[3] < a.c[3]) {
+            // fade out, use initial position
+            pos = a.p;
+        }
+
         ctx.save();
 
         ctx.globalAlpha = i.c[3];
@@ -4393,7 +4406,7 @@ function Text(text, pos) {
         this.size = {w: 0, h: 0};
         if (should_draw_text) {
 
-            ctx.translate(i.p.x, i.p.y);
+            ctx.translate(pos.x, pos.y);
             ctx.rotate(i.r);
             ctx.scale(i.w, i.h);
 
