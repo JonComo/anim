@@ -50,7 +50,7 @@ var synth;
 var voices;
 
 var t_ease = 0;
-var t_steps = 20;
+var t_steps = 30;
 var t_percent = 0;
 var t_in_out = 1.0;
 
@@ -6146,9 +6146,9 @@ window.onload = function() {
 
     save_state();
 
-    var fps = 30;
+    var fps;
     millis = Date.now();
-    var targ_millis = millis + 1000/fps;
+    var targ_millis = millis + 1; // set below
 
     function animate() {
 
@@ -6161,7 +6161,7 @@ window.onload = function() {
         targ_millis = millis + 1000/fps;
 
         if (presenting) {
-            fps = 30;
+            fps = 60;
         } else {
             fps = 20; // save power when editing
         }
