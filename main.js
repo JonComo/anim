@@ -2967,6 +2967,16 @@ function Shape(color, path) {
         }
     }
 
+    this.del_props_before = function() {
+        if (this.selected_indices.length == 0) {
+            return;
+        }
+
+        if (this.properties && this.properties[frame-1]) {
+            delete this.properties[frame-1];
+        }
+    }
+
     this.add_point = function(p) {
         let props = this.properties[frame];
         let path = props.path;
@@ -3278,6 +3288,16 @@ function Circle(color, pos) {
         }
     }
 
+    this.del_props_before = function() {
+        if (!this.selected) {
+            return;
+        }
+        
+        if (this.properties && this.properties[frame-1]) {
+            delete this.properties[frame-1];
+        }
+    }
+
     this.near_mouse = function () {
         let props = this.properties[frame];
         if (!props) {
@@ -3567,6 +3587,16 @@ function Text(text, pos) {
             if (key != frame) {
                 delete this.properties[key];
             }
+        }
+    }
+
+    this.del_props_before = function() {
+        if (!this.selected) {
+            return;
+        }
+        
+        if (this.properties && this.properties[frame-1]) {
+            delete this.properties[frame-1];
         }
     }
 
@@ -5046,12 +5076,12 @@ function Menu(pos) {
         }
     }));
 
-    this.buttons.push(new Button("del props f-1", {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button("del props before", {x: 0, y: 0}, function(b) {
         let N = objs.length;
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
-            if (obj.properties && obj.properties[frame-1]) {
-                delete obj.properties[frame-1];
+            if (typeof obj.del_props_before == "function") {
+                obj.del_props_before();
             }
         }
     }));
@@ -5619,7 +5649,7 @@ function draw_cursor() {
 
         ctx.translate(mouse.x, mouse.y);
 
-        ctx.strokeStyle = dark;
+        ctx.strokeStyle = pen.color;
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
