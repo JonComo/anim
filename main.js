@@ -50,7 +50,7 @@ var synth;
 var voices;
 
 var t_ease = 0;
-var t_steps = 40;
+var t_steps = 20;
 var t_percent = 0;
 var t_in_out = 1.0;
 
@@ -2093,18 +2093,12 @@ function rgb1ToHex(a) {
     return rgbToHex(c);
 }
 
-window.requestAnimFrame = function() {
-    return (
-        window.requestAnimationFrame       || 
-        window.webkitRequestAnimationFrame || 
-        window.mozRequestAnimationFrame    || 
-        window.oRequestAnimationFrame      || 
-        window.msRequestAnimationFrame     || 
-        function(/* function */ callback){
-            window.setTimeout(callback, 1000 / 60);
-        }
-    );
-}();
+// http://www.javascriptkit.com/javatutors/requestanimationframe.shtml
+window.requestAnimationFrame = window.requestAnimationFrame
+    || window.mozRequestAnimationFrame
+    || window.webkitRequestAnimationFrame
+    || window.msRequestAnimationFrame
+    || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60 
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 function guid() {
@@ -4705,6 +4699,8 @@ function Camera() {
     this.screen_to_graph = function(p) {
         return {x: (p.x-this.props.p.x)/(grid_size * this.props.w), y:-(p.y - this.props.p.y)/(grid_size * this.props.h)};
     }
+
+    this.update_props();
 }
 
 function save_state() {
@@ -5133,7 +5129,7 @@ function Menu(pos) {
         cam.rotate([-Math.PI/2,0,-Math.PI/2]);
     }));
 
-    this.buttons.push(new Button("1920x1080", {x: 0, y:0}, function(b){
+    this.buttons.push(new Button("frame", {x: 0, y:0}, function(b){
         view_frame = !view_frame;
     }));
 
@@ -5393,6 +5389,7 @@ function Pen() {
             draw_path({"p": this.path, "c": this.color});
         }
 
+        /*
         if (!presenting) {
             // onion skin
             ctx.globalAlpha = .5;
@@ -5405,7 +5402,7 @@ function Pen() {
                     }
                 }
             }
-        }
+        } */
 
         ctx.restore();
     };
@@ -6149,16 +6146,29 @@ window.onload = function() {
 
     save_state();
 
-    var fps = 60;
-    animate();
+    var fps = 30;
+    millis = Date.now();
+    var targ_millis = millis + 1000/fps;
+
     function animate() {
-        setTimeout(function() {
-            requestAnimationFrame(animate);
-        }, 1000/fps);
+
+        millis = Date.now();
+        if (millis < targ_millis) {
+            setTimeout(animate, targ_millis-millis);
+            return;
+        }
+
+        targ_millis = millis + 1000/fps;
+
+        if (presenting) {
+            fps = 30;
+        } else {
+            fps = 20; // save power when editing
+        }
 
         parser.set('_frame', t);
-        millis = Date.now();
         parser.set('_millis', millis);
+
         if (meter) {
             parser.set('_vol', meter.volume);
         }
@@ -6253,5 +6263,9 @@ window.onload = function() {
         transition.update();
 
         t += 1;
+
+        requestAnimationFrame(animate);
     }
+
+    requestAnimationFrame(animate);
 }
