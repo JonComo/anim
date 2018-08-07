@@ -6245,7 +6245,7 @@ window.onload = function() {
         let N = objs.length;
         for (let i = 0; i < N; i++) {
             let obj = objs[i];
-            if (obj.command == "e" || obj.new) {
+            if (typeof obj.eval == "function") {
                 obj.eval();
             }
         }
