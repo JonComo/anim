@@ -41,6 +41,7 @@ Access the clipping through node.checkClipping(); use node.shutdown to get rid o
 var audioContext;
 var mediaStreamSource;
 var meter;
+var meterInitialized = false;
 
 function initVolumeMeter() {
 	// volume meter
