@@ -4006,7 +4006,7 @@ function Text(text, pos) {
         }
 
         if (presenting) {
-            if (this.args && this.args[0]._data) {
+            if (this.args && this.args[0] && this.args[0]._data) {
 
             } else {
                 if (this.command == "slide" && this.point_in_text_rect(mouse_start)) {
@@ -5045,7 +5045,11 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("pen", {x: 0, y: 0}, function(b) {
-        tool = "pen";
+        if (tool != "pen") {
+            tool = "pen";
+        } else {
+            pen.clear_drawing();
+        }
     }));
 
     this.buttons.push(new Button("split", {x: 0, y: 0}, function(b) {
@@ -5354,9 +5358,9 @@ function Pen() {
     
                 this.drawings[frame].push({"p": this.path, "c": this.color});
                 this.path = [];
-    
-                return true;
             }
+
+            return true;
         }
 
         return false;
@@ -5369,7 +5373,15 @@ function Pen() {
         }
 
         return false;
-    }
+    };
+
+    this.clear_drawing = function() {
+        if (this.drawings[frame]) {
+            delete this.drawings[frame];
+        }
+
+        this.path = [];
+    };
 
     this.render = function() {
 
@@ -6066,11 +6078,6 @@ window.onload = function() {
 
         mouse_down = false;
 
-        if (pen.mouse_up(evt)) {
-            save_state();
-            return;
-        }
-
         if (presenting) {
             // maybe tap some text
             let N = objs.length;
@@ -6092,6 +6099,11 @@ window.onload = function() {
             new_line = null;
             selecting = false;
 
+            save_state();
+            return;
+        }
+
+        if (pen.mouse_up(evt)) {
             save_state();
             return;
         }
@@ -6206,7 +6218,7 @@ window.onload = function() {
         if (presenting) {
             fps = 60;
         } else {
-            fps = 20; // save power when editing
+            fps = 30; // save power when editing
         }
 
         parser.set('_frame', t);
