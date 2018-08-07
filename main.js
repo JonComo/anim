@@ -883,7 +883,7 @@ math.import({
             return (f(a+h)-f(a))/h;
         }
     },
-    nnet: function(layers, _pos, _high_conn, _high_neur) { // Draws a neural net layers = [1, 2, 3, 2, 1]
+    visnet: function(layers, _pos, _high_conn, _high_neur) { // Draws a neural net layers = [1, 2, 3, 2, 1]
         layers = layers._data;
         let pad = 120;
 
@@ -897,7 +897,7 @@ math.import({
         }
 
         loc = function(i, j, units) {
-            let pad2 = 120;
+            let pad2 = 250;
             //return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
             return [pos[0] - pad2 * units/2 + pad2/2 + i*pad2, -pad + pos[1] - j*pad2];
         }
@@ -1179,7 +1179,7 @@ math.import({
         let rows = W._size[0];
         let cols = W._size[1];
 
-        let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
+        let high = math.visnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
         let high_conn = high[0];
         let high_neur = high[1];
 
@@ -1245,7 +1245,7 @@ math.import({
         let rows = W._size[0];
         let cols = W._size[1];
 
-        let high = math.nnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
+        let high = math.visnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
         let high_conn = high[0];
         let high_neur = high[1];
 
@@ -1395,7 +1395,8 @@ math.import({
         synth.speak(utterThis);
     },
     enableVolMeter: function () {
-        if (!meter) {
+        if (!meterInitialized) {
+            meterInitialized = true;
             initVolumeMeter();
         }
     },
@@ -3883,9 +3884,10 @@ function Text(text, pos) {
             if (a.t != b.t) {
                 // text is diff, cross fade result
                 //ctx.globalAlpha = -math.cos(t_percent*2*math.PI-math.PI)/2 + .5;
+                /*
                 if (t_percent > .5) {
                     this.parse_text(this.properties[next_frame].t);
-                }
+                } */
             }
         }
 
