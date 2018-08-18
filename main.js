@@ -5299,6 +5299,10 @@ function Pen() {
         if (tool == "pen" && evt.key == "Esc") {
             tool = "select";
         } else if (evt.key == "p") {
+            if (tool == "pen") {
+                this.clear_drawing();
+            }
+            
             tool = "pen";
         }
 
