@@ -860,6 +860,17 @@ math.import({
         ctx.restore();
     },
     integral: function(f, a, b, _n) {
+        if (a == b) {
+            return 0;
+        }
+
+        if (a > b) {
+            t = b
+            b = a
+            a = t
+            negate = true;
+        }
+
         let n = 10000;
         if (arguments.length >= 4) {
             n = _n;
@@ -867,8 +878,12 @@ math.import({
 
         let dx = (b-a)/n;
         let sum = 0;
-        for (let x = a; x <=b; x+= dx) {
+        for (let x = a; x <= b; x+= dx) {
             sum += f(x) * dx;
+        }
+
+        if (negate) {
+            sum *= -1;
         }
 
         return sum;
@@ -2080,6 +2095,58 @@ math.import({
         
 
         ctx.restore();
+    },
+    dirField: function(f) { // draws direction field of dy/dx = f(x,y)
+        for (let x = -10; x <= 10; x+=2) {
+            for (let y = -10; y <= 10; y+=2) {
+                dydx = f(x+.0001, y+.0001); // to avoid asymptotes at x=0 or y=0
+                if (dydx.im) {
+                    continue;
+                }
+                uv = [1, dydx];
+                uv = math.matrix(uv)
+                uv = math.multiply(uv, 1/math.norm(uv));
+                draw_vect(x, y, 0, x+uv._data[0], y+uv._data[1], 0);
+            }
+        }
+    },
+    eulerMeth: function(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
+        n = 10;
+        h = .1;
+
+        if (_n > 0) {
+            n = _n;
+        }
+
+        if (_h > 0) {
+            h = _h;
+        }
+
+        x = x0
+        y = y0
+
+        ctx.beginPath();
+
+        p = cam.graph_to_screen(x, y, 0);
+        ctx.moveTo(p[0], p[1]);
+
+        for (let i = 0; i < n; i++) {
+            dydx = f(x, y);
+
+            if (dydx.im) {
+                ctx.stroke();
+                return math.matrix([x, y]);
+            }
+
+            x += h;
+            y += dydx * h;
+
+            p = cam.graph_to_screen(x, y, 0);
+            ctx.lineTo(p[0], p[1]);
+        }
+
+        ctx.stroke();
+        return math.matrix([x, y]);
     }
 });
 
@@ -6229,6 +6296,9 @@ window.onload = function() {
 
         parser.set('_frame', t);
         parser.set('_millis', millis);
+        let mp = cam.screen_to_graph({x: mouse.x, y: mouse.y});
+        parser.set('_mx', mp.x);
+        parser.set('_my', mp.y);
 
         if (meter) {
             parser.set('_vol', meter.volume);
