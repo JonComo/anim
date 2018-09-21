@@ -569,6 +569,17 @@ math.import({
         }
         ctx.restore();
     },
+    drawxy: function(xs, ys) {
+        let N = xs.size()[0];
+        let m = cached([N, 3]);
+        for (let i = 0; i < N; i++) {
+            m._data[i][0] = xs._data[i];
+            m._data[i][1] = ys._data[i];
+            m._data[i][2] = 0;
+        }
+
+        math.draw(m);
+    },
     vect: function(a, b) {
 
         if (!a) {
@@ -1375,15 +1386,41 @@ math.import({
 
         return math.matrix(path);
     },
+    interp: function(a, b, divisions) { // interpolate from [x1,y1,z1,...] -> [x2,y2,z2,...]
+        ad = a._data;
+        bd = b._data;
+
+        divisions -= 1;
+
+        L = cached([divisions+1, ad.length]);
+
+        for (let i = 0; i <= divisions; i ++) {
+            let t = i/divisions;
+            for (let j = 0; j < ad.length; j++) {
+                L._data[i][j] = ad[j] * (1-t) + t * bd[j];
+            }
+        }
+
+        return L;
+    },
     zer: function() {
         return [0, 0, 0];
     },
     linspace: function(a, b, steps) {
         let path = [];
 
-        for (let t = 0; t <= 1; t += 1/steps) {
-            path.push(math.add(math.multiply(a, (1-t)),  math.multiply(t, b)));
+        path.push(a);
+
+        if (steps > 2) {
+            let dt = 1/(steps-2);
+            let t = 0;
+            for (let i = 0; i < steps-2; i ++) {
+                path.push(math.add(math.multiply(a, (1-t)),  math.multiply(t, b)));
+                t += dt
+            }
         }
+
+        path.push(b);
 
         return math.matrix(path);
     },
