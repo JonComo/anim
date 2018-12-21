@@ -2804,6 +2804,47 @@ function draw_simple(text) {
     return text.length * char_size;
 }
 
+function draw_network(layers, pos) {
+    let pad = 120;
+    let radius = 14;
+
+    loc = function(i, j, units) {
+        let pad2 = 250;
+        //return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
+        return [pos[0] - pad2 * units/2 + pad2/2 + i*pad2, -pad + pos[1] - j*pad2];
+    }
+
+    // connections
+    for (let j = 0; j < layers.length-1; j++) {
+        let units = layers[j];
+        let units_next = layers[j+1];
+        
+        
+        for (let i = 0; i < units; i++) {
+            let p = loc(i, j, units);
+
+            for (let k = 0; k < units_next; k++) {
+
+                let p2 = loc(k, j+1, units_next);
+                
+                let l = new Shape([0, 0, 0, 1], [{x: p[0], y: p[1]}, {x: p2[0], y: p2[1]}]);
+                objs.push(l);
+            }
+        }
+    }
+
+    // neurons
+    for (let j = 0; j < layers.length; j++) {
+        let units = layers[j];
+
+        for (let i = 0; i < units; i++) {
+            let p = loc(i, j, units);
+            let c = new Circle([1,1,1,1], {x: p[0], y: p[1]});
+            objs.push(c);
+        }
+    }
+}
+
 let cache_fn = {};
 function draw_fn(fn) {
 
@@ -3908,6 +3949,18 @@ function Text(text, pos) {
         }
 
         let t = this.properties[frame].t;
+
+        if (t.indexOf("visnet") != -1) {
+            // very hacky but it works.. :-)
+            
+            let p = this.properties[frame].p;
+
+            let l = math.eval(t.substring(t.indexOf('['), t.indexOf(']')+1));
+
+            draw_network(l._data, [p.x, p.y]);
+            this.deleted = true;
+            return;
+        }
 
         // for each character, make it it's own text obj
         if (!t) {
