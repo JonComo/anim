@@ -875,6 +875,7 @@ math.import({
             return 0;
         }
 
+        let negate = false;
         if (a > b) {
             t = b
             b = a
@@ -2184,6 +2185,164 @@ math.import({
 
         ctx.stroke();
         return math.matrix([x, y]);
+    },
+    diffEq: function(a, b, c, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = 0 numerically plotted for _n steps and _dt accuracy
+        let n = 1000;
+        let dt = .001;
+        
+        if (arguments.length >= 7) {
+            n = _n;
+        }
+
+        if (arguments.length >= 8) {
+            dt = _dt;
+        }
+
+        let y = y0;
+        let x = x0;
+        let yp = yp0;
+
+        let p = cam.graph_to_screen(x, y, 0);
+
+        ctx.beginPath();
+        ctx.moveTo(p[0], p[1]);
+        for (let i = 0; i < n; i++) {
+            ypp = (-b*yp - c*y)/a;
+            yp += ypp * dt;
+            y += yp * dt;
+            x += 1 * dt;
+            p = cam.graph_to_screen(x, y, 0);
+            ctx.lineTo(p[0], p[1]);
+        }
+        ctx.stroke();
+    },
+    diffEqF: function(a, b, c, f, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = f(x) numerically plotted for _n steps and _dt accuracy
+        let n = 1000;
+        let dt = .001;
+        
+        if (arguments.length >= 8) {
+            n = _n;
+        }
+
+        if (arguments.length >= 9) {
+            dt = _dt;
+        }
+
+        let y = y0;
+        let x = x0;
+        let yp = yp0;
+
+        let p = cam.graph_to_screen(x, y, 0);
+
+        ctx.beginPath();
+        ctx.moveTo(p[0], p[1]);
+        for (let i = 0; i < n; i++) {
+            ypp = (f(x) - b*yp - c*y)/a;
+            yp += ypp * dt;
+            y += yp * dt;
+            x += 1 * dt;
+            p = cam.graph_to_screen(x, y, 0);
+            ctx.lineTo(p[0], p[1]);
+        }
+        ctx.stroke();
+    },
+    diffEqTri: function(a, b, c, d, x0, y0, yp0, ypp0, _n, _dt) { // ay''' + by'' + cy' + dy = 0 numerically plotted for _n steps and _dt accuracy
+        let n = 1000;
+        let dt = .001;
+        
+        if (arguments.length >= 8) {
+            n = _n;
+        }
+
+        if (arguments.length >= 9) {
+            dt = _dt;
+        }
+
+        let y = y0;
+        let x = x0;
+        let yp = yp0;
+        let ypp = ypp0;
+
+        let p = cam.graph_to_screen(x, y, 0);
+
+        ctx.beginPath();
+        ctx.moveTo(p[0], p[1]);
+        for (let i = 0; i < n; i++) {
+            yppp = (-b*ypp - c*yp - d*y)/a;
+            ypp += yppp * dt;
+            yp += ypp * dt;
+            y += yp * dt;
+            x += 1 * dt;
+            p = cam.graph_to_screen(x, y, 0);
+            ctx.lineTo(p[0], p[1]);
+        }
+        ctx.stroke();
+    },
+    factors: function (n) { // list positive factors of n
+        f = [];
+        for (let i = 0; i <= n/2; i++) {
+            if (n / i % 1 == 0) {
+                f.push(i);
+            }
+        }
+
+        f.push(n);
+
+        return math.matrix(f);        
+    },
+    primeFactors: function (n) { // list prime factors of n
+
+        let factors = math.factors(n);
+        let d = factors._data;
+
+        let primes = []; 
+        // this gonna be real inefficient! fun times...
+        for (let i = 0; i < factors._size[0]; i++) {
+            let num = d[i];
+            let f = math.factors(num);
+            if (f._size[0] == 1 || f._size[0] == 2) {
+                // prime
+                primes.push(num);
+            }
+        }
+
+        return math.matrix(primes);
+    },
+    laplace: function(f, _ti, _tf, _dt) {
+        let ti = 0;
+        let tf = 1000;
+        let dt = .01;
+
+        if (arguments.length >= 2) {
+            ti = _ti;
+        }
+
+        if (arguments.length >= 3) {
+            tf = _tf;
+        }
+
+        if (arguments.length >= 4) {
+            _dt = dt;
+        }
+
+        let F = function(s) {
+            let sum = 0;
+            for (t = ti; t <= tf; t += dt) {
+                sum += math.exp(-s*t) * f(t);
+            }
+            return sum;
+        }
+
+        return F;
+    },
+    step(t) {
+        if (t > 0) {
+            return 1;
+        }
+        return 0;
+    },
+    window(t, a, b) {
+        return math.step(t-a) - math.step(t-b);
     }
 });
 
@@ -2699,7 +2858,7 @@ function draw_matrix(matrix, color_ij) {
         shift = 24;
     }
 
-    let max_width = mat_num_width - 20;
+    let max_width = mat_num_width - 10;
 
     for (let i = 0; i < matrix.length; i ++) {
         for (let j = 0; j < matrix[i].length; j++) {
@@ -3748,13 +3907,44 @@ function Text(text, pos) {
             return;
         }
 
-        // for each character, make it it's own text obj
         let t = this.properties[frame].t;
+
+        // if this is visnet split the network
+        if (t.indexOf('visnet') != -1) {
+            
+            return;
+        }
+
+        // for each character, make it it's own text obj
+        
         if (!t) {
             return;
         }
 
         let p = this.properties[frame].p;
+
+        // if its a matrix split that up too
+        if (this.matrix_vals.length != 0) {
+            // create a bunch of matrix numbers
+            let pad = 24;
+
+            let max_width = mat_num_width - 20;
+
+            let matrix = format_matrix(this.matrix_vals);
+
+            for (let i = 0; i < matrix.length; i ++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    let newT = new Text(matrix[i][j], {x: p.x + j * (mat_num_width + pad) + 110, 
+                                                       y: p.y + i * grid_size});
+                    objs.push(newT);
+                }
+            }
+
+            let size = matrix_size(matrix);
+            draw_brackets(0, 0, size[0], size[1]);
+
+            return;
+        }
 
         let N = t.length;
         let xoff = 0;
