@@ -32,22 +32,10 @@ f(x) = x^(2)
 
 Then graph it:
 
-e:graphxy(f)
+graphxy(f)
 
 (click the view xy button in the menu to rotate the 3D coordinate axes to see your graph)
 
-You can write expressions that are evaluated each frame by writing:
-
-e: x = 2
-
-A counter:
-
-  define x in a text object:
-  x = 1
-
-  Then in another write:
-  e: x = x + 1
-  
 You can interact with a variable by using a slider:
 
 slide: x
