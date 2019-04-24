@@ -910,23 +910,20 @@ math.import({
             return (f(a+h)-f(a))/h;
         }
     },
-    visnet: function(layers, _pos, _high_conn, _high_neur) { // Draws a neural net layers = [1, 2, 3, 2, 1]
+    visnet: function(layers, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
         layers = layers._data;
-        let pad = 120;
 
         let props = parser.eval("text_props");
         let pos = [props.p.x, props.p.y];
 
-        let radius = 14;
+        let pad = 200;
+        let radius = 20;
 
-        if (arguments.length >= 2) {
-            pos = [pos[0] + _pos._data[0], pos[1] + _pos._data[1]];
-        }
+        let h = layers.length * pad;
+        let w = Math.max(...layers) * pad;
 
         loc = function(i, j, units) {
-            let pad2 = 250;
-            //return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
-            return [pos[0] - pad2 * units/2 + pad2/2 + i*pad2, -pad + pos[1] - j*pad2];
+            return [pos[0] + 30 + w/2 - pad * units/2 + i*pad, pos[1] + h - j*pad - 120];
         }
 
         ctx.save();
@@ -978,7 +975,7 @@ math.import({
                         let vlen = math.norm(vline);
 
                         if (d1 + d2 < vlen + 1) {
-                            ctx.strokeStyle = "green";
+                            ctx.strokeStyle = colors[3];
                             high_conn = [i, k, j]; // unit i to unit k in layer j
                             high_neur = [[i, j], [k, j+1]];
                         }
@@ -1009,17 +1006,17 @@ math.import({
                     if (high_conn[2] == j) {
                         if (high_conn[0] == i) {
                             if (j == 0) {
-                                ctx.strokeStyle = "blue";
+                                ctx.strokeStyle = colors[1];
                             } else {
-                                ctx.strokeStyle = "red";
+                                ctx.strokeStyle = colors[2];
                             }
                         }
                     } else if (high_conn[2] == j-1) {
                         if (high_conn[1] == i) {
                             if (j == 0) {
-                                ctx.strokeStyle = "blue";
+                                ctx.strokeStyle = colors[1];
                             } else {
-                                ctx.strokeStyle = "red";
+                                ctx.strokeStyle = colors[2];
                             }
                         }
                     }
@@ -1032,9 +1029,9 @@ math.import({
                     
                     if (dx*dx + dy*dy < 400) {
                         if (j == 0) {
-                            ctx.strokeStyle = "blue";
+                            ctx.strokeStyle = colors[1];
                         } else {
-                            ctx.strokeStyle = "red";
+                            ctx.strokeStyle = colors[2];
                         }
                         
                         high_neur = [[i, j]];
@@ -1050,7 +1047,7 @@ math.import({
 
         ctx.restore();
 
-        if (arguments.length >= 3) {
+        if (arguments.length >= 2 && ret_highlighted) {
             return [high_conn, high_neur];
         }
     },
@@ -1206,7 +1203,7 @@ math.import({
         let rows = W._size[0];
         let cols = W._size[1];
 
-        let high = math.visnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
+        let high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
         let high_conn = high[0];
         let high_neur = high[1];
 
@@ -1217,13 +1214,13 @@ math.import({
         
         ctx.font = font_anim;
 
-        ctx.translate(loc[0], loc[1]);
+        ctx.translate(loc[0] + 10, loc[1] + 330);
         draw_matrix(rformat, function(i, j) {
             ctx.fillStyle = "black";
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
                 if (highn[1] == 1 && highn[0] == i) {
-                    ctx.fillStyle = "red";
+                    ctx.fillStyle = colors[2];
                 }
             }
         });
@@ -1236,7 +1233,7 @@ math.import({
         draw_matrix(Wformat, function(i, j) {
             ctx.fillStyle = "black";
             if (high_conn.length && high_conn[0] == j && high_conn[1] == i) {
-                ctx.fillStyle = "green";
+                ctx.fillStyle = colors[3];
             }
         });
 
@@ -1250,7 +1247,7 @@ math.import({
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
                 if (highn[1] == 0 && highn[0] == i) {
-                    ctx.fillStyle = "blue";
+                    ctx.fillStyle = colors[1];
                 }
             }
         });
@@ -1272,7 +1269,7 @@ math.import({
         let rows = W._size[0];
         let cols = W._size[1];
 
-        let high = math.visnet(math.matrix([x._size[0], W._size[0]]), math.matrix([0, 0]), true);
+        let high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
         let high_conn = high[0];
         let high_neur = high[1];
 
@@ -1283,7 +1280,7 @@ math.import({
 
         ctx.font = font_anim;
 
-        ctx.translate(loc[0], loc[1]);
+        ctx.translate(loc[0] + 10, loc[1] + 330);
         draw_matrix(rformat, function(i, j) {
             ctx.fillStyle = "black";
             for (let n = 0; n < high_neur.length; n ++) {
@@ -2806,7 +2803,7 @@ function draw_simple(text) {
 
 function draw_network(layers, pos) {
     let pad = 120;
-    let radius = 14;
+    let radius = 20;
 
     loc = function(i, j, units) {
         let pad2 = 250;
@@ -2840,6 +2837,7 @@ function draw_network(layers, pos) {
         for (let i = 0; i < units; i++) {
             let p = loc(i, j, units);
             let c = new Circle([1,1,1,1], {x: p[0], y: p[1]});
+            c.properties[frame].fill = [255,255,255,255]; // white fill
             objs.push(c);
         }
     }
@@ -3529,7 +3527,7 @@ function Circle(color, pos) {
     this.type = "Circle";
     this.guid = guid();
     this.properties = {};
-    this.properties[frame] = {p: pos, c: color, a_s:0, a_e: Math.PI*2.0, w: 1, h: 1, r: 0};
+    this.properties[frame] = {p: pos, c: color, fill:[0,0,0,0], a_s:0, a_e: Math.PI*2.0, w: 1, h: 1, r: 0};
     this.selected = false;
 
     this.select = function() {
@@ -3743,7 +3741,11 @@ function Circle(color, pos) {
 
         ctx.save();
 
-        ctx.fillStyle = "#ffffff";
+
+        ctx.fillStyle = rgbToHex(props.fill);
+        ctx.globalAlpha = math.min(props.fill[3], props.c[3]);
+        ctx.fill();
+
         ctx.globalAlpha = props.c[3];
         ctx.strokeStyle = rgbToHex(props.c);
         
@@ -3958,7 +3960,11 @@ function Text(text, pos) {
             let l = math.eval(t.substring(t.indexOf('['), t.indexOf(']')+1));
 
             draw_network(l._data, [p.x, p.y]);
-            this.deleted = true;
+            
+            // hide
+            this.properties[frame].c[3] = 0;
+            this.selected = false;
+            
             return;
         }
 
