@@ -3781,6 +3781,7 @@ function Text(text, pos) {
     this.matrix_vals = [];
     this.near_mouse = false;
     this.size = {w:0, h:0}; // pixel width and height
+    this.image = null;
 
     this.select = function() {
         this.selected = true;
@@ -3829,6 +3830,18 @@ function Text(text, pos) {
         this.cursor_selection = this.cursor;
 
         return new_text;
+    }
+
+    this.paste_text = function(text_copied) {
+        if (this.is_text_selected()) {
+            // wipe out some text in between
+            this.change_text(this.replace_selected_text(text_copied));
+        } else {
+            let text = this.properties[frame].t;
+            this.properties[frame].t = text.slice(0, this.cursor) + text_copied + text.slice(this.cursor, text.length);
+            this.cursor += text_copied.length;
+            this.cursor_selection = this.cursor;
+        }
     }
 
     this.constrain_cursors = function() {
@@ -4022,23 +4035,29 @@ function Text(text, pos) {
         let key = evt.key;
         let text = this.properties[frame].t;
 
+        if (ctrl) {
+            this.properties[frame] = transform_props(key, this.properties[frame]);
+            return true;
+        }
+
         if (meta || ctrl) {
             if (this.is_selected()) {
                 if (key == "c") {
                     // copy
                     text_copied = this.text_selected();
+                    
+                    // hacky but works
+                    const el = document.createElement('textarea');
+                    el.value = this.text_selected();
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+
                     return true;
                 } else if (key == "v") {
-                    // paste
-                    if (this.is_text_selected()) {
-                        // wipe out some text in between
-                        this.change_text(this.replace_selected_text(text_copied));
-                        return true;
-                    } else {
-                        this.properties[frame].t = text.slice(0, this.cursor) + text_copied + text.slice(this.cursor, text.length);
-                        this.cursor += text_copied.length;
-                        return true;
-                    }
+                    // paste, let event take over
+                    return false;
                 } else if (key == "a") {
                     // select all
                     this.cursor = this.properties[frame].t.length;
@@ -4046,10 +4065,7 @@ function Text(text, pos) {
                     return true;
                 }
             }
-        }
-
-        if (ctrl) {
-            this.properties[frame] = transform_props(key, this.properties[frame]);
+            
             return true;
         }
 
@@ -4316,8 +4332,15 @@ function Text(text, pos) {
         }
 
         let p = props.p;
-        if (point.x > p.x && point.x < p.x + this.size.w && point.y > p.y - this.size.h/2 && point.y < p.y + this.size.h/2) {
-            return true;
+
+        if (this.image != null) {
+            if (point.x > p.x && point.x < p.x + this.image.width && point.y > p.y && point.y < p.y + this.image.height) {
+                return true;
+            }
+        } else {
+            if (point.x > p.x && point.x < p.x + this.size.w && point.y > p.y - this.size.h/2 && point.y < p.y + this.size.h/2) {
+                return true;
+            }
         }
 
         return false;
@@ -4748,6 +4771,22 @@ function Text(text, pos) {
 
         if (presenting && (a.ph || (b && b.ph))) {
             should_draw_text = false;
+        }
+
+        // image display
+        if (i.t.indexOf("http") != -1 && (i.t.indexOf("png") != -1 || i.t.indexOf("jpg") != -1)) {
+            should_draw_text = false;
+
+            if (this.image == null || this.image.src != i.t) {
+                this.image = new Image();
+                this.image.src = i.t;
+            } else {
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(i.r);
+                ctx.scale(i.w, i.h);
+
+                ctx.drawImage(this.image, 0, 0);
+            }
         }
 
         // text
@@ -6393,6 +6432,8 @@ function draw_cursor() {
 }
 
 window.onload = function() {
+
+    objs = [];
     
     c = document.createElement("canvas");
     win_width = window.innerWidth; 
@@ -6505,7 +6546,22 @@ window.onload = function() {
         save_state();
     };
 
-    objs = [];
+    document.addEventListener('paste', (event) => {
+        let paste = (event.clipboardData || window.clipboardData).getData('text');
+        console.log("pasting: " + paste);
+
+        let N = objs.length;
+        for (let i = 0; i < objs.length; i++) {
+            let obj = objs[i];
+            if (obj.type == "Text") {
+                if (obj.is_selected()) {
+                    obj.paste_text(paste);
+                }
+            }
+        }
+     
+        event.preventDefault();
+    });
 
     transition = new Transition();
     frame = 1;
