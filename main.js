@@ -4437,28 +4437,6 @@ function Text(text, pos) {
         if (this.hidden()) {
             return false;
         }
-
-        if (presenting) {
-            if (this.near_mouse) {
-                // clicked, eval text
-
-                // loop:num,expr
-                if (this.command == "loop") {
-                    try {
-                        let num = this.args[0];
-                        let expr = this.args[1];
-                        for (let i = 0; i < num; i++) {
-                            parser.eval(expr);
-                        }
-                    } catch(e) {
-                        console.log('loop error ' + e);
-                    }
-                } else {
-                    this.eval();
-                }
-            }
-            return;
-        }
         
         if (this.near_mouse) {
             if (!this.dragged) {
