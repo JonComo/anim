@@ -4333,8 +4333,10 @@ function Text(text, pos) {
 
         let p = props.p;
 
-        if (this.image != null) {
-            if (point.x > p.x && point.x < p.x + this.image.width * props.w && point.y > p.y && point.y < p.y + this.image.height * props.h) {
+        if (this.image) {
+            let w = this.image.width * props.w;
+            let h = this.image.height * props.h;
+            if (point.x > p.x - w/2 && point.x < p.x + w/2 && point.y > p.y - h/2 && point.y < p.y + h/2) {
                 return true;
             }
         } else {
@@ -4352,7 +4354,6 @@ function Text(text, pos) {
             return;
         }
 
-        
         this.near_mouse = this.point_in_text_rect(mouse);
     };
 
@@ -4413,7 +4414,7 @@ function Text(text, pos) {
                     return true;
                 }
             }
-        } else if (this.is_selected() && this.near_mouse) {
+        } else if (this.is_selected() && this.near_mouse && this.image == null) {
             let p = props.p;
             
             this.cursor = this.char_index_at_x(mouse.x);
@@ -4446,12 +4447,14 @@ function Text(text, pos) {
                 this.cursor = this.char_index_at_x(mouse.x);
                 this.cursor_selection = this.cursor;
                 this.constrain_cursors();
+                return true;
             }
         } else if (!shift && this.is_selected()) {
             this.selected = false;
         }
         
         this.dragged = false;
+        return false;
     }
 
     this.draw_text = function(ctx, t) {
@@ -4695,8 +4698,15 @@ function Text(text, pos) {
     this.draw_border = function(ctx) {
         ctx.save();
         ctx.fillStyle = gray;
-        ctx.fillRect(0, this.size.h/2, this.size.w, 4);
-        //ctx.fillRect(this.size.w/2-2,this.size.h/2+2,4,12);
+        ctx.globalAlpha = .2;
+
+        if (this.image) {
+            ctx.strokeRect(-this.image.width/2, -this.image.height/2, this.image.width, this.image.height);
+        } else {
+            ctx.strokeRect(0, -this.size.h/2, this.size.w, this.size.h);
+        }
+
+        ctx.globalAlpha = 1.0;
         ctx.restore();
     }
 
@@ -4751,29 +4761,24 @@ function Text(text, pos) {
             should_draw_text = false;
         }
 
+        // text
+        this.size = {w: 0, h: 0};
+
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(i.r);
+        ctx.scale(i.w, i.h);
+
         // image display
-        if (i.t.indexOf("http") != -1 && (i.t.indexOf("png") != -1 || i.t.indexOf("jpg") != -1)) {
-            should_draw_text = false;
+        if (i.t.indexOf("http") != -1 && (i.t.indexOf("png") != -1 || i.t.indexOf("jpg") != -1 || i.t.indexOf("gif") != -1 || i.t.indexOf("jpeg") != -1)) {
 
             if (this.image == null || this.image.src != i.t) {
                 this.image = new Image();
                 this.image.src = i.t;
             } else {
-                ctx.translate(pos.x, pos.y);
-                ctx.rotate(i.r);
-                ctx.scale(i.w, i.h);
-
-                ctx.drawImage(this.image, 0, 0);
+                ctx.drawImage(this.image, -this.image.width/2, -this.image.height/2);
+                this.size = {w: this.image.width * i.w, h: this.image.height * i.h};
             }
-        }
-
-        // text
-        this.size = {w: 0, h: 0};
-        if (should_draw_text) {
-
-            ctx.translate(pos.x, pos.y);
-            ctx.rotate(i.r);
-            ctx.scale(i.w, i.h);
+        } else if (should_draw_text) {
 
             if (!b) {
                 b = a;
@@ -6748,12 +6753,13 @@ window.onload = function() {
         if (mouse_down) {
             let captured = false;
             let N = objs.length;
-            for (let i = 0; i < N; i++) {
+            for (let i = N-1; i >= 0; i--) {
                 let obj = objs[i];
-                if (typeof obj.mouse_drag === 'function') {
-                    captured = obj.mouse_drag(evt) || captured;
+                if (!captured && typeof obj.mouse_drag === 'function') {
+                    captured = obj.mouse_drag(evt);
                 }
             }
+
             if (!captured) {
                 cam.mouse_drag(evt);
             }
@@ -6784,11 +6790,12 @@ window.onload = function() {
 
         if (presenting) {
             // maybe tap some text
+            let captured = false;
             let N = objs.length;
             for (let i = 0; i < N; i++) {
                 let obj = objs[i];
-                if (typeof obj.mouse_up === 'function') {
-                    obj.mouse_up(evt);
+                if (!captured && typeof obj.mouse_up === 'function') {
+                    captured = obj.mouse_up(evt);
                 }
             }
 
@@ -6813,11 +6820,12 @@ window.onload = function() {
         }
 
         if (tool == "select") {
+            let captured = false;
             let N = objs.length;
-            for (let i = 0; i < N; i++) {
+            for (let i = N-1; i >= 0; i--) {
                 let obj = objs[i];
-                if (typeof obj.mouse_up === 'function') {
-                    obj.mouse_up(evt);
+                if (!captured && typeof obj.mouse_up === 'function') {
+                    captured = obj.mouse_up(evt);
                 }
             }
         } else if (tool == "text") {
