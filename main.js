@@ -4334,7 +4334,7 @@ function Text(text, pos) {
         let p = props.p;
 
         if (this.image != null) {
-            if (point.x > p.x && point.x < p.x + this.image.width && point.y > p.y && point.y < p.y + this.image.height) {
+            if (point.x > p.x && point.x < p.x + this.image.width * props.w && point.y > p.y && point.y < p.y + this.image.height * props.h) {
                 return true;
             }
         } else {
