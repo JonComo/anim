@@ -252,7 +252,190 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
     }
 }
 
+function implies(p, q) {
+    return !p || q;
+}
+
 math.import({
+    table: function() {
+        O = [true, false];
+
+        for (let k = 0; k < arguments.length; k++) {
+            ctx.save();
+            s = copy(arguments[k]);
+
+            let props = parser.eval("text_props");
+            let x = props.p.x;
+            let y = props.p.y;
+            ctx.translate(x + 4*grid_size*k, y+grid_size);
+            ctx.fillText(s, 0, 0);
+
+            for (let i = 0; i < 2; i++) {
+                p = O[i];
+
+                for (let j = 0; j < 2; j++) {
+                    q = O[j];
+
+
+                    s.replace("P", p);
+                    s.replace("Q", q);
+                    r = math.beval(s);
+
+                    if (r) {
+                        ctx.fillStyle = colors[4];
+                        ctx.fillText("T", 0, grid_size);
+                    } else {
+                        ctx.fillStyle = colors[1];
+                        ctx.fillText("F", 0, grid_size);
+                    }
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = colors[5];
+                    ctx.moveTo(0, grid_size/2-2);
+                    ctx.lineTo(grid_size * 4, grid_size/2-2);
+                    ctx.stroke();
+
+                    ctx.translate(0, grid_size);
+                }
+            }
+
+            ctx.restore();
+        }
+    },
+    implies: function(p, q) { // LOGIC: Returns whether p => q is a true statement. Only false when p=T and q=F
+        return implies(p, q);
+    },
+    beval: function(statement) { // LOGIC: Boolean evaluation, "true^false||true"
+        statement = statement.toLowerCase();
+        statement = statement.replace("^", "&&");
+        return eval(statement);
+    },
+    tautology: function(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
+        O = [true, false];
+
+        for (let i = 0; i < 2; i++) {
+            p = O[i];
+            for (let j = 0; j < 2; j++) {
+                q = O[j];
+                
+                s = copy(statement);
+                s.replace("P", p);
+                s.replace("Q", q);
+
+                if (!math.beval(s)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    },
+    contradiction: function(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always false
+        O = [true, false];
+
+        for (let i = 0; i < 2; i++) {
+            p = O[i];
+            for (let j = 0; j < 2; j++) {
+                q = O[j];
+                
+                s = copy(statement);
+                s.replace("P", p);
+                s.replace("Q", q);
+
+                if (math.beval(s)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    },
+    egg: function(f) {
+        f = f._data;
+
+        let radius = 100;
+
+        var col = "white";
+        if (f[0]) {
+            col = "white";
+        } else if (f[1]) {
+            col = colors[3];
+        } else if (f[2]) {
+            col = colors[4];
+        }
+
+        var scol = "white";
+        if (f[3]) {
+            scol = "white";
+        } else if (f[4]) {
+            scol = colors[3];
+        } else if (f[5]) {
+            scol = colors[4];
+        }
+
+        var spots = 0;
+        if (f[6]) {
+            spots = 1;
+        } else if (f[7]) {
+            spots = 3;
+        } else if (f[8]) {
+            spots = 5;
+        }
+
+        var hairy = f[10];
+
+        ctx.save();
+
+        let props = parser.eval("text_props");
+        let x = props.p.x;
+        let y = props.p.y;
+        ctx.translate(x, y);
+        ctx.rotate(props.r);
+        ctx.scale(props.w, props.h*1.2);
+        ctx.translate(-x, -y);
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2*math.PI, 0);
+        ctx.fillStyle = col;
+        ctx.strokeStyle = "black";
+        ctx.fill();
+        ctx.stroke();
+
+        var da = 2*math.PI / math.max(spots, 1);
+        for (let i = 0; i < spots; i++) {
+            var a = da * i;
+            ctx.beginPath();
+            ctx.arc(x+math.cos(a)*(20+spots*2) + 30, 
+                    y+math.sin(a)*(20+spots*2) + 30,
+                    10, 0, 2*math.PI, 0);
+            ctx.fillStyle = scol;
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        if (hairy) {
+            let n = 40;
+            let da = 2*math.PI / n;
+            for (let i = 0; i < n; i++) {
+                var a = da * i;
+
+                let sx = x+math.cos(a)*radius;
+                let sy = y+math.sin(a)*radius;
+
+                ctx.beginPath();
+
+                ctx.moveTo(sx, 
+                           sy);
+
+                ctx.lineTo(sx+math.cos(a)*15, 
+                           sy+math.sin(a)*15);
+
+                ctx.stroke();
+            }
+        }
+        
+        ctx.restore();
+    },
     rad: function(deg) { // converts to radians
         return deg * math.pi/180;
     },
@@ -4272,7 +4455,8 @@ function Text(text, pos) {
                     } else {
                         this.text_val = '=' + pretty_round(val);
                     }
-                    
+                } else if (type == "boolean") {
+                    this.text_val = ' = ' + val;
                 } else if (type == "object" && val._data && val._data.length != 0) {
                     // prob a matrix, render entries
                     this.matrix_vals = val._data;
