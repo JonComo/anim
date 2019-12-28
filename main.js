@@ -257,7 +257,7 @@ function implies(p, q) {
 }
 
 math.import({
-    table: function() {
+    logicTable: function() {
         O = [true, false];
 
         for (let k = 0; k < arguments.length; k++) {
@@ -267,7 +267,7 @@ math.import({
             let props = parser.eval("text_props");
             let x = props.p.x;
             let y = props.p.y;
-            ctx.translate(x + 4*grid_size*k, y+grid_size);
+            ctx.translate(x + 5*grid_size*k, y+grid_size);
             ctx.fillText(s, 0, 0);
 
             for (let i = 0; i < 2; i++) {
@@ -292,7 +292,7 @@ math.import({
                     ctx.beginPath();
                     ctx.strokeStyle = colors[5];
                     ctx.moveTo(0, grid_size/2-2);
-                    ctx.lineTo(grid_size * 4, grid_size/2-2);
+                    ctx.lineTo(grid_size * 5, grid_size/2-2);
                     ctx.stroke();
 
                     ctx.translate(0, grid_size);
@@ -3132,6 +3132,19 @@ function format_matrix(matrix) {
 
 function get_mouse_pos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
+    var x, y;
+
+    if (evt.touches) {
+        for (var i = 0; i < evt.touches.length; i++) {
+            if (evt.touches[i].touchType === "stylus") {
+                return {
+                    x: (evt.touches[i].clientX - rect.left) * scale_factor,
+                    y: (evt.touches[i].clientY - rect.top) * scale_factor
+                };
+            }
+        }
+    }
+
     return {
         x: (evt.clientX - rect.left) * scale_factor,
         y: (evt.clientY - rect.top) * scale_factor
@@ -7097,6 +7110,10 @@ window.onload = function() {
 
         save_state();
     }
+
+    window.ontouchstart = window.onmousedown;
+    window.ontouchmove = window.onmousemove;
+    window.ontouchend = window.onmouseup;
 
     save_state();
 
