@@ -6083,6 +6083,10 @@ function Menu(pos) {
         load_local();
     }));
 
+    this.buttons.push(new Button("ver: 0.1", {x: 0, y: 0}, function(b) {
+        
+    }));
+
     for (let i = 0; i < colors.length; i++) {
 
         let b = new Button("", {x: 0, y: 0}, function(b) {
