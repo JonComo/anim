@@ -2,44 +2,44 @@
 
 WARNING! Internal tool! Turn back while you still can!
 
-Used to make animations + graphs for https://www.youtube.com/watch?v=ZzWaow1Rvho
+Anim is used to make animations and graphs for the youtube series, https://www.youtube.com/watch?v=ZzWaow1Rvho
 
 Quick user guide (subject to change or be out of date as the code changes):
 
-This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. Object's properties are smoothly transitioned during presentation. 
+This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. An object's properties are smoothly transitioned while presenting.
 
+Present: <code>ctrl enter</code>
 
-Present: ctrl+p
+Exit present mode: <code>esc</code>
 
-Exit present mode: escape key
+Change frames: keys <code>0</code> and up or left and right arrow keys.
 
-Change frames: keys [0-9] and left and right arrow key
-
-Insert frame: + button
-Remove current frame: - button
+Insert frame: <code>+</code> button
+Remove current frame: <code>-</code> button
 
 Add objects:
-  Select the tool for the object you want.
-  Text - click to place a line of text under the mouse
-  Shape or vector - click and keep clicking to draw a shape. Escape when finished
-  Circle - click to place a circle under the mouse
+  Select the tool for the object you want to create
+  Text: click to place a line of text under the mouse
+  Shape or vector: click and keep clicking to draw a shape
+  Press <code>esc</code> to finish
+  Circle: click to place a circle under the mouse pointer
 
-Select objects with the select tool ( has rectangular selection ).
+You can select objects with the select tool (which uses rectangular selection)
 
-You can define functions in text objects by just writing them.
+You can define functions in text objects by just typing them in.
 
-f(x) = x^(2)
+<code>f(x) = x^(2)</code>
 
-Then graph it:
+Then you can graph them:
 
-graphxy(f)
+<code>graphxy(f)</code>
 
-(click the view xy button in the menu to rotate the 3D coordinate axes to see your graph)
+(click the <code>view xy</code> button in the menu to rotate the 3D coordinate axes to see your 2D graph)
 
-You can interact with a variable by using a slider:
+You can interact with a variable by using a slider (just type in into a text object):
 
-slide: x
+<code>slide:x</code>
 
-Then enter presentation mode, ctrl + p, and drag your mouse over the variable name left and right to change it's value. 
+Then enter presentation mode, <code>ctrl enter</code>, and drag (with your mouse) the variable name left and right to change it's value.
 
-That's about it for now! Good luck! Even now the code is begging for bug fixes and cleaning up... So much repetition of code too (not used to javascript.. ok end of my excuses). 
+That's about it for now! Good luck! Even now the code is begging for bug fixes and cleaning up... So much repetition of code too(not used to javascript.. okay, end of my excuses).
