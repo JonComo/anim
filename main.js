@@ -197,7 +197,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
         pd[i][0] = data[0];
         pd[i][1] = data[1];
         pd[i][2] = data[2];
-        
+
         i ++;
     }
 
@@ -217,19 +217,19 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
     if (units) {
         let num_dots = tmax-tmin;
         num_dots = Math.floor(num_dots);
-        
+
         if (num_dots > 0) {
             let dots = cached([num_dots, 3]);
-            
+
             let i = 0;
 
             for (i=0; i < num_dots; i++) {
                 data = r(i+1)._data;
-        
+
                     data[0] = Math.max(Math.min(data[0], 1000), -1000);
                     data[1] = Math.max(Math.min(data[1], 1000), -1000);
                     data[2] = Math.max(Math.min(data[2], 1000), -1000);
-            
+
                     dots._data[i][0] = data[0];
                     dots._data[i][1] = data[1];
                     dots._data[i][2] = data[2];
@@ -241,7 +241,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
             ctx.save();
             for (let i = 0; i < num_dots; i++) {
                 p = dots[i];
-                
+
                 ctx.beginPath();
                 ctx.arc(p[0], p[1], 4, 0, pi2);
                 ctx.fill();
@@ -317,7 +317,7 @@ math.import({
             p = O[i];
             for (let j = 0; j < 2; j++) {
                 q = O[j];
-                
+
                 s = copy(statement);
                 s.replace("P", p);
                 s.replace("Q", q);
@@ -337,7 +337,7 @@ math.import({
             p = O[i];
             for (let j = 0; j < 2; j++) {
                 q = O[j];
-                
+
                 s = copy(statement);
                 s.replace("P", p);
                 s.replace("Q", q);
@@ -405,14 +405,14 @@ math.import({
         for (let i = 0; i < spots; i++) {
             var a = da * i;
             ctx.beginPath();
-            ctx.arc(x+math.cos(a)*(20+spots*2) + 30, 
+            ctx.arc(x+math.cos(a)*(20+spots*2) + 30,
                     y+math.sin(a)*(20+spots*2) + 30,
                     10, 0, 2*math.PI, 0);
             ctx.fillStyle = scol;
             ctx.fill();
             ctx.stroke();
         }
-        
+
         if (hairy) {
             let n = 40;
             let da = 2*math.PI / n;
@@ -424,16 +424,16 @@ math.import({
 
                 ctx.beginPath();
 
-                ctx.moveTo(sx, 
+                ctx.moveTo(sx,
                            sy);
 
-                ctx.lineTo(sx+math.cos(a)*15, 
+                ctx.lineTo(sx+math.cos(a)*15,
                            sy+math.sin(a)*15);
 
                 ctx.stroke();
             }
         }
-        
+
         ctx.restore();
     },
     rad: function(deg) { // converts to radians
@@ -491,7 +491,7 @@ math.import({
         }
 
         md = cam.graph_to_screen_mat(m);
-        
+
         i = 0;
         for (let x = 0; x < d; x ++) {
             ctx.beginPath();
@@ -545,7 +545,7 @@ math.import({
         }
 
         md = cam.graph_to_screen_mat(m);
-        
+
         i = 0;
         for (let x = 0; x < d; x ++) {
             ctx.beginPath();
@@ -613,7 +613,7 @@ math.import({
         let idx = 0;
 
         for (let i = 0; i < xN; i ++) {
-            
+
             for (let j = 0; j < yN; j ++) {
                 let row = m._data[idx];
                 row[0] = xd[i];
@@ -647,20 +647,20 @@ math.import({
         let psize_half = psize/2;
 
         let cam_data = cam.graph_to_screen_mat(points);
-        
+
         ctx.save();
         if (arguments.length == 3) {
             // gradation
 
             var indices = new Array(n);
             for (var i = 0; i < n; ++i) indices[i] = i;
-            
+
             indices.sort(function(a, b) {
                 a = cam_data[a][2];
                 b = cam_data[b][2];
                 return a < b ? 1 : (a > b ? -1 : 1);
             });
-            
+
             let col;
             for (let j = 0; j < n; j++) {
                 let i = indices[j];
@@ -682,7 +682,7 @@ math.import({
     },
     point: function(a, size, color) { // point [x,y,z] size color[r,g,b]
         let psize = 8;
-        if (size){ 
+        if (size){
             psize = size;
         }
 
@@ -696,7 +696,7 @@ math.import({
         }
 
         let cam_data = cam.graph_to_screen_mat(math.matrix([a]))[0];
-        
+
         ctx.save();
         ctx.beginPath();
         if (color) {
@@ -728,7 +728,7 @@ math.import({
     draw: function(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
         let N = points.size()[0];
         points = cam.graph_to_screen_mat(points);
-        
+
         ctx.save();
         ctx.beginPath();
         let p; let lastp;
@@ -763,6 +763,21 @@ math.import({
 
         math.draw(m);
     },
+    oval: function(_p, hr, vr, _n) {
+        let n = 10;
+        if (arguments.length >= 4) {
+            n = _n;
+        }
+
+        let path = [];
+        for (let i = 0; i <= n; i++) {
+            let t = i/n * 2 * math.PI;
+            let p = math.add(_p, [math.cos(t) * hr, math.sin(t) * vr, 0]);
+            path.push(p);
+        }
+
+        return math.matrix(path);
+    },
     vect: function(a, b) {
 
         if (!a) {
@@ -788,21 +803,21 @@ math.import({
         if (!b) {
             x = a._data[0];
             y = a._data[1];
-            
+
             if (a.size()[0] == 3) {
                 z = a._data[2];
             }
         } else {
             _x = a._data[0];
             _y = a._data[1];
-            
+
             if (a.size()[0] == 3) {
                 _z = a._data[2];
             }
 
             x = b._data[0];
             y = b._data[1];
-            
+
             if (b.size()[0] == 3) {
                 z = b._data[2];
             }
@@ -824,7 +839,7 @@ math.import({
         let v = fn(d[0])._data;
         // get return size
         let dims = [N, v.length];
-        
+
         let m = cached(dims);
         let md = m._data;
 
@@ -867,7 +882,7 @@ math.import({
         } else {
             p = [0, 0];
         }
-        
+
         p = cam.graph_to_screen(p[0], p[1], 0);
         for (let i = 0; i < t.length; i++) {
             ctx.textAlign = 'left';
@@ -909,7 +924,7 @@ math.import({
     field: function(f, _n, _uv) { // plots a vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
         let n = 10;
         let uv = false;
-        
+
         if (arguments.length >= 2) {
             n = _n-1;
 
@@ -941,7 +956,7 @@ math.import({
     fielda: function(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
         let n = 10;
         let uv = false;
-        
+
         let mod = .2;
         let flo = (t/500)%mod;
 
@@ -1008,7 +1023,7 @@ math.import({
                 v = _vrs + dv * j;
 
                 let p = r(u, v)._data;
-                let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
+                let camp = cam.graph_to_screen(p[0], p[1], p[2]);
                 if (v == 0) {
                     ctx.moveTo(camp[0], camp[1]);
                 } else {
@@ -1026,7 +1041,7 @@ math.import({
 
                 u = _urs + du * j;
                 let p = r(u, v)._data;
-                let camp = cam.graph_to_screen(p[0], p[1], p[2]);            
+                let camp = cam.graph_to_screen(p[0], p[1], p[2]);
                 if (u == 0) {
                     ctx.moveTo(camp[0], camp[1]);
                 } else {
@@ -1039,12 +1054,12 @@ math.import({
         if (f) {
             for (let i = 0; i <= n; i ++) {
                 u = _urs + du * i;
-    
+
                 for (let j = 0; j <= n; j ++) {
                     v = _vrs + dv * j;
-    
+
                     let p = r(u, v)._data;
-                    
+
                     let vect = f(p[0], p[1], p[2])._data;
                     draw_vect(p[0], p[1], p[2], p[0]+vect[0], p[1]+vect[1], p[2]+vect[2]);
                 }
@@ -1088,7 +1103,7 @@ math.import({
         if (arguments.length >= 2) {
             h = _h;
         }
-        
+
         return function g(a) {
             return (f(a+h)-f(a))/h;
         }
@@ -1118,8 +1133,8 @@ math.import({
         for (let j = 0; j < layers.length-1; j++) {
             let units = layers[j];
             let units_next = layers[j+1];
-            
-            
+
+
             for (let i = 0; i < units; i++) {
                 let p = loc(i, j, units);
 
@@ -1163,7 +1178,7 @@ math.import({
                             high_neur = [[i, j], [k, j+1]];
                         }
                     }
-                    
+
                     ctx.beginPath();
                     ctx.moveTo(p[0], p[1]);
                     ctx.lineTo(p2[0], p2[1]);
@@ -1204,19 +1219,19 @@ math.import({
                         }
                     }
 
-                    
+
 
                 } else {
                     let dx = mouse.x - p[0];
                     let dy = mouse.y - p[1];
-                    
+
                     if (dx*dx + dy*dy < 400) {
                         if (j == 0) {
                             ctx.strokeStyle = colors[1];
                         } else {
                             ctx.strokeStyle = colors[2];
                         }
-                        
+
                         high_neur = [[i, j]];
                     }
                 }
@@ -1248,17 +1263,17 @@ math.import({
 
             //let move = ((millis % 1000) /1000 * .5 + .5);
             //console.log(move);
-            
+
             for (let x = -10; x <= 10; x+=d) {
                 for (let y = -10; y <= 10; y+=d) {
                     for (let z = -10; z <= 10; z+=d) {
-                        
+
                         var xp = x;
                         var yp = y
                         var zp = z;
 
                         for (let j = 0; j <= pl; j++) {
-                            
+
                             ctx.beginPath();
                             p = cam.graph_to_screen(xp, yp, zp);
                             ctx.moveTo(p[0], p[1]);
@@ -1319,7 +1334,7 @@ math.import({
                 let v = [xp-cx, yp-cy, zp-cz];
                 let len = math.norm(v);
                 let l2 = len*len;
-                
+
                 let c = math.coulomb.value*q/len/l2; //math.coulomb.value*
 
                 xt += c * v[0];
@@ -1356,7 +1371,7 @@ math.import({
             let v = [xp-cx, yp-cy, zp-cz];
             let len = math.norm(v);
             let l2 = len*len;
-            
+
             let c = math.coulomb.value*q*oc/len/l2; //math.coulomb.value*
 
             fx += c * v[0];
@@ -1394,7 +1409,7 @@ math.import({
 
         // draw result matrix
         ctx.save();
-        
+
         ctx.font = font_anim;
 
         ctx.translate(loc[0] + 10, loc[1] + 330);
@@ -1533,15 +1548,15 @@ math.import({
         if (arguments.length >= 3) {
             at_point = at_point._data;
             let b = b_at(at_point[0], at_point[1], at_point[2], path, current);
-            
+
             return b;
         } else {
             for (let x = -10; x <= 10; x+=d) {
                 for (let y = -10; y <= 10; y+=d) {
                     for (let z = -10; z <= 10; z+=d) {
-    
+
                         let b = b_at(x, y, z, path, current);
-    
+
                         if (math.norm(b) > .1) {
                             b = b._data;
                             draw_vect(x, y, z, x + b[0], y+b[1], z+b[2]);
@@ -1550,7 +1565,7 @@ math.import({
                 }
             }
         }
-        
+
     },
     circle: function(_p, r, _n) {
         let n = 10;
@@ -1822,7 +1837,7 @@ math.import({
         ctx.stroke();
 
         ctx.restore();
-        
+
     },
     drawComputer: function() {
 
@@ -2082,7 +2097,7 @@ math.import({
         ctx.arc(0, 0, 20, 0, 6.283185307179586, false);
         ctx.restore();
         ctx.stroke();
-        
+
         // pupil
         ctx.save();
         ctx.beginPath();
@@ -2190,7 +2205,7 @@ math.import({
         ctx.lineTo(-48, -32);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.beginPath();
         ctx.translate(x + -51.25, y + -149.75);
@@ -2201,7 +2216,7 @@ math.import({
         ctx.strokeStyle = "#000000";
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.beginPath();
         ctx.translate(x + 28.75, y + -149.75);
@@ -2212,7 +2227,7 @@ math.import({
         ctx.strokeStyle = "#000000";
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.translate(x + -42.5, y + -109.75);
         ctx.rotate(0);
@@ -2222,7 +2237,7 @@ math.import({
         ctx.fillText(".", 22.5, 0);
         ctx.fillText("-", 45, 0);
         ctx.restore();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2234,7 +2249,7 @@ math.import({
         ctx.lineTo(-5, 5);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2246,7 +2261,7 @@ math.import({
         ctx.lineTo(5, 5);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2260,7 +2275,7 @@ math.import({
         ctx.lineTo(32.5, -35);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2272,7 +2287,7 @@ math.import({
         ctx.lineTo(-5, 25);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2284,7 +2299,7 @@ math.import({
         ctx.lineTo(15, -20);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2296,7 +2311,7 @@ math.import({
         ctx.lineTo(0, 25);
         ctx.restore();
         ctx.stroke();
-        
+
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "#000000";
@@ -2308,9 +2323,9 @@ math.import({
         ctx.lineTo(0, 25);
         ctx.restore();
         ctx.stroke();
-        
-        
-        
+
+
+
 
         ctx.restore();
     },
@@ -2369,7 +2384,7 @@ math.import({
     diffEq: function(a, b, c, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = 0 numerically plotted for _n steps and _dt accuracy
         let n = 1000;
         let dt = .001;
-        
+
         if (arguments.length >= 7) {
             n = _n;
         }
@@ -2399,7 +2414,7 @@ math.import({
     diffEqF: function(a, b, c, f, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = f(x) numerically plotted for _n steps and _dt accuracy
         let n = 1000;
         let dt = .001;
-        
+
         if (arguments.length >= 8) {
             n = _n;
         }
@@ -2429,7 +2444,7 @@ math.import({
     diffEqTri: function(a, b, c, d, x0, y0, yp0, ypp0, _n, _dt) { // ay''' + by'' + cy' + dy = 0 numerically plotted for _n steps and _dt accuracy
         let n = 1000;
         let dt = .001;
-        
+
         if (arguments.length >= 8) {
             n = _n;
         }
@@ -2468,14 +2483,14 @@ math.import({
 
         f.push(n);
 
-        return math.matrix(f);        
+        return math.matrix(f);
     },
     primeFactors: function (n) { // list prime factors of n
 
         let factors = math.factors(n);
         let d = factors._data;
 
-        let primes = []; 
+        let primes = [];
         // this gonna be real inefficient! fun times...
         for (let i = 0; i < factors._size[0]; i++) {
             let num = d[i];
@@ -2536,7 +2551,7 @@ function report_error(e) {
 var states = [];
 
 function rgb1ToHex(a) {
-    let c = [Math.round(a[0]*255), 
+    let c = [Math.round(a[0]*255),
             Math.round(a[1]*255),
             Math.round(a[2]*255)];
     return rgbToHex(c);
@@ -2547,7 +2562,7 @@ window.requestAnimationFrame = window.requestAnimationFrame
     || window.mozRequestAnimationFrame
     || window.webkitRequestAnimationFrame
     || window.msRequestAnimationFrame
-    || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60 
+    || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 function guid() {
@@ -2620,13 +2635,13 @@ function draw_r(o, p, d) {
     let size = {w: 0, h: 0};
 
     if (args) {
-        
+
         if (o.name && o.name.length) {
             text = o.name;
         } else if (o.op && o.op.length) {
             text = o.op;
         }
-        
+
         if (text == "+" || text == "-" || text == "*") {
             if (argc == 1) {
                 if (d) ctx.fillText(text, p.x, p.y);
@@ -2661,7 +2676,7 @@ function draw_r(o, p, d) {
                         opp = {x: p.x + s1.w + pad2, y: p.y + size.h - char_size*2};
                         s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*char_size + pad2, y: p.y + size.h - s2.h}, d);
                     }
-                    
+
                     if (text == "*") {
                         ctx.beginPath();
                         ctx.arc(opp.x + char_size/2, opp.y+char_size, 3, 0, pi2);
@@ -2766,7 +2781,7 @@ function draw_r(o, p, d) {
                 } else {
                     if (d) ctx.fillText(",", p.x + xo, cally);
                 }
-                
+
                 xo += char_size;
             }
 
@@ -2783,7 +2798,7 @@ function draw_r(o, p, d) {
         } else {
             text = '?';
         }
-        
+
         if (o.content) {
             // parens
             let s1 = draw_r(o.content, {x: 0, y: 0}, false);
@@ -2801,7 +2816,7 @@ function draw_r(o, p, d) {
             size = draw_r(o.node, {x: p.x, y: p.y}, d);
         } else if (o.object && o.value) {
             // assignment
-            
+
             let s1 = draw_r(o.value, {x: 0, y: 0}, false);
             let text = o.object.name + " = ";
 
@@ -2810,7 +2825,7 @@ function draw_r(o, p, d) {
                 ctx.translate(p.x, p.y + s1.h/2-char_size);
                 draw_simple(text);
                 ctx.restore();
-                
+
                 draw_r(o.value, {x: p.x + text.length*char_size, y: p.y}, d);
             }
 
@@ -2920,7 +2935,7 @@ function draw_r(o, p, d) {
                     ctx.fillText(text[i], p.x + i*char_size, p.y);
                 }
             }
-            
+
             size.w = text.length * char_size;
             size.h = char_size * 2;
         }
@@ -2934,15 +2949,15 @@ function draw_r(o, p, d) {
 function draw_vect(_x, _y, _z, x, y, z) {
     a = cam.graph_to_screen(_x, _y, _z);
     b = cam.graph_to_screen(x, y, z);
-    
+
     a = {x: a[0], y: a[1]};
     b = {x: b[0], y: b[1]};
-    
+
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
     ctx.stroke();
-    
+
     // draw an arrow head
     let theta = Math.atan2(b.y - a.y, b.x - a.x);
 
@@ -2955,7 +2970,7 @@ function draw_vect(_x, _y, _z, x, y, z) {
 }
 
 function draw_brackets(sx, sy, width, height) {
-    
+
     ctx.beginPath();
     ctx.moveTo(sx + 7, sy);
     ctx.lineTo(sx, sy);
@@ -2998,15 +3013,15 @@ function draw_network(layers, pos) {
     for (let j = 0; j < layers.length-1; j++) {
         let units = layers[j];
         let units_next = layers[j+1];
-        
-        
+
+
         for (let i = 0; i < units; i++) {
             let p = loc(i, j, units);
 
             for (let k = 0; k < units_next; k++) {
 
                 let p2 = loc(k, j+1, units_next);
-                
+
                 let l = new Shape([0, 0, 0, 1], [{x: p[0], y: p[1]}, {x: p2[0], y: p2[1]}]);
                 objs.push(l);
             }
@@ -3105,11 +3120,11 @@ function format_matrix(matrix) {
     // format for display
     let formatted = [];
     let round = pretty_round_one;
-    
+
     if (ctrl) {
         round = pretty_round;
     }
-    
+
     if (typeof matrix[0] == "number") {
         // array
         for (let i = 0; i < matrix.length; i ++) {
@@ -3351,7 +3366,7 @@ function Button(text, pos, callback) {
     if (this.width == 0) {
         this.width = grid_size;
     }
-    
+
     this.hovering = function() {
         return (mouse.x > this.pos.x && mouse.x < this.pos.x + this.width && Math.abs(mouse.y - this.pos.y) < this.height);
     }
@@ -3595,7 +3610,7 @@ function Shape(color, path) {
         let path = props.path;
         let c = {x: 0, y: 0};
 
-        
+
         for (let i = 0; i < path.length; i++) {
             c.x += path[i].x;
             c.y += path[i].y;
@@ -3614,7 +3629,7 @@ function Shape(color, path) {
 
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
-            
+
             if (i == 0) {
                 ctx.moveTo(p.x - c.x, p.y - c.y);
             } else {
@@ -3659,7 +3674,7 @@ function Shape(color, path) {
         let props = this.properties[frame];
         let path = props.path;
         let c = {x: 0, y: 0};
-        
+
         for (let i = 0; i < path.length; i++) {
             c.x += path[i].x;
             c.y += path[i].y;
@@ -3679,7 +3694,7 @@ function Shape(color, path) {
 
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
-            
+
             if (i == 0) {
                 js += "ctx.moveTo(" + (p.x - c.x) + ", " + (p.y - c.y) + ");\n";
             } else {
@@ -3738,7 +3753,7 @@ function Circle(color, pos) {
         if (!this.properties[frame]) {
             return true;
         }
-        
+
         return this.properties[frame].c[3] == 0;
     }
 
@@ -3796,7 +3811,7 @@ function Circle(color, pos) {
         if (!this.selected) {
             return;
         }
-        
+
         if (this.properties && this.properties[frame-1]) {
             delete this.properties[frame-1];
         }
@@ -3944,7 +3959,7 @@ function Circle(color, pos) {
 
         ctx.globalAlpha = props.c[3];
         ctx.strokeStyle = rgbToHex(props.c);
-        
+
         ctx.stroke();
 
         ctx.restore();
@@ -4055,7 +4070,7 @@ function Text(text, pos) {
         if (!props) {
             return 0;
         }
-        
+
         let idx = Math.round((x - props.p.x)/char_size);
         return Math.max(0, Math.min(idx, props.t.length));
     }
@@ -4090,7 +4105,7 @@ function Text(text, pos) {
             } else {
                 this.properties[frame].c[3] = 1;
             }
-            
+
             this.selected = false;
         }
     }
@@ -4115,7 +4130,7 @@ function Text(text, pos) {
         if (!this.selected) {
             return;
         }
-        
+
         if (this.properties && this.properties[frame-1]) {
             delete this.properties[frame-1];
         }
@@ -4145,7 +4160,7 @@ function Text(text, pos) {
         } else {
             p = props.p;
         }
-        
+
         if (p.x > x && p.y > y && p.x < x2 && p.y < y2) {
             this.select();
             return true;
@@ -4163,17 +4178,17 @@ function Text(text, pos) {
 
         if (t.indexOf("visnet") != -1) {
             // very hacky but it works.. :-)
-            
+
             let p = this.properties[frame].p;
 
             let l = math.eval(t.substring(t.indexOf('['), t.indexOf(']')+1));
 
             draw_network(l._data, [p.x, p.y]);
-            
+
             // hide
             this.properties[frame].c[3] = 0;
             this.selected = false;
-            
+
             return;
         }
 
@@ -4195,7 +4210,7 @@ function Text(text, pos) {
 
             for (let i = 0; i < matrix.length; i ++) {
                 for (let j = 0; j < matrix[i].length; j++) {
-                    let newT = new Text(matrix[i][j], {x: p.x + j * (mat_num_width + pad) + 110, 
+                    let newT = new Text(matrix[i][j], {x: p.x + j * (mat_num_width + pad) + 110,
                                                        y: p.y + i * grid_size});
                     objs.push(newT);
                 }
@@ -4241,7 +4256,7 @@ function Text(text, pos) {
                 if (key == "c") {
                     // copy
                     text_copied = this.text_selected();
-                    
+
                     // hacky but works
                     const el = document.createElement('textarea');
                     el.value = this.text_selected();
@@ -4261,7 +4276,7 @@ function Text(text, pos) {
                     return true;
                 }
             }
-            
+
             return true;
         }
 
@@ -4276,12 +4291,12 @@ function Text(text, pos) {
                     let key = keys[i];
 
                     if (key.indexOf(fn) == 0) {
-                        
+
                         let new_text = text.split(fn)[0] + keys[i];
                         if ((math[key]+"").split("\n")[0].indexOf("(") != -1) {
                             new_text += "(";
                         }
-                    
+
                         this.change_text(new_text);
                         this.cursor = new_text.length;
                         this.cursor_selection = this.cursor;
@@ -4311,7 +4326,7 @@ function Text(text, pos) {
             } else {
                 enter_select();
             }
-            
+
             return false;
         }
 
@@ -4451,12 +4466,12 @@ function Text(text, pos) {
 
         try {
             parser.set("text_props", i);
-            
+
             let val = this.cargs[0].eval(parser.scope);
 
             // only display the value if its not an assignment or constant
             let op_type = math.parse(this.args[0]).type;
-            
+
             if (op_type.indexOf("Assignment") == -1 && op_type != "ConstantNode") {
                 let type = typeof val;
 
@@ -4493,7 +4508,7 @@ function Text(text, pos) {
             console.log('eval error:');
             console.log(e);
         }
-        
+
         ctx.restore();
     }
 
@@ -4514,7 +4529,7 @@ function Text(text, pos) {
         }
 
         this.near_mouse = this.point_in_text_rect(mouse);
-        
+
         if (this.near_mouse) {
             return true;
         }
@@ -4564,7 +4579,7 @@ function Text(text, pos) {
         if (tool == "camera") {
             return false;
         }
-        
+
         let props = this.properties[frame];
         if (!props) {
             return false;
@@ -4613,7 +4628,7 @@ function Text(text, pos) {
             }
         } else if (this.is_selected() && this.near_mouse && this.image == null) {
             let p = props.p;
-            
+
             this.cursor = this.char_index_at_x(mouse.x);
             this.cursor_selection = this.char_index_at_x(mouse_start.x);
 
@@ -4627,7 +4642,7 @@ function Text(text, pos) {
 
             return true;
         }
-        
+
         return false;
     }
 
@@ -4635,7 +4650,7 @@ function Text(text, pos) {
         if (this.hidden()) {
             return false;
         }
-        
+
         if (this.near_mouse) {
             if (!this.dragged) {
                 this.select();
@@ -4649,7 +4664,7 @@ function Text(text, pos) {
         } else if (!shift && this.is_selected()) {
             this.selected = false;
         }
-        
+
         this.dragged = false;
         return false;
     }
@@ -4672,7 +4687,7 @@ function Text(text, pos) {
                     if (t[i] in brackets) plevel += brackets[t[i]];
                 }
             }
-            
+
             // draw red brackets
             ctx.save();
             if (this.is_selected() && plevel != 0) {
@@ -4709,7 +4724,7 @@ function Text(text, pos) {
             ctx.translate(-100, -20);
             let formatted = format_matrix(this.matrix_vals);
             draw_matrix(formatted);
-            
+
             ctx.restore();
         } else if (!this.selected && this.text_val && this.text_val.length) {
             ctx.save();
@@ -4805,8 +4820,8 @@ function Text(text, pos) {
                     next_stuff.push(' ');
                 }
             }
-            
-            
+
+
             let lx = -(next_stuff.length-1)/2*xoff;
             let li = 0;
 
@@ -4832,7 +4847,7 @@ function Text(text, pos) {
                     if (distance(mouse, np) < grid_size) {
                         text = o.toString();
                     }
-                    
+
                     /*ctx.beginPath();
                     ctx.arc(np.x, np.y, op_size, 0, pi2);
                     ctx.stroke(); */
@@ -4872,7 +4887,7 @@ function Text(text, pos) {
                         text = '?';
                     }
 
-                    
+
                     ctx.fillText(text, np.x, np.y);
                 }
             }
@@ -4880,7 +4895,7 @@ function Text(text, pos) {
             if (next_stuff.length == 0) {
                 break;
             }
-            
+
             if (added_all_spaces) {
                 break;
             }
@@ -4888,7 +4903,7 @@ function Text(text, pos) {
             stuff = next_stuff;
             p.y += yoff;
         }
-        
+
         ctx.restore();
     }
 
@@ -5016,7 +5031,7 @@ function Text(text, pos) {
             // draw slider rect
             this.draw_border(ctx);
         }
-        
+
         if (!presenting && !this.hidden() && this.near_mouse) {
             // draw border
             this.draw_border(ctx);
@@ -5108,7 +5123,7 @@ function Network(pos) {
     this.new = true; // loaded or just created
     this.selected = false;
     this.dragged = false;
-    
+
     this.select = function() {
         this.selected = true;
     }
@@ -5121,7 +5136,7 @@ function Network(pos) {
         if (!this.properties[frame]) {
             return true;
         }
-        
+
         return this.properties[frame].c[3] == 0;
     }
 
@@ -5179,7 +5194,7 @@ function Network(pos) {
         if (!this.selected) {
             return;
         }
-        
+
         if (this.properties && this.properties[frame-1]) {
             delete this.properties[frame-1];
         }
@@ -5269,8 +5284,8 @@ function Network(pos) {
         for (let j = 0; j < layers.length-1; j++) {
             let units = layers[j];
             let units_next = layers[j+1];
-            
-            
+
+
             for (let i = 0; i < units; i++) {
                 let p = loc(i, j, units);
 
@@ -5314,7 +5329,7 @@ function Network(pos) {
                             high_neur = [[i, j], [k, j+1]];
                         }
                     }
-                    
+
                     ctx.beginPath();
                     ctx.moveTo(p[0], p[1]);
                     ctx.lineTo(p2[0], p2[1]);
@@ -5355,19 +5370,19 @@ function Network(pos) {
                         }
                     }
 
-                    
+
 
                 } else {
                     let dx = mouse.x - p[0];
                     let dy = mouse.y - p[1];
-                    
+
                     if (dx*dx + dy*dy < 400) {
                         if (j == 0) {
                             ctx.strokeStyle = "blue";
                         } else {
                             ctx.strokeStyle = "red";
                         }
-                        
+
                         high_neur = [[i, j]];
                     }
                 }
@@ -5426,7 +5441,7 @@ function Camera() {
         let tick_size = 10;
 
         for (let i = 0; i < 2; i++) {
-            
+
             for (let j = 0; j < N; j++) {
                 let t = R._data[j];
                 if (i == 0) {
@@ -5504,7 +5519,7 @@ function Camera() {
                 a = r[1] - (mouse.y - mouse_last.y)/100;
                 b = r[2] - (mouse.x - mouse_last.x)/100;
                 r = [r[0], a, b];
-                
+
             } else {
                 let angle = math.atan2(mouse.y - props.p.y, mouse.x - props.p.x);
                 let angle2 = math.atan2(mouse_last.y - props.p.y, mouse_last.x - props.p.x);
@@ -5728,7 +5743,7 @@ function load_local() {
 }
 
 function text_array_to_objs(arr, keep_animation) {
-    
+
     let new_objs = [];
     for (let i = 0; i < arr.length; i++) {
         let o = arr[i];
@@ -5751,7 +5766,7 @@ function text_array_to_objs(arr, keep_animation) {
         }
 
         new_obj.guid = o.guid;
-        
+
         new_objs.push(new_obj);
     }
 
@@ -6087,7 +6102,7 @@ function Menu(pos) {
     }));
 
     this.buttons.push(new Button("ver: 0.1", {x: 0, y: 0}, function(b) {
-        
+
     }));
 
     for (let i = 0; i < colors.length; i++) {
@@ -6192,7 +6207,7 @@ function Pen() {
             if (tool == "pen") {
                 this.clear_drawing();
             }
-            
+
             tool = "pen";
         }
 
@@ -6251,7 +6266,7 @@ function Pen() {
                 if (!this.drawings[frame]) {
                     this.drawings[frame] = [];
                 }
-    
+
                 this.drawings[frame].push({"p": this.path, "c": this.color});
                 this.path = [];
             }
@@ -6300,7 +6315,7 @@ function Pen() {
                     ctx.lineTo(x, y);
                 }
             }
-            
+
             ctx.stroke();
         };
 
@@ -6324,7 +6339,7 @@ function Pen() {
             // draw the drawing
             for (let i = 0; i < this.drawings[frame_to_draw].length; i ++) {
                 let path = this.drawings[frame_to_draw][i];
-                
+
                 if (!presenting) {
                     ctx.globalAlpha = 1;
                     if (this.path_nearby_idx == i) {
@@ -6381,7 +6396,7 @@ function draw_axes(ctx) {
     if (!cam.R) {
         return;
     }
-    
+
     ctx.save();
 
     csys_style = cam.style();
@@ -6414,11 +6429,11 @@ function draw_axes(ctx) {
             axis = cam.graph_to_screen_mat(axis);
             let N = axis.length;
             for (let j = 0; j < N; j += 2) {
-        
+
                 if (j == 20 || j == 62) {
                     continue;
                 }
-        
+
                 ctx.beginPath();
                 ctx.moveTo(axis[j][0], axis[j][1]);
                 ctx.lineTo(axis[j+1][0], axis[j+1][1]);
@@ -6453,7 +6468,7 @@ function draw_axes(ctx) {
 
         // center
         let c = cam.graph_to_screen(0, 0, 0);
-    
+
         // axes
         let axes = math.matrix([[10, 0, 0],
                     [0, 10, 0],
@@ -6461,44 +6476,44 @@ function draw_axes(ctx) {
                     [-10, 0, 0],
                     [0, -10, 0],
                     [0, 0, -10]]);
-    
+
         axes = cam.graph_to_screen_mat(axes);
-    
+
         let labels;
         if (cam.axes_names) {
             labels = cam.axes_names;
         } else {
             labels = ['x', 'y', 'z'];
         }
-        
+
         let colors = ["#FF0000", "#00FF00", "#0000FF"];
-        
+
         N = axes.length;
         for (let i = 0; i < N; i ++) {
             ctx.fillStyle = colors[i%3];
             ctx.strokeStyle = colors[i%3];
-    
+
             x = axes[i][0];
             y = axes[i][1];
-    
+
             ctx.beginPath();
             ctx.moveTo(c[0], c[1]);
             ctx.lineTo(x, y);
             ctx.stroke();
         }
-        
+
         ctx.globalAlpha = 1;
         ctx.lineWidth = 0;
-        
+
         for (let i = 0; i < 3; i++) {
             x = axes[i][0];
             y = axes[i][1];
-    
+
             ctx.beginPath();
             ctx.fillStyle = '#FFFFFF';
             ctx.arc(x, y, 16, 0, 2*Math.PI);
             ctx.fill();
-    
+
             ctx.fillStyle = colors[i%3];
             ctx.strokeStyle = colors[i%3];
             ctx.fillText(labels[i], x, y);
@@ -6593,9 +6608,9 @@ function draw_cursor() {
 
         if (mouse_down) {
             mouse_time = mouse_duration;
-            
+
             ctx.arc(0, 0, 10, 0, pi2, 0);
-            
+
         } else {
             let pad = 20;
 
@@ -6621,9 +6636,9 @@ function draw_cursor() {
 window.onload = function() {
 
     objs = [];
-    
+
     c = document.createElement("canvas");
-    win_width = window.innerWidth; 
+    win_width = window.innerWidth;
     win_height = window.innerHeight;
     c.width = win_width*scale_factor;
     c.height = win_height*scale_factor;
@@ -6642,7 +6657,7 @@ window.onload = function() {
     synth = window.speechSynthesis; // speech synthesis
     window.speechSynthesis.onvoiceschanged = function() {
         voices = window.speechSynthesis.getVoices();
-        
+
     };
 
     var content = document.getElementById("content");
@@ -6746,7 +6761,7 @@ window.onload = function() {
                 }
             }
         }
-     
+
         event.preventDefault();
     });
 
@@ -7241,7 +7256,7 @@ window.onload = function() {
 
             ctx.restore();
         }
-        
+
         transition.update();
 
         t += 1;
