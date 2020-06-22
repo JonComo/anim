@@ -28,18 +28,18 @@ Select objects with the select tool ( has rectangular selection ).
 
 You can define functions in text objects by just writing them.
 
-f(x) = x^(2)
+<code>f(x) = x^(2)</code>
 
 Then graph it:
 
-graphxy(f)
+<code>graphxy(f)</code>
 
-(click the view xy button in the menu to rotate the 3D coordinate axes to see your graph)
+(click the <code>view xy</code> button in the menu to rotate the 3D coordinate axes to see your graph)
 
 You can interact with a variable by using a slider:
 
-slide: x
+<code>slide:x</code>
 
-Then enter presentation mode, ctrl + p, and drag your mouse over the variable name left and right to change it's value. 
+Then enter presentation mode, <code> ctrl enter</code>, and drag your mouse over the variable name left and right to change it's value. 
 
 That's about it for now! Good luck! Even now the code is begging for bug fixes and cleaning up... So much repetition of code too (not used to javascript.. ok end of my excuses). 
