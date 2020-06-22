@@ -32,51 +32,51 @@
             <input type="submit" id="gen_script" value="Generate Script">
             <h2>Help:</h2>
             <h3>KEYBOARD SHORTCUTS</h3>
-            cmd/ctrl+z to undo<br>
-            left and right arrow keys for previous and next frame<br>
-            ctrl+ENTER to enter presentation mode<br>
-            esc to escape any tool or presentation mode<br>
-            t for text tool<br>
-            c for camera<br>
-            ctrl+delete to delete any selected objects<br>
-            ctrl+(I L K J) to scale selected object<br>
-            ctrl+(U O) to rotate selected object<br> 
+            <code>cmd / ctrl z</code> to undo<br><br>
+            <code>left</code> and <code>right</code> arrow keys for previous and next frame<br><br>
+            <code>ctrl enter</code> to enter presentation mode<br><br>
+            <code>esc</code> to escape any tool or presentation mode<br><br>
+            <code>t</code> for text tool<br><br>
+            <code>c</code> for camera<br><br>
+            <code>ctrl backspace</code> to delete any selected objects<br><br>
+            <code>ctrl I or L or K or J</code> to scale selected object<br><br>
+            <code>ctrl U or O</code> to rotate selected object<br><br>
             <h3>THINGS TO DO WITH TEXT BOXES</h3>
-            "x=5" to assign a value to a variable<br>
-            "e:x=5" to repeatedly update x every frame<br>
-            "f(x)=sin(x)" to define a function<br>
-            "e:expression" to run expression each frame<br>
-            "slide:var_name" then present, and you can slide the box to change the variable value<br>
-            "e:graph(function_name)" to graph function_name(x)<br>
+            <code>x = 5</code> to assign a value to a variable<br><br>
+            <code>e:x = x + 0.1</code> to repeatedly update x every frame<br><br>
+            <code>f(x) = sin(x)</code> to define a function<br><br>
+            <code>e:expression</code> to run expression each frame<br><br>
+            <code>slide:var_name</code> then present, and you can slide the box to change the variable value<br><br>
+            <code>e:graph(function_name)</code> to graph function_name(x)<br><br>
             <h3>ANIMATION BASICS</h3>
-            create a text or circle or drawing<br>
-            change frames with the left and right arrow keys<br>
-            change the text or object's properties on the new frame<br>
-            enter presentation mode by hitting p<br>
-            left and right arrow keys will show animated transition<br>
-            escape presentation mode with ESC key<br>
+            1) Create a text, circle or drawing<br><br>
+            2) Change frames with the <code>left</code> and <code>right</code> arrow keys<br><br>
+            3) Change the text or object's properties on the new frame<br><br>
+            4) Enter presentation mode by hitting <code>ctrl enter</code><br><br>
+            5) <code>left</code> and <code>right</code> arrow keys will show animated transition<br><br>
+            6) Exit presentation mode by pressing <code>esc</code><br><br>
             <h3>CONTROL CAMERA</h3>
-            click camera or hit "c"<br>
-            click and drag to pan<br>
-            cmd/ctrl+click and drag to rotate<br>
-            the camera will transition smoothly frame to frame<br>
+            Tap camera or hit <code>c</code> to edit camera<br><br>
+            Click and drag to pan<br><br>
+            <code>cmd</code> / <code>ctrl</code> click and drag to rotate<br><br>
+            The camera will transition smoothly frame to frame<br><br>
             <h3>FILES</h3>
-            save local will overwrite a local file in browser's cache<br>
-            load local clears your work and loads the cache file<br>
-            to save: enter a filename above and hit "save file"<br>
-            to load: hit load file and select your saved file<br>
-            as you edit if you make a mistake you can undo by hitting ctrl+z<br>
+            Tapping save local will overwrite a local file in browser's cache<br><br>
+            Tapping load local clears your work and load the cached file<br><br>
+            To save: enter a file name and hit save file<br><br>
+            To load: hit load file and select your saved file<br><br>
+            As you edit if you make a mistake you can undo by hitting <code>ctrl z</code><br><br>
             <h3>MORE FUNCTIONS</h3>
-            "L=range(a,b,c)" create array of values from a to b increment c<br>
-            "e:view(L, [x,y,z])" print matrix elements at position [x,y,z]<br>
-            "e:surface(func)" to graph y=func(x,z) as a grid of points<br>
-            "e:scatter(A)" A is n by 3 matrix of points to be scatter plotted<br>
-            "A=randn([a,b,c,...])" to create matrix of random normal values<br>
-            "A[1,2]" to index into matrix A with 1 based indexing, not zero! :-(<br>
+            <code>L = range(a, b, c)</code> to create array of values from <code>a</code> to <code>b</code> incrementing by <code>c</code><br><br>
+            <code>e:view(L, [x, y, z])</code> print matrix elements at position [x,y,z]<br><br>
+            <code>e:surface(func)</code> to graph <code>y = func(x, z)</code> as a grid of points<br><br>
+            <code>e:scatter(A)</code> <code>A</code> is n by 3 matrix of points to be scatter plotted<br><br>
+            <code>A = randn([a, b, c, ...])</code> to create matrix of random normal values<br><br>
+            <code>A[1, 2]</code> to index into matrix <code>A</code> with 1 based indexing, not zero! :-(<br><br>
             <h3>SPECIAL VALUES</h3>
-            _x mouse x position, _y mouse y position<br>
-            _frame current frame (counts up indefinitely)<br>
-            _t frame transition from 0 to 1, _tt eased transition<br>
+            <code>_x</code> mouse x position, <code>_y</code> mouse y position<br><br>
+            <code>_frame</code> current frame (counts up indefinitely)<br><br>
+            <code>_t</code> frame transition from 0 to 1, <code>_tt</code> eased transition<br><br>
         </div>
     </body>
 </html>
