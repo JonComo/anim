@@ -3,10 +3,22 @@ canvas {
 }
 
 body {
-    background: #aaaaaa;
+    background-color: white;
     margin: 0px;
+    font-family: monospace;
 }
 
 #controls {
     margin: 10px;
+}
+
+code {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+    padding-left: 4px;
+    background-color: whitesmoke;
+    color: crimson;
+    border-radius: 4px;
+    font-weight: bold;
 }
