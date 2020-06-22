@@ -5910,6 +5910,9 @@ function present() {
     tool = "select";
     presenting = true;
     document.body.style.cursor = 'none';
+    document.body.scrollTop = 0; // Scroll to top in Safari
+    document.documentElement.scrollTop = 0; // Scroll to top in other browsers
+    document.body.style.overflow = 'hidden'; // Disable and hide scrollbar
 }
 
 function Menu(pos) {
@@ -6769,6 +6772,7 @@ window.onload = function() {
         if (key == "Escape" && presenting && tool != "camera" && tool != "pen") {
             presenting = false;
             document.body.style.cursor = '';
+            document.body.style.overflow = 'scroll'; // Enable and show scrollbar
             return false;
         }
 
