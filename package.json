@@ -14,5 +14,10 @@
   "bugs": {
     "url": "https://github.com/supreme-pancakes/anim/issues"
   },
-  "homepage": "https://github.com/supreme-pancakes/anim/tree/webpack/third-attempt#readme"
+  "homepage": "https://github.com/supreme-pancakes/anim/tree/webpack/third-attempt#readme",
+  "devDependencies": {
+    "webpack": "^5.24.2",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.2"
+  }
 }
