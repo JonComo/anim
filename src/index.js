@@ -1,4 +1,5 @@
 const { saveAs } = require('file-saver');
+const $ = require('jquery');
 
 // colors
 var gray = "#cccccc";
