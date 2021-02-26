@@ -1,5 +1,8 @@
 const { saveAs } = require('file-saver');
 const $ = require('jquery');
+const { create, all } = require('mathjs');
+
+const math = create(all);
 
 // colors
 var gray = "#cccccc";
