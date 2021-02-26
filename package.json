@@ -24,6 +24,7 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "file-saver": "^2.0.5"
+    "file-saver": "^2.0.5",
+    "jquery": "^3.5.1"
   }
 }
