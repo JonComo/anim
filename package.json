@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Quick JS program for creating animations.",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "build": "webpack"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/supreme-pancakes/anim.git"
