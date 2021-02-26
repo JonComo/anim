@@ -4398,6 +4398,14 @@ function Text(text, pos) {
             } else {
                 text = this.replace_selected_text("");
             }
+        } else if (key === "Delete") {
+            if (!this.is_text_selected()) {
+                this.cursor_selection = this.cursor + 1;
+                this.constrain_cursors();
+                text = this.replace_selected_text("");
+            } else {
+                text = this.replace_selected_text("");
+            }
         } else if (key.length == 1) {
             // type character
             if (this.is_text_selected()) {
