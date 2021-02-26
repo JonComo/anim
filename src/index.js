@@ -1,3 +1,5 @@
+const { saveAs } = require('file-saver');
+
 // colors
 var gray = "#cccccc";
 var grid = "#eeeeee";
