@@ -4,6 +4,7 @@
   "description": "Quick JS program for creating animations.",
   "private": true,
   "scripts": {
+    "start": "webpack serve",
     "build": "webpack"
   },
   "repository": {
