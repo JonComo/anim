@@ -15,10 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Install NPM packages
+        run: npm install
 
-      - name: Run a multi-line script
+      - name: Compile Webpack project
+        run: npm run build
+
+      - name: Publish build
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          git add --force dist/
+          git commit --message 'Publish site'
+          git subtree split --prefix dist/ --branch gh-pages
+          git push --force origin gh-pages
