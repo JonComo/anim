@@ -1,6 +1,6 @@
 # anim
 
-WARNING! Internal tool! Turn back while you still can!
+WARNING! Internal tool! Turn back while you still can! On that note, anim has started to become actively managed! Feel free to submit issues and they just may be addressed :-)
 
 Anim is used to make animations and graphs for the youtube series, https://www.youtube.com/watch?v=ZzWaow1Rvho
 
