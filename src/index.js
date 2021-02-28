@@ -1,3 +1,9 @@
+import { saveAs } from 'file-saver';
+import $ from 'jquery';
+import { create, all } from 'mathjs';
+
+const math = create(all);
+
 // colors
 var gray = "#cccccc";
 var grid = "#eeeeee";
@@ -31,6 +37,7 @@ var win_width, win_height;
 var formula_text;
 
 var animator;
+var transition;
 var objs = [];
 var selected_objs = [];
 var frames;
@@ -72,7 +79,7 @@ var mouse = {x: 0, y: 0};
 var mouse_last = {x: 0, y: 0};
 var mouse_start = {x: 0, y: 0};
 var mouse_grid = {x: 0, y: 0};
-var mouse_last_grid = {x: 0, y: 0};
+var mouse_grid_last = {x: 0, y: 0};
 var mouse_graph = {x: 0, y: 0};
 
 var brackets = {"(": 1, "[": 1, ")": -1, "]": -1};
@@ -205,7 +212,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
 
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
-        p = points[i];
+        const p = points[i];
         if (i == 0) {
             ctx.moveTo(p[0], p[1]);
         } else {
@@ -240,7 +247,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
 
             ctx.save();
             for (let i = 0; i < num_dots; i++) {
-                p = dots[i];
+                const p = dots[i];
 
                 ctx.beginPath();
                 ctx.arc(p[0], p[1], 4, 0, pi2);
@@ -258,11 +265,11 @@ function implies(p, q) {
 
 math.import({
     logicTable: function() {
-        O = [true, false];
+        const O = [true, false];
 
         for (let k = 0; k < arguments.length; k++) {
             ctx.save();
-            s = copy(arguments[k]);
+            const s = copy(arguments[k]);
 
             let props = parser.eval("text_props");
             let x = props.p.x;
@@ -271,15 +278,15 @@ math.import({
             ctx.fillText(s, 0, 0);
 
             for (let i = 0; i < 2; i++) {
-                p = O[i];
+                const p = O[i];
 
                 for (let j = 0; j < 2; j++) {
-                    q = O[j];
+                    const q = O[j];
 
 
                     s.replace("P", p);
                     s.replace("Q", q);
-                    r = math.beval(s);
+                    const r = math.beval(s);
 
                     if (r) {
                         ctx.fillStyle = colors[4];
@@ -311,14 +318,14 @@ math.import({
         return eval(statement);
     },
     tautology: function(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
-        O = [true, false];
+        const O = [true, false];
 
         for (let i = 0; i < 2; i++) {
-            p = O[i];
+            const p = O[i];
             for (let j = 0; j < 2; j++) {
-                q = O[j];
+                const q = O[j];
 
-                s = copy(statement);
+                const s = copy(statement);
                 s.replace("P", p);
                 s.replace("Q", q);
 
@@ -331,14 +338,14 @@ math.import({
         return true;
     },
     contradiction: function(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always false
-        O = [true, false];
+        const O = [true, false];
 
         for (let i = 0; i < 2; i++) {
-            p = O[i];
+            const p = O[i];
             for (let j = 0; j < 2; j++) {
-                q = O[j];
+                const q = O[j];
 
-                s = copy(statement);
+                const s = copy(statement);
                 s.replace("P", p);
                 s.replace("Q", q);
 
@@ -624,7 +631,7 @@ math.import({
 
         return m;
     },
-    rotate: function(rx, ry, rz) { // rotates the camera
+    rotateCamera: function(rx, ry, rz) { // rotates the camera
         let rxyz = [rx, ry, rz];
         if (!isNaN(math.sum(rxyz))) {
             cam.properties[frame].rxyz = rxyz;
@@ -3229,7 +3236,7 @@ function copy(d) {
 
 function change_frames() {
     for (let i = 0; i < objs.length; i++) {
-        obj = objs[i];
+        const obj = objs[i];
         if (obj.properties[frame] && obj.properties[next_frame] == null) {
             obj.properties[next_frame] = copy(obj.properties[frame]);
             if (next_frame < frame) {
@@ -3278,7 +3285,7 @@ function interpolate(a, b) {
     }
 
     let interp = {};
-    for (key in a) {
+    for (const key in a) {
         if (key == "p") {
             // interpolate position
             let ap = a[key];
@@ -5524,8 +5531,8 @@ function Camera() {
             let r = props.rxyz;
 
             if (!this.dragging_rotate) {
-                a = r[1] - (mouse.y - mouse_last.y)/100;
-                b = r[2] - (mouse.x - mouse_last.x)/100;
+                const a = r[1] - (mouse.y - mouse_last.y)/100;
+                const b = r[2] - (mouse.x - mouse_last.x)/100;
                 r = [r[0], a, b];
 
             } else {
@@ -6407,12 +6414,12 @@ function draw_axes(ctx) {
 
     ctx.save();
 
-    csys_style = cam.style();
-    props = cam.properties[frame];
+    const csys_style = cam.style();
+    let props = cam.properties[frame];
 
     // do a fade in and out
     if (transition.transitioning) {
-        csys_next_style = cam.properties[next_frame].style;
+        const csys_next_style = cam.properties[next_frame].style;
 
         if (csys_next_style != null && csys_next_style != csys_style) {
             // changing text
@@ -6496,13 +6503,13 @@ function draw_axes(ctx) {
 
         let colors = ["#FF0000", "#00FF00", "#0000FF"];
 
-        N = axes.length;
+        const N = axes.length;
         for (let i = 0; i < N; i ++) {
             ctx.fillStyle = colors[i%3];
             ctx.strokeStyle = colors[i%3];
 
-            x = axes[i][0];
-            y = axes[i][1];
+            const x = axes[i][0];
+            const y = axes[i][1];
 
             ctx.beginPath();
             ctx.moveTo(c[0], c[1]);
@@ -6514,8 +6521,8 @@ function draw_axes(ctx) {
         ctx.lineWidth = 0;
 
         for (let i = 0; i < 3; i++) {
-            x = axes[i][0];
-            y = axes[i][1];
+            const x = axes[i][0];
+            const y = axes[i][1];
 
             ctx.beginPath();
             ctx.fillStyle = '#FFFFFF';
@@ -6877,7 +6884,7 @@ window.onload = function() {
         }
 
         if (tool == "select" && evt.srcElement == document.body) {
-            tools = {'t': 'text', 's': 'shape', 'c': 'camera', 'v': 'vector'};
+            const tools = {'t': 'text', 's': 'shape', 'c': 'camera', 'v': 'vector'};
             if (key in tools) {
                 tool = tools[key];
             }
@@ -7105,10 +7112,10 @@ window.onload = function() {
             let x2 = mouse.x;
             let y2 = mouse.y;
 
-            xx = Math.min(x, x2);
-            yy = Math.min(y, y2);
-            xx2 = Math.max(x, x2);
-            yy2 = Math.max(y, y2);
+            const xx = Math.min(x, x2);
+            const yy = Math.min(y, y2);
+            const xx2 = Math.max(x, x2);
+            const yy2 = Math.max(y, y2);
 
             selected_objs = [];
 
