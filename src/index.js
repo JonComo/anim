@@ -1,8 +1,5 @@
 import { saveAs } from 'file-saver';
 import $ from 'jquery';
-import { create, all } from 'mathjs';
-
-const math = create(all);
 
 // colors
 var gray = "#cccccc";
