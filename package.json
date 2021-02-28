@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/supreme-pancakes/anim.git"
+    "url": "git+https://github.com/JonComo/anim.git"
   },
   "keywords": [],
   "author": {
@@ -19,9 +19,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/supreme-pancakes/anim/issues"
+    "url": "https://github.com/JonComo/anim/issues"
   },
-  "homepage": "https://github.com/supreme-pancakes/anim/tree/webpack/third-attempt#readme",
+  "homepage": "https://github.com/JonComo/anim#readme",
   "devDependencies": {
     "eslint": "^7.20.0",
     "eslint-config-airbnb-base": "^14.2.1",
