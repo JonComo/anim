@@ -12,7 +12,11 @@
     "url": "git+https://github.com/supreme-pancakes/anim.git"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "JC",
+    "email": "jon@underground.net",
+    "url": "http://joncomo.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/supreme-pancakes/anim/issues"
