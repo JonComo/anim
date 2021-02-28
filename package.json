@@ -1,0 +1,34 @@
+{
+  "name": "anim",
+  "version": "1.0.0",
+  "description": "Quick JS program for creating animations.",
+  "private": true,
+  "scripts": {
+    "start": "webpack serve",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supreme-pancakes/anim.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/supreme-pancakes/anim/issues"
+  },
+  "homepage": "https://github.com/supreme-pancakes/anim/tree/webpack/third-attempt#readme",
+  "devDependencies": {
+    "eslint": "^7.20.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "webpack": "^5.24.2",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "file-saver": "^2.0.5",
+    "jquery": "^3.5.1",
+    "mathjs": "^9.2.0"
+  }
+}
