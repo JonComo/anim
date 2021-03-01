@@ -20,11 +20,32 @@ First things first, you must download `anim`'s code. Here are some options:
 
   If you're planning to play around with `anim`'s code, but aren't really interested in contributing, go with this option. First, clone this repository using the command `git clone https://github.com/JonComo/anim`. Using this option will also let you update your local version of this repository whenever you feel like it. Just run `git pull` in the repository directory!
 
+  - Use GitHub CLI!
+
+    If you have the [GitHub CLI](https://cli.github.com/) installed, then you can just clone this repository by executing `gh repo clone JonComo/anim`.
+
 - Fork this repository.
 
   If you're going to submit code changes to this repository, then you should create a fork of it. To do so, navigate to this repository's URL (https://github.com/JonComo/anim) and press the <kbd>Fork</kbd> button in the top-right corner of the GitHub UI. Then, clone it using `git clone https://github.com/<your username here>/anim` or whatever software you please!
 
+  - Fork with GitHub CLI
+
+    To fork this repo and then clone the fork with the [GitHub CLI](https://cli.github.com/), run `gh repo fork --clone JonComo/`.
+
 - Download https://github.com/JonComo/anim/archive/master.zip and unzip it.
+
+- Use your software of choice!
+
+  I think you know what to do.
+
+### Install stuff
+
+Once you have this repository's contents on your system, you must install some packages with NPM. These include ones like `webpack` and friends, `jquery` and more! To install them, run
+```
+npm install
+```
+
+Now, you should be all set to start modifying the code.
 
 ## Quick user guide (subject to change or be out of date as the code changes):
 
