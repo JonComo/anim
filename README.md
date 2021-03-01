@@ -12,6 +12,20 @@ This section explains the process of setting up your own environment for develop
 
 Before starting, you must have Node.js (https://nodejs.org/) and NPM (https://npmjs.com)installed on your system. Make sure you have Git (https://git-scm.com/) installed if you're planning to submit your modifications (or just want to keep track of your changes)!
 
+### Obtaining the code
+
+First things first, you must download `anim`'s code. Here are some options:
+
+- Clone this repository
+
+  If you're planning to play around with `anim`'s code, but aren't really interested in contributing, go with this option. First, clone this repository using the command `git clone https://github.com/JonComo/anim`. Using this option will also let you update your local version of this repository whenever you feel like it. Just run `git pull` in the repository directory!
+
+- Fork this repository.
+
+  If you're going to submit code changes to this repository, then you should create a fork of it. To do so, navigate to this repository's URL (https://github.com/JonComo/anim) and press the <kbd>Fork</kbd> button in the top-right corner of the GitHub UI. Then, clone it using `git clone https://github.com/<your username here>/anim` or whatever software you please!
+
+- Download https://github.com/JonComo/anim/archive/master.zip and unzip it.
+
 ## Quick user guide (subject to change or be out of date as the code changes):
 
 This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. An object's properties are smoothly transitioned while presenting.
