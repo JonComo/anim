@@ -4,7 +4,7 @@
   "description": "Quick JS program for creating animations.",
   "private": true,
   "scripts": {
-    "start": "webpack serve",
+    "start": "webpack serve --open --config webpack.dev.js",
     "build": "webpack"
   },
   "repository": {
