@@ -8,6 +8,10 @@ Anim is used to make animations and graphs for the youtube series, https://www.y
 
 This section explains the process of setting up your own environment for developing `anim`.
 
+### Prerequisites
+
+Before starting, you must have Node.js (https://nodejs.org/) and NPM (https://npmjs.com)installed on your system. Make sure you have Git (https://git-scm.com/) installed if you're planning to submit your modifications (or just want to keep track of your changes)!
+
 ## Quick user guide (subject to change or be out of date as the code changes):
 
 This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. An object's properties are smoothly transitioned while presenting.
