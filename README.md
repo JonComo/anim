@@ -51,6 +51,10 @@ Now, you should be all set to start modifying the code.
 
 `anim` uses the [Webpack bundler](https://webpack.js.org/): a program which squashes all of a project's code into a few files. You've already installed it in the previous step when running `npm install`. Now, all you need to do is run `npm start` to start the Webpack development server (Webpack dev server for short). Now, open your browser to https://localhost:9000/ and wait for a page to load. The Webpack dev server automatically bundles `anim` every time you change the code. Try editing the code and wait for the browser page to reload. Wow! Your changes are reflected in the browser. When you feel like you want to share your new and improved code with others, head on down to the next section.
 
+### Compile it!
+
+Once you're satisfied with your changes, you can bundle everything up. Just run `npm run build` and look in the `dist/` directory. You should see a new file named `main.js`. This file is Webpack's compiled version of your code. Opening up `dist/index.html` in your browser should open up `anim` accompanied by your changes. Hooray!
+
 ## Quick user guide (subject to change or be out of date as the code changes):
 
 This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. An object's properties are smoothly transitioned while presenting.
