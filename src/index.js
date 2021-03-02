@@ -6414,7 +6414,7 @@ function draw_axes(ctx) {
 
     ctx.save();
 
-    const csys_style = cam.style();
+    let csys_style = cam.style();
     let props = cam.properties[frame];
 
     // do a fade in and out
