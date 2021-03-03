@@ -2,7 +2,7 @@ name: GitHub Pages CD
 
 on:
   push:
-    branches: [ development ]
+    branches: [ master ]
 
   workflow_dispatch:
 
