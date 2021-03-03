@@ -4522,7 +4522,7 @@ function Text(text, pos) {
             return false;
         }
 
-        if (Math.abs(rtv.mouse.pos.x - rtv.mouse_start.x) > CHAR_SIZE || Math.abs(rtv.mouse.pos.y - rtv.mouse_start.y) > CHAR_SIZE) {
+        if (Math.abs(rtv.mouse.pos.x - rtv.mouse.start.x) > CHAR_SIZE || Math.abs(rtv.mouse.pos.y - rtv.mouse.start.y) > CHAR_SIZE) {
             this.dragged = true;
         }
 
@@ -4530,7 +4530,7 @@ function Text(text, pos) {
             if (this.args && this.args[0] && this.args[0]._data) {
 
             } else {
-                if (this.command == "slide" && this.point_in_text_rect(rtv.mouse_start)) {
+                if (this.command == "slide" && this.point_in_text_rect(rtv.mouse.start)) {
 
                     // change the value of the variable
                     let var_name = this.var_name();
@@ -4567,7 +4567,7 @@ function Text(text, pos) {
             let p = props.p;
 
             this.cursor = this.char_index_at_x(rtv.mouse.pos.x);
-            this.cursor_selection = this.char_index_at_x(rtv.mouse_start.x);
+            this.cursor_selection = this.char_index_at_x(rtv.mouse.start.x);
 
             this.constrain_cursors();
             this.dragged = true;
@@ -6841,7 +6841,7 @@ window.onload = function() {
         }
 
         rtv.mouse_down = true;
-        rtv.mouse_start = get_mouse_pos(rtv.c, evt);
+        rtv.mouse.start = get_mouse_pos(rtv.c, evt);
 
         try {
             math.compile('click()').eval(parser.scope);
@@ -7029,8 +7029,8 @@ window.onload = function() {
         if (rtv.selecting) {
             rtv.selecting = false;
 
-            let x = rtv.mouse_start.x;
-            let y = rtv.mouse_start.y;
+            let x = rtv.mouse.start.x;
+            let y = rtv.mouse.start.y;
             let x2 = rtv.mouse.pos.x;
             let y2 = rtv.mouse.pos.y;
 
@@ -7144,7 +7144,7 @@ window.onload = function() {
         if (rtv.selecting) {
             // draw a rect
             rtv.ctx.strokeStyle = DARK;
-            rtv.ctx.strokeRect(rtv.mouse_start.x, rtv.mouse_start.y, rtv.mouse.pos.x - rtv.mouse_start.x, rtv.mouse.pos.y - rtv.mouse_start.y);
+            rtv.ctx.strokeRect(rtv.mouse.start.x, rtv.mouse.start.y, rtv.mouse.pos.x - rtv.mouse.start.x, rtv.mouse.pos.y - rtv.mouse.start.y);
         }
 
         rtv.ctx.font = FONT.MENU;
