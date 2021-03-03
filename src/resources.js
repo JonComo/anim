@@ -92,14 +92,13 @@ export const rtv = {
   ctrl: false,
   meta: false,
   shift: false,
-  mouse_grid_last: { x: 0, y: 0 },
   mouse_graph: { x: 0, y: 0 },
   mouse: {
     pos: { x: 0, y: 0 },
     start: { x: 0, y: 0 },
     last: { x: 0, y: 0 },
     grid: { x: 0, y: 0 },
-    grid_last: { x: 0, y: 0 },
+    gridLast: { x: 0, y: 0 },
     graph: { x: 0, y: 0 },
   },
 
