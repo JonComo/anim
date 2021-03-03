@@ -92,7 +92,6 @@ export const rtv = {
   ctrl: false,
   meta: false,
   shift: false,
-  mouse_last: { x: 0, y: 0 },
   mouse_start: { x: 0, y: 0 },
   mouse_grid: { x: 0, y: 0 },
   mouse_grid_last: { x: 0, y: 0 },

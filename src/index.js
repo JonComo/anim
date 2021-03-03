@@ -4546,7 +4546,7 @@ function Text(text, pos) {
                         old_val = 0;
                     }
 
-                    let delta = (rtv.mouse.pos.x - rtv.mouse_last.x)/GRID_SIZE;
+                    let delta = (rtv.mouse.pos.x - rtv.mouse.last.x)/GRID_SIZE;
                     if (rtv.meta || rtv.ctrl) {
                         delta *= .01;
                     }
@@ -5453,13 +5453,13 @@ function Camera() {
             let r = props.rxyz;
 
             if (!this.dragging_rotate) {
-                const a = r[1] - (rtv.mouse.pos.y - rtv.mouse_last.y)/100;
-                const b = r[2] - (rtv.mouse.pos.x - rtv.mouse_last.x)/100;
+                const a = r[1] - (rtv.mouse.pos.y - rtv.mouse.last.y)/100;
+                const b = r[2] - (rtv.mouse.pos.x - rtv.mouse.last.x)/100;
                 r = [r[0], a, b];
 
             } else {
                 let angle = math.atan2(rtv.mouse.pos.y - props.p.y, rtv.mouse.pos.x - props.p.x);
-                let angle2 = math.atan2(rtv.mouse_last.y - props.p.y, rtv.mouse_last.x - props.p.x);
+                let angle2 = math.atan2(rtv.mouse.last.y - props.p.y, rtv.mouse.last.x - props.p.x);
                 let c = (angle - angle2);
 
                 if (Math.abs(c) > 1) {
@@ -6934,7 +6934,7 @@ window.onload = function() {
             rtv.mouse_time = MOUSE_DURATION;
         }
 
-        rtv.mouse_last = get_mouse_pos(rtv.c, evt);
+        rtv.mouse.last = get_mouse_pos(rtv.c, evt);
         rtv.mouse_grid_last = constrain_to_grid(rtv.mouse.pos);
     };
 
