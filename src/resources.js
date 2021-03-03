@@ -98,6 +98,14 @@ export const rtv = {
   mouse_grid: { x: 0, y: 0 },
   mouse_grid_last: { x: 0, y: 0 },
   mouse_graph: { x: 0, y: 0 },
+  mouse: {
+    pos: { x: 0, y: 0 },
+    last: { x: 0, y: 0 },
+    start: { x: 0, y: 0 },
+    grid: { x: 0, y: 0 },
+    grid_last: { x: 0, y: 0 },
+    graph: { x: 0, y: 0 },
+  },
 
   t: 0, // time for parser
   millis: 0,
