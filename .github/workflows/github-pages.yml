@@ -2,9 +2,7 @@ name: GitHub Pages CD
 
 on:
   push:
-    branches: [ webpack/third-attempt ]
-  pull_request:
-    branches: [ webpack/third-attempt ]
+    branches: [ master ]
 
   workflow_dispatch:
 
