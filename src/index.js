@@ -3501,8 +3501,8 @@ function Shape(color, path) {
 
             if (rtv.tool == "select") {
                 // move all
-                let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x,
-                          y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
+                let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x,
+                          y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
                 for (let i = 0; i < this.selected_indices.length; i++) {
                     let idx = this.selected_indices[i];
                     let p = path[idx];
@@ -3815,8 +3815,8 @@ function Circle(color, pos) {
         if (this.selected && rtv.tool == "select") {
             // move
             let props = this.properties[rtv.frame];
-            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x,
-                        y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x,
+                        y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
             let p = props.p;
             this.properties[rtv.frame].p = {x: p.x + offset.x, y: p.y + offset.y};
         }
@@ -4574,7 +4574,7 @@ function Text(text, pos) {
         } else if (rtv.tool == "select" && (this.near_mouse || this.is_selected())) {
             // shift it
             let p = props.p;
-            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x, y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x, y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
 
             return true;
@@ -5180,8 +5180,8 @@ function Network(pos) {
         if (this.selected && rtv.tool == "select") {
             // move
             let props = this.properties[rtv.frame];
-            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x,
-                        y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x,
+                        y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
             let p = props.p;
             this.properties[rtv.frame].p = {x: p.x + offset.x, y: p.y + offset.y};
         }
@@ -5475,7 +5475,7 @@ function Camera() {
         } else {
             // translate
             let p = props.p;
-            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x, y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x, y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
         }
     }
@@ -6935,7 +6935,7 @@ window.onload = function() {
         }
 
         rtv.mouse.last = get_mouse_pos(rtv.c, evt);
-        rtv.mouse_grid_last = constrain_to_grid(rtv.mouse.pos);
+        rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
     };
 
     window.onmouseup = function(evt) {
