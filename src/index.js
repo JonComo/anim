@@ -15,8 +15,6 @@ import {
   BRACKETS,
   PI2,
   MAT_NUM_WIDTH,
-  CHAR.SIZE,
-  CHAR.PAD,
   VERSION,
 } from './resources';
 
