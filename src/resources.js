@@ -16,13 +16,10 @@ export const LIGHT = '#ffffff';
 
 export const COLORS = ['#000000', '#E74C3C', '#2980B9', '#FFA400', '#66E07A', GRAY];
 
-export const FONT_SMALL = '26px Courier';
-export const FONT_MENU = '30px Courier';
-export const FONT_ANIM = IS_MAC ? '40px Menlo' : '40px Courier New';
 export const FONT = {
-  FONT_SMALL: '26px Courier',
-  FONT_MENU: '30px Courier',
-  FONT_ANIM: IS_MAC ? '40px Menlo' : '40px Courier New',
+  SMALL: '26px Courier',
+  MENU: '30px Courier',
+  ANIM: IS_MAC ? '40px Menlo' : '40px Courier New',
 };
 
 export const SCALE_FACTOR = 2; // retina
