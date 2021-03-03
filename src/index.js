@@ -1567,7 +1567,7 @@ math.import({
             utterThis.pitch = _pitch;
         }
 
-        utterThis.voice = rtv.voices[voice];
+        utterThis.voice = rtv.speech.voices[voice];
         rtv.speech.synth.cancel();
         rtv.speech.synth.speak(utterThis);
     },
@@ -6593,7 +6593,7 @@ window.onload = function() {
     // speech synth
     rtv.speech.synth = window.speechSynthesis; // speech synthesis
     window.speechSynthesis.onvoiceschanged = function() {
-        rtv.voices = window.speechSynthesis.getVoices();
+        rtv.speech.voices = window.speechSynthesis.getVoices();
 
     };
 
