@@ -6898,10 +6898,10 @@ window.onload = function() {
         // update mouse
         rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
         rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
-        rtv.mouse_graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
+        rtv.mouse.graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
 
-        parser.set('_y', rtv.mouse_graph.x);
-        parser.set('_z', rtv.mouse_graph.y);
+        parser.set('_y', rtv.mouse.graph.x);
+        parser.set('_z', rtv.mouse.graph.y);
 
         if (rtv.pen.mouse_move(evt)) {
             return;

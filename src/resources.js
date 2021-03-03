@@ -92,7 +92,6 @@ export const rtv = {
   ctrl: false,
   meta: false,
   shift: false,
-  mouse_graph: { x: 0, y: 0 },
   mouse: {
     pos: { x: 0, y: 0 },
     start: { x: 0, y: 0 },
