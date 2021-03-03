@@ -6116,7 +6116,7 @@ function Menu(pos) {
         load_local();
     }));
 
-    this.buttons.push(new Button("ver: 1.0.1", {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button("ver: 1.0.2", {x: 0, y: 0}, function(b) {
 
     }));
 
