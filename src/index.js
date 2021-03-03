@@ -3501,8 +3501,8 @@ function Shape(color, path) {
 
             if (rtv.tool == "select") {
                 // move all
-                let offset = {x: rtv.mouse_grid.x - rtv.mouse_grid_last.x,
-                          y: rtv.mouse_grid.y - rtv.mouse_grid_last.y};
+                let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x,
+                          y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
                 for (let i = 0; i < this.selected_indices.length; i++) {
                     let idx = this.selected_indices[i];
                     let p = path[idx];
@@ -3815,8 +3815,8 @@ function Circle(color, pos) {
         if (this.selected && rtv.tool == "select") {
             // move
             let props = this.properties[rtv.frame];
-            let offset = {x: rtv.mouse_grid.x - rtv.mouse_grid_last.x,
-                        y: rtv.mouse_grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x,
+                        y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
             let p = props.p;
             this.properties[rtv.frame].p = {x: p.x + offset.x, y: p.y + offset.y};
         }
@@ -4574,7 +4574,7 @@ function Text(text, pos) {
         } else if (rtv.tool == "select" && (this.near_mouse || this.is_selected())) {
             // shift it
             let p = props.p;
-            let offset = {x: rtv.mouse_grid.x - rtv.mouse_grid_last.x, y: rtv.mouse_grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x, y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
 
             return true;
@@ -5180,8 +5180,8 @@ function Network(pos) {
         if (this.selected && rtv.tool == "select") {
             // move
             let props = this.properties[rtv.frame];
-            let offset = {x: rtv.mouse_grid.x - rtv.mouse_grid_last.x,
-                        y: rtv.mouse_grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x,
+                        y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
             let p = props.p;
             this.properties[rtv.frame].p = {x: p.x + offset.x, y: p.y + offset.y};
         }
@@ -5475,7 +5475,7 @@ function Camera() {
         } else {
             // translate
             let p = props.p;
-            let offset = {x: rtv.mouse_grid.x - rtv.mouse_grid_last.x, y: rtv.mouse_grid.y - rtv.mouse_grid_last.y};
+            let offset = {x: rtv.mouse.grid.x - rtv.mouse_grid_last.x, y: rtv.mouse.grid.y - rtv.mouse_grid_last.y};
             props.p = {x: p.x + offset.x, y: p.y + offset.y};
         }
     }
@@ -6897,7 +6897,7 @@ window.onload = function() {
     window.onmousemove = function(evt) {
         // update mouse
         rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
-        rtv.mouse_grid = constrain_to_grid(rtv.mouse.pos);
+        rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
         rtv.mouse_graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
 
         parser.set('_y', rtv.mouse_graph.x);
@@ -6987,7 +6987,7 @@ window.onload = function() {
             }
         } else if (rtv.tool == "text") {
             // add a num obj at mouse pos
-            let n = new Text("", rtv.mouse_grid);
+            let n = new Text("", rtv.mouse.grid);
 
             let N = rtv.objs.length;
             for (let i = 0; i < N; i++) {
@@ -7003,9 +7003,9 @@ window.onload = function() {
             // add a num obj at mouse pos
             if (rtv.new_line) {
                 // add a point
-                rtv.new_line.add_point({x: rtv.mouse_grid.x, y: rtv.mouse_grid.y});
+                rtv.new_line.add_point({x: rtv.mouse.grid.x, y: rtv.mouse.grid.y});
             } else {
-                let l = new Shape([0, 0, 0, 1], [{x: rtv.mouse_grid.x, y: rtv.mouse_grid.y}]);
+                let l = new Shape([0, 0, 0, 1], [{x: rtv.mouse.grid.x, y: rtv.mouse.grid.y}]);
 
                 if (rtv.tool == "vector") {
                     l.properties[rtv.frame].v = true;
@@ -7019,10 +7019,10 @@ window.onload = function() {
 
             return;
         } else if (rtv.tool == "circle") {
-            let new_circle = new Circle([0, 0, 0, 1], rtv.mouse_grid);
+            let new_circle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
             rtv.objs.push(new_circle);
         } else if (rtv.tool == "network") {
-            let n = new Network(rtv.mouse_grid);
+            let n = new Network(rtv.mouse.grid);
             rtv.objs.push(n);
         }
 
