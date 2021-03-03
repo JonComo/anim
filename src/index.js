@@ -16,7 +16,7 @@ import {
   PI2,
   MAT_NUM_WIDTH,
   CHAR.SIZE,
-  CHAR_PAD,
+  CHAR.PAD,
   VERSION,
 } from './resources';
 
@@ -2582,7 +2582,7 @@ function draw_r(o, p, d) {
                 // draw on the left and the right
 
                 let center = false; // false -> bottom align
-                let pad2 = CHAR_PAD * 2;
+                let pad2 = CHAR.PAD * 2;
                 if (text == "*") {
                     pad2 = 0;
                 }
@@ -2653,13 +2653,13 @@ function draw_r(o, p, d) {
                 let s1 = draw_r(a, {x: 0, y: 0}, false);
                 let s2 = draw_r(b, {x: 0, y: 0}, false);
 
-                size.w = Math.max(s1.w, s2.w) + CHAR_PAD*2;
-                size.h = Math.max(s1.h, s2.h)*2 + CHAR_PAD*4;
+                size.w = Math.max(s1.w, s2.w) + CHAR.PAD*2;
+                size.h = Math.max(s1.h, s2.h)*2 + CHAR.PAD*4;
 
                 if (d) {
 
-                    draw_r(a, {x: p.x + size.w/2 - s1.w/2, y: p.y + size.h/2 - s1.h - CHAR_PAD*2}, d);
-                    draw_r(b, {x: p.x + size.w/2 - s2.w/2, y: p.y + size.h/2 + CHAR_PAD*2}, d);
+                    draw_r(a, {x: p.x + size.w/2 - s1.w/2, y: p.y + size.h/2 - s1.h - CHAR.PAD*2}, d);
+                    draw_r(b, {x: p.x + size.w/2 - s2.w/2, y: p.y + size.h/2 + CHAR.PAD*2}, d);
 
                     rtv.ctx.beginPath();
                     rtv.ctx.moveTo(p.x, p.y + size.h/2);
