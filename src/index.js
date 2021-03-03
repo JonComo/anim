@@ -16,6 +16,7 @@ import {
   PI2,
   MAT_NUM_WIDTH,
   VERSION,
+  CHAR,
 } from './resources';
 
 // custom functions!
