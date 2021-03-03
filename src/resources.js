@@ -43,7 +43,6 @@ export const PI2 = 2 * Math.PI;
 export const MAT_NUM_WIDTH = 140; // matrix max number width
 
 // fn drawing
-export const CHAR_SIZE = GRID_SIZE / 2;
 export const CHAR_PAD = GRID_SIZE / 4;
 export const CHAR = {
   CHAR_SIZE: GRID_SIZE / 2,
