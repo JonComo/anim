@@ -75,7 +75,6 @@ export const rtv = {
   view_frame: false,
 
   // speech synthesis
-  synth: null,
   voices: null,
   speech: {
     synth: null,

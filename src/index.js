@@ -1568,8 +1568,8 @@ math.import({
         }
 
         utterThis.voice = rtv.voices[voice];
-        rtv.synth.cancel();
-        rtv.synth.speak(utterThis);
+        rtv.speech.synth.cancel();
+        rtv.speech.synth.speak(utterThis);
     },
     enableVolMeter: function () {
         if (!meterInitialized) {
@@ -6591,7 +6591,7 @@ window.onload = function() {
     rtv.ctx.lineJoin = 'round';
 
     // speech synth
-    rtv.synth = window.speechSynthesis; // speech synthesis
+    rtv.speech.synth = window.speechSynthesis; // speech synthesis
     window.speechSynthesis.onvoiceschanged = function() {
         rtv.voices = window.speechSynthesis.getVoices();
 
