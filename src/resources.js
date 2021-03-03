@@ -1,8 +1,6 @@
 import { create, all } from 'mathjs';
 import packageJson from '../package.json';
 
-export const math = create(all);
-
 export const VERSION = packageJson.version; // Version
 const IS_MAC = navigator.platform.toUpperCase().includes('MAC'); // Running on macOS?
 
@@ -112,6 +110,8 @@ export const rtv = {
   t: 0, // time for parser
   millis: 0,
 };
+
+export const math = create(all);
 
 export const parser = math.parser();
 parser.set('frame', rtv.frame);
