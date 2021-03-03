@@ -15,7 +15,7 @@ import {
   BRACKETS,
   PI2,
   MAT_NUM_WIDTH,
-  CHAR_SIZE,
+  CHAR.SIZE,
   CHAR_PAD,
   VERSION,
 } from './resources';
@@ -2574,9 +2574,9 @@ function draw_r(o, p, d) {
         if (text == "+" || text == "-" || text == "*") {
             if (argc == 1) {
                 if (d) rtv.ctx.fillText(text, p.x, p.y);
-                let s1 = draw_r(args[0], {x: p.x + CHAR_SIZE, y: p.y}, d);
+                let s1 = draw_r(args[0], {x: p.x + CHAR.SIZE, y: p.y}, d);
 
-                size.w = s1.w + CHAR_SIZE;
+                size.w = s1.w + CHAR.SIZE;
                 size.h = s1.h;
             } else if (argc == 2) {
                 // draw on the left and the right
@@ -2590,25 +2590,25 @@ function draw_r(o, p, d) {
                 let s1 = draw_r(args[0], {x: 0, y: 0}, false);
                 let s2 = draw_r(args[1], {x: 0, y: 0}, false);
 
-                size.w = s1.w + text.length * CHAR_SIZE + 2*pad2 + s2.w;
+                size.w = s1.w + text.length * CHAR.SIZE + 2*pad2 + s2.w;
                 size.h = Math.max(s1.h, s2.h);
 
                 if (d) {
                     let opp = {x: 0, y: 0};
                     if (center) {
                         s1 = draw_r(args[0], {x: p.x, y: p.y + size.h/2 - s1.h/2}, d);
-                        opp = {x: p.x + s1.w + pad2, y: p.y + size.h/2 - CHAR_SIZE};
-                        s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*CHAR_SIZE + pad2, y: p.y + size.h/2 - s2.h/2}, d);
+                        opp = {x: p.x + s1.w + pad2, y: p.y + size.h/2 - CHAR.SIZE};
+                        s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*CHAR.SIZE + pad2, y: p.y + size.h/2 - s2.h/2}, d);
                     } else {
                         // bottom align
                         s1 = draw_r(args[0], {x: p.x, y: p.y + size.h - s1.h}, d);
-                        opp = {x: p.x + s1.w + pad2, y: p.y + size.h - CHAR_SIZE*2};
-                        s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*CHAR_SIZE + pad2, y: p.y + size.h - s2.h}, d);
+                        opp = {x: p.x + s1.w + pad2, y: p.y + size.h - CHAR.SIZE*2};
+                        s2 = draw_r(args[1], {x: p.x + s1.w + pad2 + text.length*CHAR.SIZE + pad2, y: p.y + size.h - s2.h}, d);
                     }
 
                     if (text == "*") {
                         rtv.ctx.beginPath();
-                        rtv.ctx.arc(opp.x + CHAR_SIZE/2, opp.y+CHAR_SIZE, 3, 0, PI2);
+                        rtv.ctx.arc(opp.x + CHAR.SIZE/2, opp.y+CHAR.SIZE, 3, 0, PI2);
                         rtv.ctx.fill();
                     } else {
                         rtv.ctx.fillText(text, opp.x, opp.y);
@@ -2629,7 +2629,7 @@ function draw_r(o, p, d) {
                 let s2 = draw_r(b, {x: 0, y: 0}, false);
 
                 size.w = s1.w + s2.w;
-                size.h = s1.h + s2.h - CHAR_SIZE;
+                size.h = s1.h + s2.h - CHAR.SIZE;
 
                 if (d) {
                     draw_r(a, {x: p.x, y: p.y + size.h - s1.h}, d);
@@ -2671,7 +2671,7 @@ function draw_r(o, p, d) {
             let s1 = draw_r(args[0], {x: p.x, y: p.y}, d);
             if (d) rtv.ctx.fillText(text, p.x + s1.w, p.y);
 
-            size.w = s1.w + CHAR_SIZE;
+            size.w = s1.w + CHAR.SIZE;
             size.h = s1.h;
         } else if (o.fn) {
             // function call
@@ -2691,15 +2691,15 @@ function draw_r(o, p, d) {
 
             // draw it
             text = o.name + "(";
-            let cally = p.y + size.h/2 - CHAR_SIZE;
+            let cally = p.y + size.h/2 - CHAR.SIZE;
 
             if (d) {
                 for (let i = 0; i < text.length; i ++) {
-                    rtv.ctx.fillText(text[i], p.x+i*CHAR_SIZE, cally);
+                    rtv.ctx.fillText(text[i], p.x+i*CHAR.SIZE, cally);
                 }
             }
 
-            let xo = text.length * CHAR_SIZE;
+            let xo = text.length * CHAR.SIZE;
 
             for (let i = 0; i < N; i ++) {
                 let s1 = draw_r(args[i], {x: p.x + xo, y: p.y + size.h/2 - hs[i].h/2}, d);
@@ -2711,7 +2711,7 @@ function draw_r(o, p, d) {
                     if (d) rtv.ctx.fillText(",", p.x + xo, cally);
                 }
 
-                xo += CHAR_SIZE;
+                xo += CHAR.SIZE;
             }
 
             size.w = xo;
@@ -2733,13 +2733,13 @@ function draw_r(o, p, d) {
             let s1 = draw_r(o.content, {x: 0, y: 0}, false);
             //ctx.save();
             //ctx.scale(1, s1.h/(char_size*2));
-            if (d) rtv.ctx.fillText("(", p.x, p.y + s1.h/2-CHAR_SIZE);
-            if (d) rtv.ctx.fillText(")", p.x + s1.w + CHAR_SIZE, p.y + s1.h/2-CHAR_SIZE);
+            if (d) rtv.ctx.fillText("(", p.x, p.y + s1.h/2-CHAR.SIZE);
+            if (d) rtv.ctx.fillText(")", p.x + s1.w + CHAR.SIZE, p.y + s1.h/2-CHAR.SIZE);
             //ctx.restore();
 
-            s1 = draw_r(o.content, {x: p.x + CHAR_SIZE, y: p.y}, d);
+            s1 = draw_r(o.content, {x: p.x + CHAR.SIZE, y: p.y}, d);
 
-            size.w = s1.w + CHAR_SIZE*2;
+            size.w = s1.w + CHAR.SIZE*2;
             size.h = s1.h;
         } else if (o.node) {
             size = draw_r(o.node, {x: p.x, y: p.y}, d);
@@ -2751,14 +2751,14 @@ function draw_r(o, p, d) {
 
             if (d) {
                 rtv.ctx.save();
-                rtv.ctx.translate(p.x, p.y + s1.h/2-CHAR_SIZE);
+                rtv.ctx.translate(p.x, p.y + s1.h/2-CHAR.SIZE);
                 draw_simple(text);
                 rtv.ctx.restore();
 
-                draw_r(o.value, {x: p.x + text.length*CHAR_SIZE, y: p.y}, d);
+                draw_r(o.value, {x: p.x + text.length*CHAR.SIZE, y: p.y}, d);
             }
 
-            size.w = s1.w + text.length * CHAR_SIZE;
+            size.w = s1.w + text.length * CHAR.SIZE;
             size.h = s1.h;
         } else if (o.blocks) {
             // block
@@ -2779,7 +2779,7 @@ function draw_r(o, p, d) {
             size.h = h;
 
             // draw it
-            let cally = p.y + size.h/2 - CHAR_SIZE;
+            let cally = p.y + size.h/2 - CHAR.SIZE;
             let xo = 0;
 
             for (let i = 0; i < N; i ++) {
@@ -2789,10 +2789,10 @@ function draw_r(o, p, d) {
                 if (i != N-1) {
                     if (d) rtv.ctx.fillText(";", p.x + xo, cally);
                 }
-                xo += CHAR_SIZE;
+                xo += CHAR.SIZE;
             }
 
-            xo -= CHAR_SIZE;
+            xo -= CHAR.SIZE;
 
             size.w = xo;
 
@@ -2815,8 +2815,8 @@ function draw_r(o, p, d) {
             size.h = h;
 
             // draw it
-            let cally = p.y + size.h/2 - CHAR_SIZE;
-            let xo = CHAR_SIZE; // first open bracket
+            let cally = p.y + size.h/2 - CHAR.SIZE;
+            let xo = CHAR.SIZE; // first open bracket
 
             for (let i = 0; i < N; i ++) {
                 let s1 = draw_r(items[i], {x: p.x + xo, y: p.y + size.h/2 - hs[i].h/2}, d);
@@ -2825,13 +2825,13 @@ function draw_r(o, p, d) {
                 if (i != N-1) {
                     if (d) rtv.ctx.fillText(",", p.x + xo, cally);
                 }
-                xo += CHAR_SIZE;
+                xo += CHAR.SIZE;
             }
 
             rtv.ctx.save();
-            rtv.ctx.scale(1, size.h/(CHAR_SIZE*2));
+            rtv.ctx.scale(1, size.h/(CHAR.SIZE*2));
             if (d) rtv.ctx.fillText("[", p.x, cally);
-            if (d) rtv.ctx.fillText("]", p.x + xo - CHAR_SIZE, cally);
+            if (d) rtv.ctx.fillText("]", p.x + xo - CHAR.SIZE, cally);
             rtv.ctx.restore();
 
             size.w = xo;
@@ -2845,12 +2845,12 @@ function draw_r(o, p, d) {
 
             if (d) {
                 rtv.ctx.save();
-                rtv.ctx.translate(p.x, p.y + s1.h - CHAR_SIZE*2);
+                rtv.ctx.translate(p.x, p.y + s1.h - CHAR.SIZE*2);
                 draw_simple(text);
                 rtv.ctx.restore();
             }
 
-            let xo = text.length*CHAR_SIZE;
+            let xo = text.length*CHAR.SIZE;
 
             draw_r(o.expr, {x: p.x + xo, y: p.y}, d);
 
@@ -2861,12 +2861,12 @@ function draw_r(o, p, d) {
             if (d) {
                 let N = text.length;
                 for (let i = 0; i < N; i ++) {
-                    rtv.ctx.fillText(text[i], p.x + i*CHAR_SIZE, p.y);
+                    rtv.ctx.fillText(text[i], p.x + i*CHAR.SIZE, p.y);
                 }
             }
 
-            size.w = text.length * CHAR_SIZE;
-            size.h = CHAR_SIZE * 2;
+            size.w = text.length * CHAR.SIZE;
+            size.h = CHAR.SIZE * 2;
         }
     }
 
@@ -2919,13 +2919,13 @@ function draw_simple(text) {
     for (let i = 0; i < text.length; i++) {
         if (text[i] == "*") {
             rtv.ctx.beginPath();
-            rtv.ctx.arc(i * CHAR_SIZE + CHAR_SIZE/2, 0, 3, 0, PI2);
+            rtv.ctx.arc(i * CHAR.SIZE + CHAR.SIZE/2, 0, 3, 0, PI2);
             rtv.ctx.fill();
         } else {
-            rtv.ctx.fillText(text[i], i * CHAR_SIZE, 0);
+            rtv.ctx.fillText(text[i], i * CHAR.SIZE, 0);
         }
     }
-    return text.length * CHAR_SIZE;
+    return text.length * CHAR.SIZE;
 }
 
 function draw_network(layers, pos) {
@@ -4000,7 +4000,7 @@ function Text(text, pos) {
             return 0;
         }
 
-        let idx = Math.round((x - props.p.x)/CHAR_SIZE);
+        let idx = Math.round((x - props.p.x)/CHAR.SIZE);
         return Math.max(0, Math.min(idx, props.t.length));
     }
 
@@ -4248,7 +4248,7 @@ function Text(text, pos) {
             if (rtv.keys.shift) {
                 // create a new text below this one
                 let p = this.properties[rtv.frame].p;
-                let newT = new Text("", {x: p.x, y: p.y + CHAR_SIZE*2});
+                let newT = new Text("", {x: p.x, y: p.y + CHAR.SIZE*2});
                 rtv.objs.push(newT);
                 newT.select();
                 save_state();
@@ -4522,7 +4522,7 @@ function Text(text, pos) {
             return false;
         }
 
-        if (Math.abs(rtv.mouse.pos.x - rtv.mouse.start.x) > CHAR_SIZE || Math.abs(rtv.mouse.pos.y - rtv.mouse.start.y) > CHAR_SIZE) {
+        if (Math.abs(rtv.mouse.pos.x - rtv.mouse.start.x) > CHAR.SIZE || Math.abs(rtv.mouse.pos.y - rtv.mouse.start.y) > CHAR.SIZE) {
             this.dragged = true;
         }
 
@@ -4614,9 +4614,9 @@ function Text(text, pos) {
             size = draw_fn(fn);
         } else {
             let N = t.length;
-            size = {w: N * CHAR_SIZE, h:CHAR_SIZE*2};
+            size = {w: N * CHAR.SIZE, h:CHAR.SIZE*2};
 
-            size = {w:draw_simple(t), h:CHAR_SIZE*2};
+            size = {w:draw_simple(t), h:CHAR.SIZE*2};
 
             let plevel = 0;
             for (let i = 0; i < N; i++) {
@@ -4634,7 +4634,7 @@ function Text(text, pos) {
                     if (t[i] in BRACKETS) p2 += BRACKETS[t[i]];
 
                     if (p2 == plevel-1) {
-                        ctx.fillText(t[i], i * CHAR_SIZE, 0);
+                        ctx.fillText(t[i], i * CHAR.SIZE, 0);
                         break;
                     }
                 }
@@ -4644,7 +4644,7 @@ function Text(text, pos) {
                     if (t[i] in BRACKETS) p2 += BRACKETS[t[i]];
 
                     if (p2 == plevel+1) {
-                        ctx.fillText(t[i], i * CHAR_SIZE, 0);
+                        ctx.fillText(t[i], i * CHAR.SIZE, 0);
                         break;
                     }
                 }
@@ -4976,13 +4976,13 @@ function Text(text, pos) {
 
         if (!rtv.presenting && this.is_selected()) {
             // draw cursor
-            ctx.fillRect(this.cursor * CHAR_SIZE, -GRID_SIZE/2, 2, GRID_SIZE);
+            ctx.fillRect(this.cursor * CHAR.SIZE, -GRID_SIZE/2, 2, GRID_SIZE);
             if (this.is_text_selected()) {
                 // draw selection
                 let s = this.selection_indices();
 
-                let xstart = s.s * CHAR_SIZE;
-                let xend = s.e * CHAR_SIZE;
+                let xstart = s.s * CHAR.SIZE;
+                let xend = s.e * CHAR.SIZE;
 
                 ctx.save();
                 ctx.globalAlpha = .1;
@@ -5004,7 +5004,7 @@ function Text(text, pos) {
 
                         if (key.indexOf(fn) == 0) {
                             ctx.save();
-                            ctx.translate(0, CHAR_SIZE*2 + yoff);
+                            ctx.translate(0, CHAR.SIZE*2 + yoff);
                             ctx.scale(.5, .5);
                             ctx.globalAlpha = .5;
                             draw_simple(key + ": " + (math[key]+"").split("\n")[0]);
@@ -5035,10 +5035,10 @@ function Text(text, pos) {
         for (let i = 0; i < text.length; i++) {
             if (text[i] == "*") {
                 js += "ctx.beginPath();\n";
-                js += "ctx.arc(" + (i * CHAR_SIZE + CHAR_SIZE/2) + ", 0, 3, 0, " + PI2 + ");\n";
+                js += "ctx.arc(" + (i * CHAR.SIZE + CHAR.SIZE/2) + ", 0, 3, 0, " + PI2 + ");\n";
                 js += "ctx.fill();\n";
             } else {
-                js += "ctx.fillText(\"" + text[i] + "\", " + (i * CHAR_SIZE) + ", 0);\n";
+                js += "ctx.fillText(\"" + text[i] + "\", " + (i * CHAR.SIZE) + ", 0);\n";
             }
         }
 
