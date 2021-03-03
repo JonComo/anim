@@ -9,7 +9,7 @@ import {
   COLORS,
   FONT_SMALL,
   FONT_MENU,
-  fontAnim,
+  FONT_ANIM,
   SCALE_FACTOR,
   T_STEPS,
   GRID_SIZE,
@@ -1341,7 +1341,7 @@ math.import({
         // draw result matrix
         rtv.ctx.save();
 
-        rtv.ctx.font = fontAnim;
+        rtv.ctx.font = FONT_ANIM;
 
         rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
         draw_matrix(rformat, function(i, j) {
@@ -1407,7 +1407,7 @@ math.import({
         // draw result matrix
         rtv.ctx.save();
 
-        rtv.ctx.font = fontAnim;
+        rtv.ctx.font = FONT_ANIM;
 
         rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
         draw_matrix(rformat, function(i, j) {
@@ -7121,7 +7121,7 @@ window.onload = function() {
 
         draw_axes(rtv.ctx);
 
-        rtv.ctx.font = fontAnim;
+        rtv.ctx.font = FONT_ANIM;
 
         let N = rtv.objs.length;
         for (let i = 0; i < N; i++) {
