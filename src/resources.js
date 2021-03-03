@@ -4,6 +4,7 @@ import packageJson from '../package.json';
 export const math = create(all);
 
 export const VERSION = packageJson.version; // Version
+const IS_MAC = navigator.platform.toUpperCase().includes('MAC'); // Running on macOS?
 
 // colors
 export const GRAY = '#cccccc';
@@ -17,6 +18,7 @@ export const COLORS = ['#000000', '#E74C3C', '#2980B9', '#FFA400', '#66E07A', GR
 
 export const FONT_SMALL = '26px Courier';
 export const FONT_MENU = '30px Courier';
+export const FONT_ANIM = IS_MAC ? '40px Menlo' : '40px Courier New';
 
 export const SCALE_FACTOR = 2; // retina
 
@@ -103,6 +105,3 @@ export const parser = math.parser();
 parser.set('frame', rtv.frame);
 
 export const date = new Date();
-
-const isMac = navigator.platform.toUpperCase().includes('MAC');
-export const fontAnim = isMac ? '40px Menlo' : '40px Courier New';
