@@ -80,8 +80,6 @@ export const rtv = {
   t_percent: 0,
   t_in_out: 1,
 
-  mouse_time: 0,
-
   tool: 'select',
   selecting: false,
   new_line: null,
@@ -99,6 +97,7 @@ export const rtv = {
     grid: { x: 0, y: 0 },
     gridLast: { x: 0, y: 0 },
     graph: { x: 0, y: 0 },
+    time: 0,
   },
 
   t: 0, // time for parser

@@ -6532,7 +6532,7 @@ function draw_cursor() {
 
         rtv.ctx.stroke();
         rtv.ctx.restore();
-    } else if (rtv.presenting && rtv.mouse_time > 0) {
+    } else if (rtv.presenting && rtv.mouse.time > 0) {
         // draw a cursor
 
         let mx = rtv.mouse.pos.x;
@@ -6544,7 +6544,7 @@ function draw_cursor() {
         rtv.ctx.beginPath();
 
         if (rtv.mouse.down) {
-            rtv.mouse_time = MOUSE_DURATION;
+            rtv.mouse.time = MOUSE_DURATION;
 
             rtv.ctx.arc(0, 0, 10, 0, PI2, 0);
 
@@ -6931,7 +6931,7 @@ window.onload = function() {
         }
 
         if (rtv.presenting) {
-            rtv.mouse_time = MOUSE_DURATION;
+            rtv.mouse.time = MOUSE_DURATION;
         }
 
         rtv.mouse.last = get_mouse_pos(rtv.c, evt);
@@ -7108,7 +7108,7 @@ window.onload = function() {
         }
 
         if (rtv.presenting) {
-            rtv.mouse_time -= 1;
+            rtv.mouse.time -= 1;
         }
 
         if (!parser.get('_trace')) {
