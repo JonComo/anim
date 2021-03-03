@@ -77,6 +77,10 @@ export const rtv = {
   // speech synthesis
   synth: null,
   voices: null,
+  speech: {
+    synth: null,
+    voices: null,
+  },
 
   t_ease: 0,
   t_percent: 0,
