@@ -7,9 +7,7 @@ import {
   GRAY,
   DARK,
   COLORS,
-  FONT_SMALL,
-  FONT_MENU,
-  FONT_ANIM,
+  FONT,
   SCALE_FACTOR,
   T_STEPS,
   GRID_SIZE,
@@ -1341,7 +1339,7 @@ math.import({
         // draw result matrix
         rtv.ctx.save();
 
-        rtv.ctx.font = FONT_ANIM;
+        rtv.ctx.font = FONT.ANIM;
 
         rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
         draw_matrix(rformat, function(i, j) {
@@ -1407,7 +1405,7 @@ math.import({
         // draw result matrix
         rtv.ctx.save();
 
-        rtv.ctx.font = FONT_ANIM;
+        rtv.ctx.font = FONT.ANIM;
 
         rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
         draw_matrix(rformat, function(i, j) {
@@ -3329,7 +3327,7 @@ function Button(text, pos, callback) {
         }
 
         ctx.textAlign = this.align;
-        ctx.font = FONT_SMALL;
+        ctx.font = FONT.SMALL;
         ctx.fillText(this.text, 0, 0);
 
         ctx.restore();
@@ -7121,7 +7119,7 @@ window.onload = function() {
 
         draw_axes(rtv.ctx);
 
-        rtv.ctx.font = FONT_ANIM;
+        rtv.ctx.font = FONT.ANIM;
 
         let N = rtv.objs.length;
         for (let i = 0; i < N; i++) {
@@ -7149,7 +7147,7 @@ window.onload = function() {
             rtv.ctx.strokeRect(rtv.mouse_start.x, rtv.mouse_start.y, rtv.mouse.x - rtv.mouse_start.x, rtv.mouse.y - rtv.mouse_start.y);
         }
 
-        rtv.ctx.font = FONT_MENU;
+        rtv.ctx.font = FONT.MENU;
 
         if (!rtv.presenting) {
             rtv.frames.render(rtv.ctx);
