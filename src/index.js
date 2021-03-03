@@ -1426,7 +1426,7 @@ math.import({
         let dp = [];
 
         let round = pretty_round_one;
-        if (rtv.ctrl) {
+        if (rtv.keys.ctrl) {
             round = pretty_round;
         }
 
@@ -3020,7 +3020,7 @@ function draw_matrix(matrix, color_ij) {
     let pad = 24;
 
     let shift = 0;
-    if (rtv.ctrl) {
+    if (rtv.keys.ctrl) {
         shift = 24;
     }
 
@@ -3050,7 +3050,7 @@ function format_matrix(matrix) {
     let formatted = [];
     let round = pretty_round_one;
 
-    if (rtv.ctrl) {
+    if (rtv.keys.ctrl) {
         round = pretty_round;
     }
 
@@ -3513,7 +3513,7 @@ function Shape(color, path) {
     }
 
     this.mouse_up = function(evt) {
-        if (!rtv.shift) {
+        if (!rtv.keys.shift) {
             this.selected_indices = [];
         }
     }
@@ -3778,7 +3778,7 @@ function Circle(color, pos) {
 
         let key = evt.key;
 
-        if (rtv.ctrl) {
+        if (rtv.keys.ctrl) {
             let p = this.properties[rtv.frame];
             let step = Math.PI/12;
             if (key == "u") {
@@ -3823,7 +3823,7 @@ function Circle(color, pos) {
     }
 
     this.mouse_up = function(evt) {
-        if (!rtv.shift) {
+        if (!rtv.keys.shift) {
             this.selected = false;
         }
     }
@@ -4175,12 +4175,12 @@ function Text(text, pos) {
         let key = evt.key;
         let text = this.properties[rtv.frame].t;
 
-        if (rtv.ctrl) {
+        if (rtv.keys.ctrl) {
             this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame]);
             return true;
         }
 
-        if (rtv.meta || rtv.ctrl) {
+        if (rtv.keys.meta || rtv.keys.ctrl) {
             if (this.is_selected()) {
                 if (key == "c") {
                     // copy
@@ -4209,7 +4209,7 @@ function Text(text, pos) {
             return true;
         }
 
-        if (rtv.tab) {
+        if (rtv.keys.tab) {
             // auto complete
             let fn = text.split(/[^A-Za-z]/).pop();
 
@@ -4245,7 +4245,7 @@ function Text(text, pos) {
         if (key == "Enter") {
             this.selected = false;
             this.eval();
-            if (rtv.shift) {
+            if (rtv.keys.shift) {
                 // create a new text below this one
                 let p = this.properties[rtv.frame].p;
                 let newT = new Text("", {x: p.x, y: p.y + CHAR_SIZE*2});
@@ -4259,7 +4259,7 @@ function Text(text, pos) {
             return false;
         }
 
-        if (!rtv.shift && this.is_text_selected()) {
+        if (!rtv.keys.shift && this.is_text_selected()) {
             let s = this.selection_indices();
             if (key == "ArrowRight") {
                 this.cursor = s.e;
@@ -4345,7 +4345,7 @@ function Text(text, pos) {
             }
         }
 
-        if (!rtv.shift || (key != "ArrowRight" && key != "ArrowLeft")) {
+        if (!rtv.keys.shift || (key != "ArrowRight" && key != "ArrowLeft")) {
             this.cursor_selection = this.cursor;
         }
 
@@ -4414,7 +4414,7 @@ function Text(text, pos) {
 
                 // set display text
                 if (type == "number") {
-                    if (rtv.ctrl) {
+                    if (rtv.keys.ctrl) {
                         // nothing
                         this.text_val = '=' + val;
                     } else {
@@ -4428,7 +4428,7 @@ function Text(text, pos) {
                     this.text_val = null;
                 } else if (val && 're' in val && val.im) {
                     if (val) {
-                        if (rtv.ctrl) {
+                        if (rtv.keys.ctrl) {
                             // nothing
                             this.text_val = '=' + val;
                         } else {
@@ -4547,7 +4547,7 @@ function Text(text, pos) {
                     }
 
                     let delta = (rtv.mouse.pos.x - rtv.mouse.last.x)/GRID_SIZE;
-                    if (rtv.meta || rtv.ctrl) {
+                    if (rtv.keys.meta || rtv.keys.ctrl) {
                         delta *= .01;
                     }
 
@@ -4598,7 +4598,7 @@ function Text(text, pos) {
                 this.constrain_cursors();
                 return true;
             }
-        } else if (!rtv.shift && this.is_selected()) {
+        } else if (!rtv.keys.shift && this.is_selected()) {
             this.selected = false;
         }
 
@@ -5188,7 +5188,7 @@ function Network(pos) {
     }
 
     this.mouse_up = function(evt) {
-        if (!rtv.shift) {
+        if (!rtv.keys.shift) {
             this.selected = false;
         }
     }
@@ -5423,7 +5423,7 @@ function Camera() {
     }
 
     this.mouse_down = function(evt) {
-        if (rtv.meta || rtv.ctrl) {
+        if (rtv.keys.meta || rtv.keys.ctrl) {
             let props = this.properties[rtv.frame];
             if (!props) {
                 return false;
@@ -5448,7 +5448,7 @@ function Camera() {
 
         let props = this.properties[rtv.frame];
 
-        if (rtv.meta || rtv.ctrl) {
+        if (rtv.keys.meta || rtv.keys.ctrl) {
             // rotate
             let r = props.rxyz;
 
@@ -6486,7 +6486,7 @@ function transition_with_next(next) {
     rtv.next_frame = next;
     change_frames();
     let steps = T_STEPS;
-    if (!rtv.presenting || rtv.meta || rtv.ctrl) {
+    if (!rtv.presenting || rtv.keys.meta || rtv.keys.ctrl) {
         // make it instant when menu open
         steps = 0;
     }
@@ -6714,8 +6714,8 @@ window.onload = function() {
     rtv.pen = new Pen();
 
     $(window).focus(function(){
-        rtv.meta = false;
-        rtv.ctrl = false;
+        rtv.keys.meta = false;
+        rtv.keys.ctrl = false;
     });
 
     window.onkeydown = function(evt) {
@@ -6733,23 +6733,23 @@ window.onload = function() {
         }
 
         if (key == "Tab") {
-            rtv.tab = true;
+            rtv.keys.tab = true;
         }
 
         if (key == "Meta") {
-            rtv.meta = true;
+            rtv.keys.meta = true;
         }
 
         if (key == "Shift") {
-            rtv.shift = true;
+            rtv.keys.shift = true;
         }
 
         if (key == "Control") {
-            rtv.ctrl = true;
+            rtv.keys.ctrl = true;
         }
 
         if (key == "Backspace") {
-            if (rtv.ctrl) {
+            if (rtv.keys.ctrl) {
                 let N = rtv.objs.length;
                 for (let i = 0; i < N; i++) {
                     let obj = rtv.objs[i];
@@ -6760,12 +6760,12 @@ window.onload = function() {
             }
         }
 
-        if (key == "z" && (rtv.meta || rtv.ctrl)) {
+        if (key == "z" && (rtv.keys.meta || rtv.keys.ctrl)) {
             undo();
             return;
         }
 
-        if ((rtv.meta || rtv.ctrl) && key == "Enter") {
+        if ((rtv.keys.meta || rtv.keys.ctrl) && key == "Enter") {
             present();
             return true;
         }
@@ -6817,19 +6817,19 @@ window.onload = function() {
         let key = evt.key;
 
         if (key == "Tab") {
-            rtv.tab = false;
+            rtv.keys.tab = false;
         }
 
         if (key == "Meta") {
-            rtv.meta = false;
+            rtv.keys.meta = false;
         }
 
         if (key == "Shift") {
-            rtv.shift = false;
+            rtv.keys.shift = false;
         }
 
         if (key == "Control") {
-            rtv.ctrl = false;
+            rtv.keys.ctrl = false;
         }
 
         save_state();
