@@ -6039,7 +6039,7 @@ function Menu(pos) {
         load_local();
     }));
 
-    this.buttons.push(new Button("ver: 0.1", {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button("ver: 1.0.3", {x: 0, y: 0}, function(b) {
 
     }));
 
@@ -6337,7 +6337,7 @@ function draw_axes(ctx) {
 
     ctx.save();
 
-    const csys_style = rtv.cam.style();
+    let csys_style = rtv.cam.style();
     let props = rtv.cam.properties[rtv.frame];
 
     // do a fade in and out
