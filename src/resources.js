@@ -1,6 +1,9 @@
 import { create, all } from 'mathjs';
+import packageJson from '../package.json';
 
 export const math = create(all);
+
+export const VERSION = packageJson.version; // Version
 
 // colors
 export const GRAY = '#cccccc';
