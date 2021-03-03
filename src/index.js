@@ -6040,7 +6040,7 @@ function Menu(pos) {
         load_local();
     }));
 
-    this.buttons.push(new Button(`v${VERSION}`, {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button(`ver: ${VERSION}`, {x: 0, y: 0}, function(b) {
 
     }));
 
