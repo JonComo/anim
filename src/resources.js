@@ -89,10 +89,6 @@ export const rtv = {
   new_line: null,
   text_copied: null,
 
-  tab: false,
-  ctrl: false,
-  meta: false,
-  shift: false,
   keys: {
     tab: false,
     ctrl: false,
