@@ -2472,8 +2472,8 @@ math.import({
 
 function report_error(e) {
     console.log(e);
-    rtv.error_timer = 100;
-    rtv.error_text = e;
+    rtv.error.timer = 100;
+    rtv.error.text = e;
 }
 
 // undo
@@ -7153,12 +7153,12 @@ window.onload = function() {
             rtv.frames.render(rtv.ctx);
             rtv.menu.render(rtv.ctx);
 
-            if (rtv.error_timer > 0) {
+            if (rtv.error.timer > 0) {
                 rtv.ctx.save();
                 rtv.ctx.fillStyle = "red";
-                rtv.ctx.fillText(rtv.error_text, 250, 30);
+                rtv.ctx.fillText(rtv.error.text, 250, 30);
                 rtv.ctx.restore();
-                rtv.error_timer -= 1;
+                rtv.error.timer -= 1;
             }
         }
 
