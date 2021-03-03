@@ -93,6 +93,13 @@ export const rtv = {
   ctrl: false,
   meta: false,
   shift: false,
+  keys: {
+    tab: false,
+    ctrl: false,
+    meta: false,
+    shift: false,
+  },
+
   mouse: {
     down: false,
     pos: { x: 0, y: 0 },
