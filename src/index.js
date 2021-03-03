@@ -19,6 +19,7 @@ import {
   MAT_NUM_WIDTH,
   CHAR_SIZE,
   CHAR_PAD,
+  VERSION,
 } from './resources';
 
 // custom functions!
@@ -6039,7 +6040,7 @@ function Menu(pos) {
         load_local();
     }));
 
-    this.buttons.push(new Button("ver: 1.0.3", {x: 0, y: 0}, function(b) {
+    this.buttons.push(new Button(`v${VERSION}`, {x: 0, y: 0}, function(b) {
 
     }));
 
