@@ -1089,11 +1089,11 @@ math.import({
                     rtv.ctx.strokeStyle = "black";
 
                     if (high_conn.length == 0) {
-                        let dx1 = p[0] - rtv.mouse.x;
-                        let dy1 = p[1] - rtv.mouse.y;
+                        let dx1 = p[0] - rtv.mouse_pos.x;
+                        let dy1 = p[1] - rtv.mouse_pos.y;
 
-                        let dx2 = p2[0] - rtv.mouse.x;
-                        let dy2 = p2[1] - rtv.mouse.y;
+                        let dx2 = p2[0] - rtv.mouse_pos.x;
+                        let dy2 = p2[1] - rtv.mouse_pos.y;
 
                         let d1 = math.sqrt(dx1*dx1 + dy1*dy1);
                         let d2 = math.sqrt(dx2*dx2 + dy2*dy2);
@@ -1151,8 +1151,8 @@ math.import({
 
 
                 } else {
-                    let dx = rtv.mouse.x - p[0];
-                    let dy = rtv.mouse.y - p[1];
+                    let dx = rtv.mouse_pos.x - p[0];
+                    let dy = rtv.mouse_pos.y - p[1];
 
                     if (dx*dx + dy*dy < 400) {
                         if (j == 0) {
@@ -2030,7 +2030,7 @@ math.import({
         // pupil
         rtv.ctx.save();
         rtv.ctx.beginPath();
-        let angle = math.atan2(rtv.mouse.y-y+53.5, rtv.mouse.x-x+56.25);
+        let angle = math.atan2(rtv.mouse_pos.y-y+53.5, rtv.mouse_pos.x-x+56.25);
         rtv.ctx.translate(x + -56.25, y + -53.5);
         rtv.ctx.rotate(angle);
         rtv.ctx.translate(8, 0);
@@ -2055,7 +2055,7 @@ math.import({
         // pupil
         rtv.ctx.save();
         rtv.ctx.beginPath();
-        angle = math.atan2(rtv.mouse.y-y+53.5, rtv.mouse.x-x-56.25);
+        angle = math.atan2(rtv.mouse_pos.y-y+53.5, rtv.mouse_pos.x-x-56.25);
         rtv.ctx.translate(x + 56.25, y + -53.5);
         rtv.ctx.rotate(angle);
         rtv.ctx.translate(8, 0);
@@ -3297,7 +3297,7 @@ function Button(text, pos, callback) {
     }
 
     this.hovering = function() {
-        return (rtv.mouse.x > this.pos.x && rtv.mouse.x < this.pos.x + this.width && Math.abs(rtv.mouse.y - this.pos.y) < this.height);
+        return (rtv.mouse_pos.x > this.pos.x && rtv.mouse_pos.x < this.pos.x + this.width && Math.abs(rtv.mouse_pos.y - this.pos.y) < this.height);
     }
 
     this.mouse_up = function(evt) {
@@ -3437,7 +3437,7 @@ function Shape(color, path) {
         for (let i = 0; i < path.length; i++) {
             let p = path[i];
 
-            if (distance(p, rtv.mouse) < GRID_SIZE/8) {
+            if (distance(p, rtv.mouse_pos) < GRID_SIZE/8) {
                 return i;
             }
         }
@@ -3752,7 +3752,7 @@ function Circle(color, pos) {
             return false;
         }
 
-        return distance(props.p, rtv.mouse) < GRID_SIZE/2
+        return distance(props.p, rtv.mouse_pos) < GRID_SIZE/2
     }
 
     this.in_rect = function(x, y, x2, y2) {
@@ -4465,7 +4465,7 @@ function Text(text, pos) {
             return false;
         }
 
-        this.near_mouse = this.point_in_text_rect(rtv.mouse);
+        this.near_mouse = this.point_in_text_rect(rtv.mouse_pos);
 
         if (this.near_mouse) {
             return true;
@@ -4503,7 +4503,7 @@ function Text(text, pos) {
             return;
         }
 
-        this.near_mouse = this.point_in_text_rect(rtv.mouse);
+        this.near_mouse = this.point_in_text_rect(rtv.mouse_pos);
     };
 
     this.var_name = function() {
@@ -4522,7 +4522,7 @@ function Text(text, pos) {
             return false;
         }
 
-        if (Math.abs(rtv.mouse.x - rtv.mouse_start.x) > CHAR_SIZE || Math.abs(rtv.mouse.y - rtv.mouse_start.y) > CHAR_SIZE) {
+        if (Math.abs(rtv.mouse_pos.x - rtv.mouse_start.x) > CHAR_SIZE || Math.abs(rtv.mouse_pos.y - rtv.mouse_start.y) > CHAR_SIZE) {
             this.dragged = true;
         }
 
@@ -4546,7 +4546,7 @@ function Text(text, pos) {
                         old_val = 0;
                     }
 
-                    let delta = (rtv.mouse.x - rtv.mouse_last.x)/GRID_SIZE;
+                    let delta = (rtv.mouse_pos.x - rtv.mouse_last.x)/GRID_SIZE;
                     if (rtv.meta || rtv.ctrl) {
                         delta *= .01;
                     }
@@ -4566,7 +4566,7 @@ function Text(text, pos) {
         } else if (this.is_selected() && this.near_mouse && this.image == null) {
             let p = props.p;
 
-            this.cursor = this.char_index_at_x(rtv.mouse.x);
+            this.cursor = this.char_index_at_x(rtv.mouse_pos.x);
             this.cursor_selection = this.char_index_at_x(rtv.mouse_start.x);
 
             this.constrain_cursors();
@@ -4593,7 +4593,7 @@ function Text(text, pos) {
                 this.select();
 
                 // move cursor
-                this.cursor = this.char_index_at_x(rtv.mouse.x);
+                this.cursor = this.char_index_at_x(rtv.mouse_pos.x);
                 this.cursor_selection = this.cursor;
                 this.constrain_cursors();
                 return true;
@@ -4781,7 +4781,7 @@ function Text(text, pos) {
                         text = o.op;
                     }
 
-                    if (distance(rtv.mouse, np) < GRID_SIZE) {
+                    if (distance(rtv.mouse_pos, np) < GRID_SIZE) {
                         text = o.toString();
                     }
 
@@ -5143,7 +5143,7 @@ function Network(pos) {
             return false;
         }
 
-        return distance(props.p, rtv.mouse) < GRID_SIZE/2
+        return distance(props.p, rtv.mouse_pos) < GRID_SIZE/2
     }
 
     this.in_rect = function(x, y, x2, y2) {
@@ -5248,11 +5248,11 @@ function Network(pos) {
                     ctx.strokeStyle = "black";
 
                     if (high_conn.length == 0) {
-                        let dx1 = p[0] - rtv.mouse.x;
-                        let dy1 = p[1] - rtv.mouse.y;
+                        let dx1 = p[0] - rtv.mouse_pos.x;
+                        let dy1 = p[1] - rtv.mouse_pos.y;
 
-                        let dx2 = p2[0] - rtv.mouse.x;
-                        let dy2 = p2[1] - rtv.mouse.y;
+                        let dx2 = p2[0] - rtv.mouse_pos.x;
+                        let dy2 = p2[1] - rtv.mouse_pos.y;
 
                         let d1 = math.sqrt(dx1*dx1 + dy1*dy1);
                         let d2 = math.sqrt(dx2*dx2 + dy2*dy2);
@@ -5310,8 +5310,8 @@ function Network(pos) {
 
 
                 } else {
-                    let dx = rtv.mouse.x - p[0];
-                    let dy = rtv.mouse.y - p[1];
+                    let dx = rtv.mouse_pos.x - p[0];
+                    let dy = rtv.mouse_pos.y - p[1];
 
                     if (dx*dx + dy*dy < 400) {
                         if (j == 0) {
@@ -5429,8 +5429,8 @@ function Camera() {
                 return false;
             }
 
-            let dx = rtv.mouse.x - props.p.x;
-            let dy = rtv.mouse.y - props.p.y;
+            let dx = rtv.mouse_pos.x - props.p.x;
+            let dy = rtv.mouse_pos.y - props.p.y;
 
             let dist = dx * dx + dy * dy;
             this.dragging_rotate = dist > 100000;
@@ -5453,12 +5453,12 @@ function Camera() {
             let r = props.rxyz;
 
             if (!this.dragging_rotate) {
-                const a = r[1] - (rtv.mouse.y - rtv.mouse_last.y)/100;
-                const b = r[2] - (rtv.mouse.x - rtv.mouse_last.x)/100;
+                const a = r[1] - (rtv.mouse_pos.y - rtv.mouse_last.y)/100;
+                const b = r[2] - (rtv.mouse_pos.x - rtv.mouse_last.x)/100;
                 r = [r[0], a, b];
 
             } else {
-                let angle = math.atan2(rtv.mouse.y - props.p.y, rtv.mouse.x - props.p.x);
+                let angle = math.atan2(rtv.mouse_pos.y - props.p.y, rtv.mouse_pos.x - props.p.x);
                 let angle2 = math.atan2(rtv.mouse_last.y - props.p.y, rtv.mouse_last.x - props.p.x);
                 let c = (angle - angle2);
 
@@ -6170,7 +6170,7 @@ function Pen() {
             this.path_nearby_idx = -1;
 
             if (rtv.mouse_down) {
-                this.path.push([rtv.mouse.x, rtv.mouse.y]);
+                this.path.push([rtv.mouse_pos.x, rtv.mouse_pos.y]);
             }
 
             let drawing = this.drawings[rtv.frame];
@@ -6181,8 +6181,8 @@ function Pen() {
                     let x = path[0][0];
                     let y = path[0][1];
 
-                    let xd = rtv.mouse.x - x;
-                    let yd = rtv.mouse.y - y;
+                    let xd = rtv.mouse_pos.x - x;
+                    let yd = rtv.mouse_pos.y - y;
 
                     if (xd*xd + yd*yd < 200) {
                         this.path_nearby_idx = i;
@@ -6520,7 +6520,7 @@ function draw_cursor() {
 
         rtv.ctx.save();
 
-        rtv.ctx.translate(rtv.mouse.x, rtv.mouse.y);
+        rtv.ctx.translate(rtv.mouse_pos.x, rtv.mouse_pos.y);
 
         rtv.ctx.strokeStyle = rtv.pen.color;
 
@@ -6535,8 +6535,8 @@ function draw_cursor() {
     } else if (rtv.presenting && rtv.mouse_time > 0) {
         // draw a cursor
 
-        let mx = rtv.mouse.x;
-        let my = rtv.mouse.y;
+        let mx = rtv.mouse_pos.x;
+        let my = rtv.mouse_pos.y;
 
         rtv.ctx.save();
         rtv.ctx.translate(mx, my);
@@ -6896,9 +6896,9 @@ window.onload = function() {
 
     window.onmousemove = function(evt) {
         // update mouse
-        rtv.mouse = get_mouse_pos(rtv.c, evt);
-        rtv.mouse_grid = constrain_to_grid(rtv.mouse);
-        rtv.mouse_graph = rtv.cam.screen_to_graph(rtv.mouse);
+        rtv.mouse_pos = get_mouse_pos(rtv.c, evt);
+        rtv.mouse_grid = constrain_to_grid(rtv.mouse_pos);
+        rtv.mouse_graph = rtv.cam.screen_to_graph(rtv.mouse_pos);
 
         parser.set('_y', rtv.mouse_graph.x);
         parser.set('_z', rtv.mouse_graph.y);
@@ -6935,7 +6935,7 @@ window.onload = function() {
         }
 
         rtv.mouse_last = get_mouse_pos(rtv.c, evt);
-        rtv.mouse_grid_last = constrain_to_grid(rtv.mouse);
+        rtv.mouse_grid_last = constrain_to_grid(rtv.mouse_pos);
     };
 
     window.onmouseup = function(evt) {
@@ -7031,8 +7031,8 @@ window.onload = function() {
 
             let x = rtv.mouse_start.x;
             let y = rtv.mouse_start.y;
-            let x2 = rtv.mouse.x;
-            let y2 = rtv.mouse.y;
+            let x2 = rtv.mouse_pos.x;
+            let y2 = rtv.mouse_pos.y;
 
             const xx = Math.min(x, x2);
             const yy = Math.min(y, y2);
@@ -7099,7 +7099,7 @@ window.onload = function() {
 
         parser.set('_frame', rtv.t);
         parser.set('_millis', rtv.millis);
-        let mp = rtv.cam.screen_to_graph({x: rtv.mouse.x, y: rtv.mouse.y});
+        let mp = rtv.cam.screen_to_graph({x: rtv.mouse_pos.x, y: rtv.mouse_pos.y});
         parser.set('_mx', mp.x);
         parser.set('_my', mp.y);
 
@@ -7144,7 +7144,7 @@ window.onload = function() {
         if (rtv.selecting) {
             // draw a rect
             rtv.ctx.strokeStyle = DARK;
-            rtv.ctx.strokeRect(rtv.mouse_start.x, rtv.mouse_start.y, rtv.mouse.x - rtv.mouse_start.x, rtv.mouse.y - rtv.mouse_start.y);
+            rtv.ctx.strokeRect(rtv.mouse_start.x, rtv.mouse_start.y, rtv.mouse_pos.x - rtv.mouse_start.x, rtv.mouse_pos.y - rtv.mouse_start.y);
         }
 
         rtv.ctx.font = FONT.MENU;
