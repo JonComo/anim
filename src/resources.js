@@ -87,12 +87,12 @@ export const rtv = {
   new_line: null,
   text_copied: null,
 
-  mouse_down: false,
   tab: false,
   ctrl: false,
   meta: false,
   shift: false,
   mouse: {
+    down: false,
     pos: { x: 0, y: 0 },
     start: { x: 0, y: 0 },
     last: { x: 0, y: 0 },

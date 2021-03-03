@@ -6169,7 +6169,7 @@ function Pen() {
         if (rtv.tool == "pen") {
             this.path_nearby_idx = -1;
 
-            if (rtv.mouse_down) {
+            if (rtv.mouse.down) {
                 this.path.push([rtv.mouse.pos.x, rtv.mouse.pos.y]);
             }
 
@@ -6543,7 +6543,7 @@ function draw_cursor() {
         rtv.ctx.strokeStyle = DARK;
         rtv.ctx.beginPath();
 
-        if (rtv.mouse_down) {
+        if (rtv.mouse.down) {
             rtv.mouse_time = MOUSE_DURATION;
 
             rtv.ctx.arc(0, 0, 10, 0, PI2, 0);
@@ -6840,7 +6840,7 @@ window.onload = function() {
             return;
         }
 
-        rtv.mouse_down = true;
+        rtv.mouse.down = true;
         rtv.mouse.start = get_mouse_pos(rtv.c, evt);
 
         try {
@@ -6907,7 +6907,7 @@ window.onload = function() {
             return;
         }
 
-        if (rtv.mouse_down) {
+        if (rtv.mouse.down) {
             let captured = false;
             let N = rtv.objs.length;
             for (let i = N-1; i >= 0; i--) {
@@ -6943,7 +6943,7 @@ window.onload = function() {
             return;
         }
 
-        rtv.mouse_down = false;
+        rtv.mouse.down = false;
 
         if (rtv.presenting) {
             // maybe tap some text
