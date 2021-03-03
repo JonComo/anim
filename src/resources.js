@@ -47,8 +47,6 @@ export const CHAR_SIZE = GRID_SIZE / 2;
 export const CHAR_PAD = GRID_SIZE / 4;
 
 export const rtv = {
-  error_timer: 0,
-  error_text: '',
   error: {
     timer: 0,
     text: 0,
