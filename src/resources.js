@@ -1,5 +1,6 @@
 import { create, all } from 'mathjs';
 import packageJson from '../package.json';
+import './style.css';
 
 export const VERSION = packageJson.version; // Version
 const IS_MAC = navigator.platform.toUpperCase().includes('MAC'); // Running on macOS?
