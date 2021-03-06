@@ -12,7 +12,7 @@ function Animator(fps, canvas, frames, callback) {
     this.capturer.start();
   }
 
-  this.animate = function () {
+  this.animate = () => {
     if (this.frames > 0) {
       this.frames -= 1;
       requestAnimationFrame(this.animate);
@@ -23,7 +23,7 @@ function Animator(fps, canvas, frames, callback) {
         this.capturer = null;
       }
 
-      setTimeout(function () {
+      setTimeout(() => {
         requestAnimationFrame(this.animate);
       }, 1000 / this.fps);
     }
