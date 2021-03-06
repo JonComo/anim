@@ -1,5 +1,6 @@
 import { saveAs } from 'file-saver';
 import $ from 'jquery';
+import Circle from './circle';
 import {
   rtv,
   math,
@@ -2493,7 +2494,7 @@ window.requestAnimationFrame = window.requestAnimationFrame
     || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-function guid() {
+export function guid() {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
       .toString(16)
@@ -3099,7 +3100,7 @@ function constrain_to_grid(p) {
     return {x: Math.floor((p.x + gs/2) / gs) * gs, y: Math.floor((p.y + gs/2) / gs) * gs};
 }
 
-function distance(a, b) {
+export function distance(a, b) {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
@@ -3151,7 +3152,7 @@ function ease_in_out(x) {
     return 1.0 / (1.0 + Math.exp(-(x-.5)*10));
 }
 
-function copy(d) {
+export function copy(d) {
     return JSON.parse(JSON.stringify(d));
 }
 
@@ -3168,7 +3169,7 @@ function change_frames() {
     }
 }
 
-function rgbToHex(c) {
+export function rgbToHex(c) {
     return "#" + ((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1);
 }
 
@@ -3181,7 +3182,7 @@ function hexToRgb(hex) {
      ] : null;
 }
 
-function transform_props(key, props, step=.2) {
+export function transform_props(key, props, step=.2) {
 
     if (key == "l") {
         props.w += step;
@@ -3200,7 +3201,7 @@ function transform_props(key, props, step=.2) {
     return props;
 }
 
-function interpolate(a, b) {
+export function interpolate(a, b) {
     if (!b) {
         return a;
     }
@@ -3659,245 +3660,6 @@ function Shape(color, path) {
         this.draw_path(props);
         ctx.stroke();
         ctx.restore();
-    }
-}
-
-function Circle(color, pos) {
-    this.type = "Circle";
-    this.guid = guid();
-    this.properties = {};
-    this.properties[rtv.frame] = {p: pos, c: color, fill:[0,0,0,0], a_s:0, a_e: Math.PI*2.0, w: 1, h: 1, r: 0};
-    this.selected = false;
-
-    this.select = function() {
-        this.selected = true;
-    }
-
-    this.is_selected = function() {
-        return this.selected;
-    }
-
-    this.hidden = function() {
-        if (!this.properties[rtv.frame]) {
-            return true;
-        }
-
-        return this.properties[rtv.frame].c[3] == 0;
-    }
-
-    this.copy_properties = function(f, n) {
-        this.properties[n] = copy(this.properties[f]);
-    }
-
-    this.duplicate = function() {
-        if (!this.selected) {
-            return;
-        }
-
-        let newc = new Circle(null, null);
-        newc.properties[rtv.frame] = copy(this.properties[rtv.frame]);
-        newc.selected = true;
-        this.selected = false;
-        rtv.objs.push(newc);
-    }
-
-    this.hide = function() {
-        if (this.selected) {
-            if (this.properties[rtv.frame].c[3] == 1) {
-                this.properties[rtv.frame].c[3] = 0;
-            } else {
-                this.properties[rtv.frame].c[3] = 1;
-            }
-            this.selected = false;
-        }
-    }
-
-    this.set_color = function(rgba) {
-        if (this.selected) {
-            rgba[3] = this.properties[rtv.frame].c[3];
-            this.properties[rtv.frame].c = rgba;
-        }
-    }
-
-    this.clear_props = function(f) {
-        delete this.properties[f];
-    }
-
-    this.clear_all_props = function() {
-        if (!this.selected) {
-            return;
-        }
-
-        for (var key in this.properties) {
-            if (key != rtv.frame) {
-                delete this.properties[key];
-            }
-        }
-    }
-
-    this.del_props_before = function() {
-        if (!this.selected) {
-            return;
-        }
-
-        if (this.properties && this.properties[rtv.frame-1]) {
-            delete this.properties[rtv.frame-1];
-        }
-    }
-
-    this.near_mouse = function () {
-        let props = this.properties[rtv.frame];
-        if (!props) {
-            return false;
-        }
-
-        return distance(props.p, rtv.mouse.pos) < GRID_SIZE/2
-    }
-
-    this.in_rect = function(x, y, x2, y2) {
-        if (this.hidden()) {
-            return false;
-        }
-
-        let props = this.properties[rtv.frame];
-        let p = props.p;
-
-        if (p.x > x && p.x < x2 && p.y > y && p.y < y2) {
-            this.selected = true;
-            return true;
-        }
-
-        return false;
-    }
-
-    this.onkeydown = function(evt) {
-        if (!this.selected) {
-            return false;
-        }
-
-        let key = evt.key;
-
-        if (rtv.keys.ctrl) {
-            let p = this.properties[rtv.frame];
-            let step = Math.PI/12;
-            if (key == "u") {
-                p.a_s += step;
-            } else if (key == "o") {
-                p.a_s -= step;
-            } else if (key == "j") {
-                p.a_e -= step;
-            } else if (key == "l") {
-                p.a_e += step;
-            }
-        } else {
-            this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame]);
-        }
-
-        return false;
-    }
-
-    this.mouse_down = function(evt) {
-        if (this.hidden()) {
-            return false;
-        }
-
-        // try to selected one
-        if (this.near_mouse()) {
-            this.selected = true;
-            return true;
-        }
-
-        return false;
-    }
-
-    this.mouse_drag = function(evt) {
-        if (this.selected && rtv.tool == "select") {
-            // move
-            let props = this.properties[rtv.frame];
-            let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x,
-                        y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
-            let p = props.p;
-            this.properties[rtv.frame].p = {x: p.x + offset.x, y: p.y + offset.y};
-        }
-    }
-
-    this.mouse_up = function(evt) {
-        if (!rtv.keys.shift) {
-            this.selected = false;
-        }
-    }
-
-    this.draw_ellipse = function(props, ctx) {
-        let p = props.p;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(props.r);
-        ctx.scale(props.w, props.h);
-        ctx.arc(0, 0, 20, props.a_s, props.a_e, false);
-        ctx.restore();
-    }
-
-    this.generate_javascript = function() {
-        let props = this.properties[rtv.frame];
-        let p = props.p;
-        let cp = rtv.cam.properties[rtv.frame].p;
-
-        let js = "";
-
-        js += "ctx.save();\n"
-        js += "ctx.beginPath();\n";
-        js += "ctx.translate(x + " + (p.x - cp.x) + ", y + " + (p.y - cp.y) + ");\n"
-        js += "ctx.rotate(" + props.r + ");\n"
-        js += "ctx.scale(" + props.w + ", " + props.h +");\n"
-        js += "ctx.arc(0, 0, 20, " + props.a_s + ", " + props.a_e + ", false);\n";
-        js += "ctx.globalAlpha = " + props.c[3] + ";\n";
-        js += "ctx.strokeStyle = \"" + rgbToHex(props.c) + "\";\n";
-        js += "ctx.restore();\n";
-        js += "ctx.stroke();\n";
-
-        return js;
-    }
-
-    this.render = function(ctx) {
-
-        let a = this.properties[rtv.frame];
-        let b = this.properties[rtv.next_frame];
-
-        if (!a) {
-            return;
-        }
-
-        let props;
-        if (rtv.transition.transitioning) {
-            props = interpolate(a, b);
-        } else {
-            props = a;
-        }
-
-
-        ctx.beginPath();
-        this.draw_ellipse(props, ctx);
-
-        ctx.save();
-
-
-        ctx.fillStyle = rgbToHex(props.fill);
-        ctx.globalAlpha = math.min(props.fill[3], props.c[3]);
-        ctx.fill();
-
-        ctx.globalAlpha = props.c[3];
-        ctx.strokeStyle = rgbToHex(props.c);
-
-        ctx.stroke();
-
-        ctx.restore();
-
-        if (!rtv.presenting && props.c[3] != 0 && (this.selected || this.near_mouse())) {
-            ctx.beginPath();
-            ctx.strokeStyle = DARK;
-            ctx.strokeRect(props.p.x - GRID_SIZE/4, props.p.y - GRID_SIZE/4, GRID_SIZE/2, GRID_SIZE/2);
-            ctx.stroke();
-        }
     }
 }
 
