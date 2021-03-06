@@ -1,3 +1,5 @@
+import CCapture from 'ccapture.js-npmfixed';
+
 function Animator(fps, canvas, frames, callback) {
   this.fps = fps;
   this.canvas = canvas;
