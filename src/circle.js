@@ -26,9 +26,7 @@ export default function Circle(color, pos) {
     this.selected = true;
   };
 
-  this.is_selected = () => {
-    return this.selected;
-  };
+  this.is_selected = () => this.selected;
 
   this.hidden = () => {
     if (!this.properties[rtv.frame]) {
@@ -67,8 +65,7 @@ export default function Circle(color, pos) {
 
   this.set_color = (rgba) => {
     if (this.selected) {
-      rgba[3] = this.properties[rtv.frame].c[3];
-      this.properties[rtv.frame].c = rgba;
+      Object.assign(this.properties[rtv.frame].c, rgba.slice(0, 3));
     }
   };
 
@@ -81,11 +78,11 @@ export default function Circle(color, pos) {
       return;
     }
 
-    for (const key in this.properties) {
+    Object.keys(this.properties).forEach((key) => {
       if (key !== rtv.frame) {
         delete this.properties[key];
       }
-    }
+    });
   };
 
   this.del_props_before = () => {
@@ -149,7 +146,7 @@ export default function Circle(color, pos) {
     return false;
   };
 
-  this.mouse_down = (evt) => {
+  this.mouse_down = () => {
     if (this.hidden()) {
       return false;
     }
@@ -163,7 +160,7 @@ export default function Circle(color, pos) {
     return false;
   };
 
-  this.mouse_drag = (evt) => {
+  this.mouse_drag = () => {
     if (this.selected && rtv.tool === 'select') {
       // move
       const props = this.properties[rtv.frame];
@@ -176,7 +173,7 @@ export default function Circle(color, pos) {
     }
   };
 
-  this.mouse_up = (evt) => {
+  this.mouse_up = () => {
     if (!rtv.keys.shift) {
       this.selected = false;
     }
@@ -247,7 +244,12 @@ export default function Circle(color, pos) {
     if (!rtv.presenting && props.c[3] !== 0 && (this.selected || this.near_mouse())) {
       ctx.beginPath();
       ctx.strokeStyle = DARK;
-      ctx.strokeRect(props.p.x - GRID_SIZE / 4, props.p.y - GRID_SIZE / 4, GRID_SIZE / 2, GRID_SIZE / 2);
+      ctx.strokeRect(
+        props.p.x - GRID_SIZE / 4,
+        props.p.y - GRID_SIZE / 4,
+        GRID_SIZE / 2,
+        GRID_SIZE / 2,
+      );
       ctx.stroke();
     }
   };
