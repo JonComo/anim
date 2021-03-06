@@ -1,6 +1,7 @@
 import { saveAs } from 'file-saver';
 import $ from 'jquery';
 import Button from './button';
+import Shape from './shape';
 import {
   rtv,
   math,
@@ -2494,7 +2495,7 @@ window.requestAnimationFrame = window.requestAnimationFrame
     || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-function guid() {
+export function guid() {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
       .toString(16)
@@ -3100,13 +3101,13 @@ function constrain_to_grid(p) {
     return {x: Math.floor((p.x + gs/2) / gs) * gs, y: Math.floor((p.y + gs/2) / gs) * gs};
 }
 
-function distance(a, b) {
+export function distance(a, b) {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function between(a, b) {
+export function between(a, b) {
     return {x: (a.x + b.x)/2, y: (a.y + b.y)/2};
 }
 
@@ -3152,7 +3153,7 @@ function ease_in_out(x) {
     return 1.0 / (1.0 + Math.exp(-(x-.5)*10));
 }
 
-function copy(d) {
+export function copy(d) {
     return JSON.parse(JSON.stringify(d));
 }
 
@@ -3169,7 +3170,7 @@ function change_frames() {
     }
 }
 
-function rgbToHex(c) {
+export function rgbToHex(c) {
     return "#" + ((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1);
 }
 
@@ -3182,7 +3183,7 @@ function hexToRgb(hex) {
      ] : null;
 }
 
-function transform_props(key, props, step=.2) {
+export function transform_props(key, props, step=.2) {
 
     if (key == "l") {
         props.w += step;
@@ -3201,7 +3202,7 @@ function transform_props(key, props, step=.2) {
     return props;
 }
 
-function interpolate(a, b) {
+export function interpolate(a, b) {
     if (!b) {
         return a;
     }
@@ -3279,335 +3280,6 @@ function interpolate_colors(ac, bc, interp) {
     }
 
     return ic;
-}
-
-function Shape(color, path) {
-    this.type = "Shape";
-    this.guid = guid();
-    this.properties = {};
-    this.properties[rtv.frame] = {c: color, path: path, v: false, w: 1, h: 1, r: 0};
-
-    this.selected_indices = [];
-
-    this.duplicate = function() {
-        if (this.selected_indices.length == 0) {
-            return;
-        }
-
-        let newc = new Shape(null, null);
-        newc.properties[rtv.frame] = copy(this.properties[rtv.frame]);
-        // select all indices for next one
-        for (let i = 0; i < newc.properties[rtv.frame].path.length; i++) {
-            newc.selected_indices.push(i);
-        }
-
-        this.selected_indices = [];
-        rtv.objs.push(newc);
-    }
-
-    this.hidden = function() {
-        if (!this.properties[rtv.frame]) {
-            return true;
-        }
-
-        return this.properties[rtv.frame].c[3] == 0;
-    }
-
-    this.copy_properties = function(f, n) {
-        this.properties[n] = copy(this.properties[f]);
-    }
-
-    this.hide = function() {
-        if (this.selected_indices.length != 0) {
-            if (this.properties[rtv.frame].c[3] == 1) {
-                this.properties[rtv.frame].c[3] = 0;
-            } else {
-                this.properties[rtv.frame].c[3] = 1;
-            }
-            this.selected_indices = [];
-        }
-    }
-
-    this.select = function() {
-        this.selected_indices = [];
-        for (let i = 0; i < this.properties[rtv.frame].path.length; i++) {
-            this.selected_indices.push(i);
-        }
-    }
-
-    this.is_selected = function() {
-        return this.selected_indices.length > 0;
-    }
-
-    this.set_color = function(rgba) {
-        if (this.selected_indices.length != 0) {
-            rgba[3] = this.properties[rtv.frame].c[3];
-            this.properties[rtv.frame].c = rgba;
-        }
-    }
-
-    this.clear_props = function(f) {
-        delete this.properties[f];
-    }
-
-    this.clear_all_props = function() {
-        if (this.selected_indices.length == 0) {
-            return;
-        }
-
-        for (var key in this.properties) {
-            if (key != rtv.frame) {
-                delete this.properties[key];
-            }
-        }
-    }
-
-    this.del_props_before = function() {
-        if (this.selected_indices.length == 0) {
-            return;
-        }
-
-        if (this.properties && this.properties[rtv.frame-1]) {
-            delete this.properties[rtv.frame-1];
-        }
-    }
-
-    this.add_point = function(p) {
-        let props = this.properties[rtv.frame];
-        let path = props.path;
-        path.push(p);
-    }
-
-    this.closest_point_idx = function() {
-        let props = this.properties[rtv.frame];
-        let path = props.path;
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-
-            if (distance(p, rtv.mouse.pos) < GRID_SIZE/8) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    this.in_rect = function(x, y, x2, y2) {
-        // select individual points
-        let props = this.properties[rtv.frame];
-
-        if (this.hidden()) {
-            return;
-        }
-
-        let path = props.path;
-        this.selected_indices = [];
-        let found = false;
-
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-
-            if (p.x > x && p.x < x2 && p.y > y && p.y < y2) {
-                this.selected_indices.push(i);
-                found = true;
-            }
-        }
-
-        return found;
-    }
-
-    this.onkeydown = function(evt) {
-        let key = evt.key;
-
-        if (this.selected_indices.length != 0) {
-            this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame]);
-        }
-
-        return false;
-    }
-
-    this.mouse_down = function(evt) {
-        if (this.hidden()) {
-            return false;
-        }
-
-        // try to selected one
-        let idx = this.closest_point_idx();
-        if (idx != -1) {
-            this.selected_indices = [idx];
-            return true;
-        }
-
-        return false;
-    }
-
-    this.mouse_drag = function(evt) {
-        if (this.selected_indices.length > 0) {
-            let props = this.properties[rtv.frame];
-            let path = props.path;
-
-            if (rtv.tool == "select") {
-                // move all
-                let offset = {x: rtv.mouse.grid.x - rtv.mouse.gridLast.x,
-                          y: rtv.mouse.grid.y - rtv.mouse.gridLast.y};
-                for (let i = 0; i < this.selected_indices.length; i++) {
-                    let idx = this.selected_indices[i];
-                    let p = path[idx];
-                    path[idx] = {x: p.x + offset.x, y: p.y + offset.y};
-                }
-            }
-        }
-    }
-
-    this.mouse_up = function(evt) {
-        if (!rtv.keys.shift) {
-            this.selected_indices = [];
-        }
-    }
-
-    this.bezier = function(points, off, t) {
-        let x = points[0].x - off.x;
-        let y = points[0].y - off.y;
-        let c = 0;
-        let N = points.length;
-        for (let i = 0; i < N; i++) {
-            c = math.factorial(N) / (math.factorial(N-i) * math.factorial(i));
-
-            c *= math.pow(1-t, N-i) * math.pow(t, i);
-
-            x += c * (points[i].x - off.x);
-            y += c * (points[i].y - off.y);
-        }
-
-        return [x, y];
-    }
-
-    this.draw_path = function(props) {
-        let path = props.path;
-        let c = {x: 0, y: 0};
-
-
-        for (let i = 0; i < path.length; i++) {
-            c.x += path[i].x;
-            c.y += path[i].y;
-        }
-
-        c.x /= path.length;
-        c.y /= path.length;
-
-        rtv.ctx.translate(c.x, c.y);
-        rtv.ctx.rotate(props.r);
-        rtv.ctx.scale(props.w, props.h);
-
-        let idx = this.closest_point_idx();
-
-        let hidden = this.hidden();
-
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-
-            if (i == 0) {
-                rtv.ctx.moveTo(p.x - c.x, p.y - c.y);
-            } else {
-                rtv.ctx.lineTo(p.x - c.x, p.y - c.y);
-            }
-
-            // show selected indices
-            if (!rtv.presenting && !hidden && (this.selected_indices.indexOf(i) != -1 || i == idx)) {
-                rtv.ctx.strokeStyle = DARK;
-                rtv.ctx.strokeRect(p.x- c.x -GRID_SIZE/2, p.y - c.y - GRID_SIZE/2, GRID_SIZE, GRID_SIZE);
-            }
-        }
-
-        if (this.selected_indices.length > 0) {
-            // render side lengths while dragging
-            for (let i = 0; i < path.length - 1; i++) {
-                let p1 = path[i];
-                let p2 = path[i+1];
-                let b = between(p1, p2);
-                let d = distance(p1, p2) / GRID_SIZE;
-                d = Math.round(d * 10) / 10;
-                rtv.ctx.fillText(d, b.x - c.x, b.y - c.y);
-            }
-        }
-
-        if (this.properties[rtv.frame].v && path.length >= 2) {
-            // vector
-            let b = path[path.length-2];
-            let a = path[path.length-1];
-
-            let theta = Math.atan2(a.y - b.y, a.x - b.x);
-            rtv.ctx.moveTo(a.x - c.x, a.y - c.y);
-            rtv.ctx.lineTo(a.x - c.x + Math.cos(theta - Math.PI*3/4) * GRID_SIZE/2, a.y - c.y + Math.sin(theta - Math.PI*3/4) * GRID_SIZE/2);
-            rtv.ctx.moveTo(a.x - c.x, a.y - c.y);
-            rtv.ctx.lineTo(a.x - c.x + Math.cos(theta + Math.PI*3/4) * GRID_SIZE/2, a.y - c.y + Math.sin(theta + Math.PI*3/4) * GRID_SIZE/2);
-        }
-    }
-
-    this.generate_javascript = function() {
-        let cp = rtv.cam.properties[rtv.frame].p;
-
-        let props = this.properties[rtv.frame];
-        let path = props.path;
-        let c = {x: 0, y: 0};
-
-        for (let i = 0; i < path.length; i++) {
-            c.x += path[i].x;
-            c.y += path[i].y;
-        }
-
-        c.x /= path.length;
-        c.y /= path.length;
-
-        js = "";
-        js += "ctx.save();\n";
-        js += "ctx.globalAlpha = " + props.c[3] + ";\n";
-        js += "ctx.strokeStyle = \"" + rgbToHex(props.c) + "\";\n";
-        js += "ctx.translate(x + " + (c.x - cp.x) + ", y + " + (c.y - cp.y) + ");\n";
-        js += "ctx.rotate(" + props.r + ");\n";
-        js += "ctx.scale(" + props.w + ", " + props.h + ");\n";
-        js += "ctx.beginPath();\n";
-
-        for (let i = 0; i < path.length; i++) {
-            let p = path[i];
-
-            if (i == 0) {
-                js += "ctx.moveTo(" + (p.x - c.x) + ", " + (p.y - c.y) + ");\n";
-            } else {
-                js += "ctx.lineTo(" + (p.x - c.x) + ", " + (p.y - c.y) + ");\n";
-            }
-        }
-
-        js += "ctx.restore();\n";
-        js += "ctx.stroke();\n";
-
-        return js;
-    }
-
-    this.render = function(ctx) {
-
-        let a = this.properties[rtv.frame];
-        let b = this.properties[rtv.next_frame];
-
-        if (!a) {
-            return;
-        }
-
-        let props;
-        if (rtv.transition.transitioning) {
-            props = interpolate(a, b);
-        } else {
-            props = a;
-        }
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.globalAlpha = props.c[3];
-        ctx.strokeStyle = rgbToHex(props.c);
-        this.draw_path(props);
-        ctx.stroke();
-        ctx.restore();
-    }
 }
 
 function Circle(color, pos) {
