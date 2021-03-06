@@ -4,6 +4,7 @@ import Button from './button';
 import Circle from './circle';
 import Frames from './frames';
 import Shape from './shape';
+import Transition from './transition';
 import {
   rtv,
   math,
@@ -3112,11 +3113,11 @@ function rotation_matrix(rx, ry, rz) {
     return math.multiply(math.multiply(Rx, Ry), Rz);
 }
 
-function sigmoid(x, num, offset, width) {
+export function sigmoid(x, num, offset, width) {
     return num / (1.0 + Math.exp(-(x+offset)*width));
 }
 
-function ease_in_out(x) {
+export function ease_in_out(x) {
     return 1.0 / (1.0 + Math.exp(-(x-.5)*10));
 }
 
@@ -5306,48 +5307,6 @@ function Menu(pos) {
             b.render(ctx);
         }
     };
-}
-
-function Transition() {
-    this.steps = 0;
-    this.step = 0;
-    this.transitioning = false;
-    this.target_frame = 0;
-    this.complete;
-
-    this.run = function(steps, target_frame, completion) {
-        if (this.transitioning) {
-            return;
-        }
-
-        rtv.t_percent = 0.0;
-        rtv.t_ease = 0.0;
-        rtv.t_in_out = 1.0;
-        this.steps = steps;
-        this.target_frame = target_frame;
-        this.transitioning = true;
-        this.completion = completion;
-    }
-
-    this.update = function() {
-        if (this.transitioning) {
-            this.step += 1;
-            rtv.t_percent = this.step / this.steps;
-            rtv.t_in_out = -math.cos(rtv.t_percent*2*math.PI-math.PI)/2 + .5;
-            parser.set('_t', rtv.t_percent);
-            rtv.t_ease = ease_in_out(rtv.t_percent);
-            parser.set('_tt', rtv.t_ease);
-            rtv.t_ease = sigmoid(rtv.t_percent, 1.2, -.4, 14) - sigmoid(rtv.t_percent, .2, -.6, 15);
-            if (this.step >= this.steps) {
-                rtv.t_percent = 1.0;
-                rtv.t_in_out = 1.0;
-                rtv.t_ease = 1.0;
-                this.completion(this.target_frame);
-                this.step = 0;
-                this.transitioning = false;
-            }
-        }
-    }
 }
 
 function Pen() {
