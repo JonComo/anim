@@ -22,15 +22,15 @@ export default function Circle(color, pos) {
   };
   this.selected = false;
 
-  this.select = function () {
+  this.select = () => {
     this.selected = true;
   };
 
-  this.is_selected = function () {
+  this.is_selected = () => {
     return this.selected;
   };
 
-  this.hidden = function () {
+  this.hidden = () => {
     if (!this.properties[rtv.frame]) {
       return true;
     }
@@ -38,11 +38,11 @@ export default function Circle(color, pos) {
     return this.properties[rtv.frame].c[3] == 0;
   };
 
-  this.copy_properties = function (f, n) {
+  this.copy_properties = (f, n) => {
     this.properties[n] = copy(this.properties[f]);
   };
 
-  this.duplicate = function () {
+  this.duplicate = () => {
     if (!this.selected) {
       return;
     }
@@ -54,7 +54,7 @@ export default function Circle(color, pos) {
     rtv.objs.push(newc);
   };
 
-  this.hide = function () {
+  this.hide = () => {
     if (this.selected) {
       if (this.properties[rtv.frame].c[3] == 1) {
         this.properties[rtv.frame].c[3] = 0;
@@ -65,18 +65,18 @@ export default function Circle(color, pos) {
     }
   };
 
-  this.set_color = function (rgba) {
+  this.set_color = (rgba) => {
     if (this.selected) {
       rgba[3] = this.properties[rtv.frame].c[3];
       this.properties[rtv.frame].c = rgba;
     }
   };
 
-  this.clear_props = function (f) {
+  this.clear_props = (f) => {
     delete this.properties[f];
   };
 
-  this.clear_all_props = function () {
+  this.clear_all_props = () => {
     if (!this.selected) {
       return;
     }
@@ -88,7 +88,7 @@ export default function Circle(color, pos) {
     }
   };
 
-  this.del_props_before = function () {
+  this.del_props_before = () => {
     if (!this.selected) {
       return;
     }
@@ -98,7 +98,7 @@ export default function Circle(color, pos) {
     }
   };
 
-  this.near_mouse = function () {
+  this.near_mouse = () => {
     const props = this.properties[rtv.frame];
     if (!props) {
       return false;
@@ -107,7 +107,7 @@ export default function Circle(color, pos) {
     return distance(props.p, rtv.mouse.pos) < GRID_SIZE / 2;
   };
 
-  this.in_rect = function (x, y, x2, y2) {
+  this.in_rect = (x, y, x2, y2) => {
     if (this.hidden()) {
       return false;
     }
@@ -123,7 +123,7 @@ export default function Circle(color, pos) {
     return false;
   };
 
-  this.onkeydown = function (evt) {
+  this.onkeydown = (evt) => {
     if (!this.selected) {
       return false;
     }
@@ -149,7 +149,7 @@ export default function Circle(color, pos) {
     return false;
   };
 
-  this.mouse_down = function (evt) {
+  this.mouse_down = (evt) => {
     if (this.hidden()) {
       return false;
     }
@@ -163,7 +163,7 @@ export default function Circle(color, pos) {
     return false;
   };
 
-  this.mouse_drag = function (evt) {
+  this.mouse_drag = (evt) => {
     if (this.selected && rtv.tool == 'select') {
       // move
       const props = this.properties[rtv.frame];
@@ -176,13 +176,13 @@ export default function Circle(color, pos) {
     }
   };
 
-  this.mouse_up = function (evt) {
+  this.mouse_up = (evt) => {
     if (!rtv.keys.shift) {
       this.selected = false;
     }
   };
 
-  this.draw_ellipse = function (props, ctx) {
+  this.draw_ellipse = (props, ctx) => {
     const { p } = props;
     ctx.save();
     ctx.translate(p.x, p.y);
@@ -192,7 +192,7 @@ export default function Circle(color, pos) {
     ctx.restore();
   };
 
-  this.generate_javascript = function () {
+  this.generate_javascript = () => {
     const props = this.properties[rtv.frame];
     const { p } = props;
     const cp = rtv.cam.properties[rtv.frame].p;
@@ -213,7 +213,7 @@ export default function Circle(color, pos) {
     return js;
   };
 
-  this.render = function (ctx) {
+  this.render = (ctx) => {
     const a = this.properties[rtv.frame];
     const b = this.properties[rtv.next_frame];
 
