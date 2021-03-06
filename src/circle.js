@@ -35,7 +35,7 @@ export default function Circle(color, pos) {
       return true;
     }
 
-    return this.properties[rtv.frame].c[3] == 0;
+    return this.properties[rtv.frame].c[3] === 0;
   };
 
   this.copy_properties = (f, n) => {
@@ -56,7 +56,7 @@ export default function Circle(color, pos) {
 
   this.hide = () => {
     if (this.selected) {
-      if (this.properties[rtv.frame].c[3] == 1) {
+      if (this.properties[rtv.frame].c[3] === 1) {
         this.properties[rtv.frame].c[3] = 0;
       } else {
         this.properties[rtv.frame].c[3] = 1;
@@ -82,7 +82,7 @@ export default function Circle(color, pos) {
     }
 
     for (const key in this.properties) {
-      if (key != rtv.frame) {
+      if (key !== rtv.frame) {
         delete this.properties[key];
       }
     }
@@ -133,13 +133,13 @@ export default function Circle(color, pos) {
     if (rtv.keys.ctrl) {
       const p = this.properties[rtv.frame];
       const step = Math.PI / 12;
-      if (key == 'u') {
+      if (key === 'u') {
         p.a_s += step;
-      } else if (key == 'o') {
+      } else if (key === 'o') {
         p.a_s -= step;
-      } else if (key == 'j') {
+      } else if (key === 'j') {
         p.a_e -= step;
-      } else if (key == 'l') {
+      } else if (key === 'l') {
         p.a_e += step;
       }
     } else {
@@ -164,7 +164,7 @@ export default function Circle(color, pos) {
   };
 
   this.mouse_drag = (evt) => {
-    if (this.selected && rtv.tool == 'select') {
+    if (this.selected && rtv.tool === 'select') {
       // move
       const props = this.properties[rtv.frame];
       const offset = {
@@ -244,7 +244,7 @@ export default function Circle(color, pos) {
 
     ctx.restore();
 
-    if (!rtv.presenting && props.c[3] != 0 && (this.selected || this.near_mouse())) {
+    if (!rtv.presenting && props.c[3] !== 0 && (this.selected || this.near_mouse())) {
       ctx.beginPath();
       ctx.strokeStyle = DARK;
       ctx.strokeRect(props.p.x - GRID_SIZE / 4, props.p.y - GRID_SIZE / 4, GRID_SIZE / 2, GRID_SIZE / 2);
