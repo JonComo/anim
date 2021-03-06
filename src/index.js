@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver';
 import $ from 'jquery';
 import Button from './button';
 import Circle from './circle';
+import Frames from './frames';
 import Shape from './shape';
 import {
   rtv,
@@ -99,7 +100,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
             continue;
         }
 
-        if (i == 0) {
+        if (i === 0) {
             rtv.ctx.moveTo(p[0], p[1]);
         } else {
             rtv.ctx.lineTo(p[0], p[1]);
@@ -137,7 +138,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
     rtv.ctx.beginPath();
     for (let i = 0; i < N; i++) {
         const p = points[i];
-        if (i == 0) {
+        if (i === 0) {
             rtv.ctx.moveTo(p[0], p[1]);
         } else {
             rtv.ctx.lineTo(p[0], p[1]);
@@ -512,7 +513,7 @@ math.import({
     },
     randn: function() { // no args: random normal, 1 arg shape: dims of matrix to return
         let N = arguments.length;
-        if (N == 1) {
+        if (N === 1) {
             let shape = arguments[0];
             let m = cached(shape._data);
             m = m.map(function (value, index, matrix) {
@@ -580,7 +581,7 @@ math.import({
         let cam_data = rtv.cam.graph_to_screen_mat(points);
 
         rtv.ctx.save();
-        if (arguments.length == 3) {
+        if (arguments.length === 3) {
             // gradation
 
             var indices = new Array(n);
@@ -665,7 +666,7 @@ math.import({
         let p; let lastp;
         for (let i = 0; i < N; i ++) {
             p = points[i];
-            if (i == 0) {
+            if (i === 0) {
                 rtv.ctx.moveTo(p[0], p[1]);
             } else {
                 rtv.ctx.lineTo(p[0], p[1]);
@@ -5056,135 +5057,7 @@ function text_array_to_objs(arr, keep_animation) {
     return new_objs;
 }
 
-function Frames(pos) {
-    this.pos = pos;
-    this.size = GRID_SIZE/2;
-
-    this.frame_pos = function(i) {
-        let size = (this.size + GRID_SIZE/4);
-        let yoffset = (i-1) * size;
-        let xoff = 0;
-        let hcon = size * 30;
-        while (yoffset >= hcon) {
-            yoffset -= hcon;
-            xoff ++;
-        }
-        return {x: this.pos.x + xoff * GRID_SIZE*2/3, y: this.pos.y + yoffset + GRID_SIZE/2};
-    }
-
-    this.create_buttons = function() {
-        this.buttons = [];
-        for (let i = 1; i <= rtv.num_frames; i++) {
-            let newb = new Button(''+i, this.frame_pos(i), null);
-            this.buttons.push(newb);
-        }
-        this.buttons.push(new Button("-", this.frame_pos(rtv.num_frames+1), null));
-        this.buttons.push(new Button("+", this.frame_pos(rtv.num_frames+2), null));
-    };
-
-    this.create_buttons();
-
-    this.mouse_down = function(evt) {
-        for (let i = 0; i < this.buttons.length; i++) {
-            let btn = this.buttons[i];
-            if (btn.hovering()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    this.mouse_up = function(evt) {
-        for (let i = 0; i < this.buttons.length; i++) {
-            let btn = this.buttons[i];
-            if (btn.mouse_up(evt)) {
-                if (i == this.buttons.length - 2) {
-                    // remove frame
-
-                    // remove selected frame
-                    // copy properties from next frames
-                    // decrement number of frames
-                    if (rtv.num_frames == 1) {
-                        break;
-                    }
-
-                    for (let f = rtv.frame; f <= rtv.num_frames; f ++) {
-                        for (let i = 0; i < rtv.objs.length; i++) {
-                            let obj = rtv.objs[i];
-                            if (typeof obj.copy_properties == "function") {
-                                if (!obj.properties[f]) {
-                                    continue;
-                                }
-                                if (!obj.properties[f+1]) {
-                                    continue;
-                                }
-                                obj.copy_properties(f+1, f);
-                            }
-                        }
-
-                        if (rtv.cam.properties[f] && rtv.cam.properties[f+1]) {
-                            rtv.cam.properties[f] = copy(rtv.cam.properties[f+1]);
-                        }
-                    }
-
-                    rtv.num_frames -= 1;
-                    this.create_buttons();
-                    return true;
-
-                } else if (i == this.buttons.length - 1) {
-                    // add frame
-                    // copy to next from frame
-                    insert_frame();
-                    return true;
-                } else {
-                    this.on_click(i+1);
-                }
-            }
-        }
-    }
-
-    this.onkeydown = function(evt) {
-        let key = evt.key;
-
-        if (key == "ArrowRight") {
-            if (!rtv.presenting && rtv.frame + 1 > rtv.num_frames) {
-                // create a new one
-                insert_frame();
-            }
-
-            transition_with_next(loop_frame(rtv.frame+1));
-            return true;
-        } else if (key == "ArrowLeft") {
-            transition_with_next(loop_frame(rtv.frame-1));
-            return true;
-        }
-
-        if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) != -1) {
-            if (!rtv.transition.transitioning) {
-                transition_with_next(Number(key));
-                return true;
-            }
-
-            return false;
-        }
-
-        return false;
-    }
-
-    this.render = function(ctx) {
-        for (let i = 1; i <= this.buttons.length; i++) {
-            let btn = this.buttons[i-1];
-            btn.selected = false;
-            if (btn.text == ''+rtv.frame) {
-                btn.selected = true;
-            }
-            btn.render(ctx);
-        }
-    }
-}
-
-function insert_frame() {
+export function insert_frame() {
     rtv.num_frames += 1;
     for (let f = rtv.num_frames; f >= rtv.frame; f--) {
         for (let i = 0; i < rtv.objs.length; i++) {
@@ -5665,7 +5538,7 @@ function constrain(v) {
     return Math.min(1, Math.max(0, v));
 }
 
-function loop_frame(f) {
+export function loop_frame(f) {
     if (f >= rtv.num_frames + 1) {
         return 1;
     } else if (f < 1) {
@@ -5806,7 +5679,7 @@ function draw_axes(ctx) {
     ctx.restore();
 }
 
-function transition_with_next(next) {
+export function transition_with_next(next) {
     if (rtv.transition.transitioning) {
         return;
     }
