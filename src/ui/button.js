@@ -1,4 +1,4 @@
-import { rtv, FONT, GRID_SIZE } from './resources';
+import { rtv, FONT, GRID_SIZE } from '../resources';
 
 export default function Button(text, pos, callback) {
   this.text = text;

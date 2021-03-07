@@ -5,7 +5,7 @@ import {
   present,
   save_local,
 } from './index';
-import Button from './button';
+import Button from './ui/button';
 import {
   rtv,
   COLORS,
