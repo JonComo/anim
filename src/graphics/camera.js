@@ -3,8 +3,8 @@ import {
   interpolate,
   rotation_matrix,
   transform_props,
-} from './index';
-import { math, rtv, GRID_SIZE } from './resources';
+} from '../index';
+import { math, rtv, GRID_SIZE } from '../resources';
 
 export default function Camera() {
   this.default_props = {
