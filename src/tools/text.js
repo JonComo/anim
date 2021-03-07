@@ -17,7 +17,7 @@ import {
   rgbToHex,
   save_state,
   transform_props,
-} from './index';
+} from '../index';
 import {
   math,
   parser,
@@ -29,7 +29,7 @@ import {
   GRID_SIZE,
   MAT_NUM_WIDTH,
   PI2,
-} from './resources';
+} from '../resources';
 
 export default function Text(text, pos) {
   this.type = 'Text';

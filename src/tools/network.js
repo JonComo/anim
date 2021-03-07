@@ -3,13 +3,13 @@ import {
   distance,
   guid,
   interpolate,
-} from './index';
+} from '../index';
 import {
   math,
   rtv,
   DARK,
   GRID_SIZE,
-} from './resources';
+} from '../resources';
 
 export default function Network(position) {
   this.type = 'Network';
