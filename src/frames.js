@@ -4,7 +4,7 @@ import {
   loop_frame,
   transition_with_next,
 } from './index';
-import Button from './button';
+import Button from './ui/button';
 import { rtv, GRID_SIZE } from './resources';
 
 export default function Frames(pos) {
