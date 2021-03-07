@@ -4,14 +4,14 @@ import {
   load_local,
   present,
   save_local,
-} from './index';
-import Button from './ui/button';
+} from '../index';
+import Button from './button';
 import {
   rtv,
   COLORS,
   GRID_SIZE,
   VERSION,
-} from './resources';
+} from '../resources';
 
 export default function Menu(pos) {
   this.pos = pos;
