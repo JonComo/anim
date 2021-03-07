@@ -5,13 +5,13 @@ import {
   interpolate,
   rgbToHex,
   transform_props,
-} from './index';
+} from '../index';
 import {
   math,
   rtv,
   DARK,
   GRID_SIZE,
-} from './resources';
+} from '../resources';
 
 export default function Circle(color, pos) {
   this.type = 'Circle';

@@ -1,5 +1,5 @@
-import { rgbToHex } from './index';
-import { math, rtv } from './resources';
+import { rgbToHex } from '../index';
+import { math, rtv } from '../resources';
 
 export default function Pen() {
   this.drawings = {};
