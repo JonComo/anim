@@ -198,7 +198,7 @@ math.import({
             rtv.ctx.save();
             const s = copy(arguments[k]);
 
-            let props = parser.eval("text_props");
+            let props = parser.evaluate("text_props");
             let x = props.p.x;
             let y = props.p.y;
             rtv.ctx.translate(x + 5*GRID_SIZE*k, y+GRID_SIZE);
@@ -320,7 +320,7 @@ math.import({
 
         rtv.ctx.save();
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let x = props.p.x;
         let y = props.p.y;
         rtv.ctx.translate(x, y);
@@ -1044,7 +1044,7 @@ math.import({
     visnet: function(layers, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
         layers = layers._data;
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let pos = [props.p.x, props.p.y];
 
         let pad = 200;
@@ -1317,7 +1317,7 @@ math.import({
     vismult: function(W, x) { // visualize matrix vector multiplication
         let pad = 24;
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let loc = [props.p.x, props.p.y + pad];
 
         let result = math.multiply(W, x);
@@ -1388,7 +1388,7 @@ math.import({
     visdot: function(W, x) { // visualize matrix vector multiplication but as dot products
         let pad = 24;
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let loc = [props.p.x, props.p.y + pad];
 
         let result = math.multiply(W, x);
@@ -1583,18 +1583,18 @@ math.import({
     },
     traceToggle: function() { // enable or disable canvas clearing
         try {
-            parser.eval("_trace");
+            parser.evaluate("_trace");
         } catch (e) {
             parser.set("_trace", false);
         }
 
-        parser.set("_trace", !parser.eval("_trace"));
+        parser.set("_trace", !parser.evaluate("_trace"));
     },
     drawFarmer: function() {
 
         rtv.ctx.save();
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let x = props.p.x;
         let y = props.p.y;
 
@@ -1776,7 +1776,7 @@ math.import({
 
         rtv.ctx.save();
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let x = props.p.x;
         let y = props.p.y;
 
@@ -2013,7 +2013,7 @@ math.import({
     drawFace: function() {
         rtv.ctx.save();
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let x = props.p.x;
         let y = props.p.y;
 
@@ -2114,7 +2114,7 @@ math.import({
     drawDog: function() {
         rtv.ctx.save();
 
-        let props = parser.eval("text_props");
+        let props = parser.evaluate("text_props");
         let x = props.p.x;
         let y = props.p.y;
 
@@ -3085,14 +3085,14 @@ function grad_2(c, x, y) {
     let h = 0.0001;
 
     parser.set('x', x+h);
-    let fxh = c.eval(parser.scope);
+    let fxh = c.evaluate(parser.scope);
     parser.set('x', x);
-    let fx = c.eval(parser.scope);
+    let fx = c.evaluate(parser.scope);
 
     parser.set('y', y+h);
-    let fyh = c.eval(parser.scope);
+    let fyh = c.evaluate(parser.scope);
     parser.set('y', y);
-    let fy = c.eval(parser.scope);
+    let fy = c.evaluate(parser.scope);
 
     return [(fxh-fx)/h, (fyh-fy)/h];
 }
@@ -3944,7 +3944,7 @@ window.onload = function() {
         rtv.mouse.start = get_mouse_pos(rtv.c, evt);
 
         try {
-            math.compile('click()').eval(parser.scope);
+            math.compile('click()').evaluate(parser.scope);
         } catch(e) {
 
         }
