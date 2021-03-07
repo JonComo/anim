@@ -75,12 +75,12 @@ export default function Frames(pos) {
 
           rtv.num_frames -= 1;
           this.create_buttons();
-          return true;
+          return;
         } if (i === this.buttons.length - 1) {
           // add frame
           // copy to next from frame
           insert_frame();
-          return true;
+          return;
         }
         this.on_click(i + 1);
       }
