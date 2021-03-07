@@ -3,9 +3,9 @@ import {
   insert_frame,
   loop_frame,
   transition_with_next,
-} from './index';
-import Button from './ui/button';
-import { rtv, GRID_SIZE } from './resources';
+} from '../index';
+import Button from '../ui/button';
+import { rtv, GRID_SIZE } from '../resources';
 
 export default function Frames(pos) {
   this.pos = pos;

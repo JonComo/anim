@@ -1,14 +1,14 @@
 import { saveAs } from 'file-saver';
 import $ from 'jquery';
-import Camera from './camera';
+import Camera from './graphics/camera';
 import Circle from './circle';
-import Frames from './frames';
+import Frames from './graphics/frames';
 import Menu from './ui/menu';
 import Network from './network';
 import Pen from './pen';
 import Shape from './shape';
 import Text from './text';
-import Transition from './transition';
+import Transition from './graphics/transition';
 import {
   rtv,
   math,
