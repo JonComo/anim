@@ -126,7 +126,7 @@ export default function Shape(color, path) {
 
   this.in_rect = (x, y, x2, y2) => {
     if (this.hidden()) {
-      return;
+      return false;
     }
 
     // select individual points
