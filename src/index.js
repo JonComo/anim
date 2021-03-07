@@ -3,7 +3,7 @@ import $ from 'jquery';
 import Camera from './camera';
 import Circle from './circle';
 import Frames from './frames';
-import Menu from './menu';
+import Menu from './ui/menu';
 import Network from './network';
 import Pen from './pen';
 import Shape from './shape';
