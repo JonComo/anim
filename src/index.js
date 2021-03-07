@@ -679,7 +679,7 @@ math.import({
         }
         rtv.ctx.stroke();
         if (fill) {
-            col = fill._data;
+            let col = fill._data;
             col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
             rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
             rtv.ctx.globalAlpha = .8;
