@@ -134,18 +134,16 @@ export default function Shape(color, path) {
 
     const { path: framePath } = props;
     this.selected_indices = [];
-    let found = false;
 
     for (let i = 0; i < framePath.length; i++) {
       const p = framePath[i];
 
       if (p.x > x && p.x < x2 && p.y > y && p.y < y2) {
         this.selected_indices.push(i);
-        found = true;
       }
     }
 
-    return found;
+    return this.selected_indices.length > 0;
   };
 
   this.onkeydown = (evt) => {
