@@ -5,7 +5,28 @@ import {
   transition_with_next,
 } from '../index';
 import Button from '../ui/button';
-import { rtv, GRID_SIZE } from '../resources';
+import {
+  rtv,
+  DARK,
+  GRID_SIZE,
+  SCALE_FACTOR,
+} from '../resources';
+
+export function configureCanvas() {
+  rtv.win_width = window.innerWidth;
+  rtv.win_height = window.innerHeight;
+  rtv.c.width = rtv.win_width * SCALE_FACTOR;
+  rtv.c.height = rtv.win_height * SCALE_FACTOR;
+  rtv.c.style.width = rtv.win_width;
+  rtv.c.style.height = rtv.win_height;
+
+  rtv.ctx.fillStyle = DARK;
+  rtv.ctx.strokeStyle = DARK;
+  rtv.ctx.lineWidth = 4;
+  rtv.ctx.textAlign = 'left';
+  rtv.ctx.textBaseline = 'middle';
+  rtv.ctx.lineJoin = 'round';
+}
 
 export default function Frames(pos) {
   this.pos = pos;
