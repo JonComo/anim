@@ -3791,7 +3791,10 @@ window.onload = function() {
 
     rtv.transition = new Transition();
     rtv.frame = 1;
-    rtv.frames = new Frames({x: rtv.c.width - GRID_SIZE*2, y: GRID_SIZE/4});
+    rtv.frames = new Frames(() => ({
+        x: rtv.c.width - GRID_SIZE*2,
+        y: GRID_SIZE/4,
+    }));
     rtv.frames.on_click = function(idx) {
         transition_with_next(idx);
     };
