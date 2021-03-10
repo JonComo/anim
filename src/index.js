@@ -2,7 +2,7 @@ import { saveAs } from 'file-saver';
 import $ from 'jquery';
 import Camera from './graphics/camera';
 import Circle from './tools/circle';
-import Frames from './graphics/frames';
+import Frames, { configureCanvas } from './graphics/frames';
 import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
@@ -3674,21 +3674,9 @@ window.onload = function() {
 
     rtv.objs = [];
 
-    rtv.c = document.createElement("canvas");
-    rtv.win_width = window.innerWidth;
-    rtv.win_height = window.innerHeight;
-    rtv.c.width = rtv.win_width*SCALE_FACTOR;
-    rtv.c.height = rtv.win_height*SCALE_FACTOR;
-    rtv.c.style.width = rtv.win_width;
-    rtv.c.style.height = rtv.win_height;
-
-    rtv.ctx = rtv.c.getContext("2d");
-    rtv.ctx.fillStyle = DARK;
-    rtv.ctx.strokeStyle = DARK;
-    rtv.ctx.lineWidth = 4;
-    rtv.ctx.textAlign = 'left';
-    rtv.ctx.textBaseline = 'middle';
-    rtv.ctx.lineJoin = 'round';
+    rtv.c = document.createElement('canvas');
+    rtv.ctx = rtv.c.getContext('2d');
+    configureCanvas();
 
     // speech synth
     rtv.speech.synth = window.speechSynthesis; // speech synthesis
