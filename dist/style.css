@@ -1,5 +1,7 @@
-canvas {
+#viewport {
     background: #ffffff;
+    width: 100%;
+    height: 100vh;
 }
 
 body {

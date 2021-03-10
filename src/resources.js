@@ -57,8 +57,6 @@ export const rtv = {
 
   c: null,
   ctx: null,
-  win_width: null,
-  win_height: null,
   formula_text: null,
 
   animator: null,

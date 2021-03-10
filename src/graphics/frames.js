@@ -13,12 +13,8 @@ import {
 } from '../resources';
 
 export function configureCanvas() {
-  rtv.win_width = window.innerWidth;
-  rtv.win_height = window.innerHeight;
-  rtv.c.width = rtv.win_width * SCALE_FACTOR;
-  rtv.c.height = rtv.win_height * SCALE_FACTOR;
-  rtv.c.style.width = rtv.win_width;
-  rtv.c.style.height = rtv.win_height;
+  rtv.c.width = rtv.c.clientWidth * SCALE_FACTOR;
+  rtv.c.height = rtv.c.clientHeight * SCALE_FACTOR;
 
   rtv.ctx.fillStyle = DARK;
   rtv.ctx.strokeStyle = DARK;
