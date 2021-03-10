@@ -3477,8 +3477,8 @@ function draw_axes(ctx) {
                 ctx.stroke();
             }
         } else {
-            let w = rtv.win_width * 2;
-            let h = rtv.win_height * 2;
+            let w = rtv.c.clientWidth * 2;
+            let h = rtv.c.clientHeight * 2;
 
             let dx = GRID_SIZE * props.w;
             let dy = GRID_SIZE * props.h;
@@ -3674,8 +3674,9 @@ window.onload = function() {
 
     rtv.objs = [];
 
-    rtv.c = document.createElement('canvas');
+    rtv.c = document.getElementById('viewport');
     rtv.ctx = rtv.c.getContext('2d');
+
     configureCanvas();
 
     // speech synth
@@ -3684,9 +3685,6 @@ window.onload = function() {
         rtv.speech.voices = window.speechSynthesis.getVoices();
 
     };
-
-    var content = document.getElementById("content");
-    content.appendChild(rtv.c);
 
     document.getElementById("save").onclick = function(evt) {
         save(rtv.objs);
@@ -3752,7 +3750,7 @@ window.onload = function() {
 
         script = s_clean;
 
-        let t = new Text("", {x: 20, y: rtv.win_height*2 - 60});
+        let t = new Text("", {x: 20, y: rtv.c.clientHeight*2 - 60});
         t.properties[rtv.frame].w = .6;
         t.properties[rtv.frame].h = .6;
         rtv.objs.push(t);
@@ -4260,20 +4258,20 @@ window.onload = function() {
             rtv.ctx.beginPath();
             let w = 1928; // +8 pixels for padding
             let h = 1088;
-            rtv.ctx.rect(rtv.win_width - w/2, rtv.win_height - h/2, w, h);
+            rtv.ctx.rect(rtv.c.clientWidth - w/2, rtv.c.clientHeight - h/2, w, h);
             rtv.ctx.stroke();
 
             if (!rtv.presenting) {
                 rtv.ctx.globalAlpha = .1;
 
                 rtv.ctx.beginPath();
-                rtv.ctx.moveTo(rtv.win_width - w/2, rtv.win_height);
-                rtv.ctx.lineTo(rtv.win_width + w/2, rtv.win_height);
+                rtv.ctx.moveTo(rtv.c.clientWidth - w/2, rtv.c.clientHeight);
+                rtv.ctx.lineTo(rtv.c.clientWidth + w/2, rtv.c.clientHeight);
                 rtv.ctx.stroke();
 
                 rtv.ctx.beginPath();
-                rtv.ctx.moveTo(rtv.win_width, rtv.win_height - h/2);
-                rtv.ctx.lineTo(rtv.win_width, rtv.win_height + h/2);
+                rtv.ctx.moveTo(rtv.c.clientWidth, rtv.c.clientHeight - h/2);
+                rtv.ctx.lineTo(rtv.c.clientWidth, rtv.c.clientHeight + h/2);
                 rtv.ctx.stroke();
 
                 rtv.ctx.globalAlpha = 1;
