@@ -3678,6 +3678,7 @@ window.onload = function() {
     rtv.ctx = rtv.c.getContext('2d');
 
     configureCanvas();
+    window.addEventListener('resize', configureCanvas);
 
     // speech synth
     rtv.speech.synth = window.speechSynthesis; // speech synthesis
