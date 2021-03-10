@@ -25,7 +25,6 @@ export function configureCanvas() {
 }
 
 export default function Frames(pos) {
-  this.pos = pos;
   this.size = GRID_SIZE / 2;
 
   this.frame_pos = (i) => {
@@ -37,7 +36,11 @@ export default function Frames(pos) {
       yoffset -= hcon;
       xoff++;
     }
-    return { x: this.pos.x + xoff * GRID_SIZE * (2 / 3), y: this.pos.y + yoffset + GRID_SIZE / 2 };
+    const p = pos();
+    return {
+      x: p.x + xoff * GRID_SIZE * (2 / 3),
+      y: p.y + yoffset + GRID_SIZE / 2,
+    };
   };
 
   this.create_buttons = () => {
@@ -51,6 +54,7 @@ export default function Frames(pos) {
   };
 
   this.create_buttons();
+  window.addEventListener('resize', this.create_buttons);
 
   this.mouse_down = () => {
     for (let i = 0; i < this.buttons.length; i++) {
