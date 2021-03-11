@@ -40,7 +40,6 @@ Access the clipping through node.checkClipping(); use node.shutdown to get rid o
 
 function volumeAudioProcess(event) {
   const buf = event.inputBuffer.getChannelData(0);
-  const bufLength = buf.length;
 
   // Do a root-mean-square on the samples: sum up the squares...
   const sum = buf.reduce((a, x) => {
@@ -52,7 +51,7 @@ function volumeAudioProcess(event) {
   });
 
   // ... then take the square root of the sum.
-  const rms = Math.sqrt(sum / bufLength);
+  const rms = Math.sqrt(sum / buf.length);
 
   // Now smooth this out with the averaging factor applied
   // to the previous sample - take the max here because we
