@@ -42,17 +42,15 @@ function volumeAudioProcess(event) {
   const buf = event.inputBuffer.getChannelData(0);
   const bufLength = buf.length;
   let sum = 0;
-  let x;
 
   // Do a root-mean-square on the samples: sum up the squares...
-  for (let i = 0; i < bufLength; i++) {
-    x = buf[i];
+  buf.forEach((x) => {
     if (Math.abs(x) >= this.clipLevel) {
       this.clipping = true;
       this.lastClip = window.performance.now();
     }
     sum += x ** 2;
-  }
+  });
 
   // ... then take the square root of the sum.
   const rms = Math.sqrt(sum / bufLength);
