@@ -41,15 +41,14 @@ Access the clipping through node.checkClipping(); use node.shutdown to get rid o
 function volumeAudioProcess(event) {
   const buf = event.inputBuffer.getChannelData(0);
   const bufLength = buf.length;
-  let sum = 0;
 
   // Do a root-mean-square on the samples: sum up the squares...
-  buf.forEach((x) => {
+  const sum = buf.reduce((a, x) => {
     if (Math.abs(x) >= this.clipLevel) {
       this.clipping = true;
       this.lastClip = window.performance.now();
     }
-    sum += x ** 2;
+    return a + x ** 2;
   });
 
   // ... then take the square root of the sum.
