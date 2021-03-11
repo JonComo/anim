@@ -61,7 +61,7 @@ function volumeAudioProcess(event) {
 
 function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
   const processor = audioContext.createScriptProcessor(512);
-  processor.onaudioprocess = volumeAudioProcess;
+  processor.addEventListener('audioprocess', volumeAudioProcess);
   processor.clipping = false;
   processor.lastClip = 0;
   processor.volume = 0;
@@ -80,8 +80,8 @@ function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
   };
 
   processor.shutdown = () => {
-    this.disconnect();
-    this.onaudioprocess = null;
+    processor.disconnect();
+    process.removeEventListener('audioprocess', volumeAudioProcess);
   };
 
   return processor;
