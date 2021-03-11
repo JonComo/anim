@@ -252,7 +252,7 @@ export default function Text(text, pos) {
 
       const { p } = this.properties[rtv.frame];
 
-      const l = math.eval(t.substring(t.indexOf('['), t.indexOf(']') + 1));
+      const l = math.evaluate(t.substring(t.indexOf('['), t.indexOf(']') + 1));
 
       draw_network(l._data, [p.x, p.y]);
 
@@ -545,7 +545,7 @@ export default function Text(text, pos) {
     try {
       parser.set('text_props', i);
 
-      const val = this.cargs[0].eval(parser.scope);
+      const val = this.cargs[0].evaluate(parser.scope);
 
       // only display the value if its not an assignment or constant
       const opType = math.parse(this.args[0]).type;
@@ -688,7 +688,7 @@ export default function Text(text, pos) {
 
         let oldVal;
         try {
-          oldVal = parser.eval(varName);
+          oldVal = parser.evaluate(varName);
           if (Number.isNaN(oldVal)) {
             oldVal = 0;
           }
