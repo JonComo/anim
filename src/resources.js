@@ -5,15 +5,18 @@ import './style.css';
 export const VERSION = packageJson.version; // Version
 const IS_MAC = navigator.platform.toUpperCase().includes('MAC'); // Running on macOS?
 
+// Text and image border
+export const BORDER_OPACITY = 0.2;
+
 // colors
-export const GRAY = '#cccccc';
+export const BRACKET_COLOR = '#E74C3C';
 export const GRID = '#eeeeee';
 export const GRID_GUIDE = '#dddddd';
 export const GRAPH_GUIDE = '#aaaaaa';
 export const DARK = '#000000';
 export const LIGHT = '#ffffff';
 
-export const COLORS = ['#000000', '#E74C3C', '#2980B9', '#FFA400', '#66E07A', GRAY];
+export const COLORS = ['#000000', '#E74C3C', '#2980B9', '#FFA400', '#66E07A', '#cccccc'];
 
 export const FONT = {
   SMALL: '26px Courier',
@@ -55,8 +58,6 @@ export const rtv = {
 
   c: null,
   ctx: null,
-  win_width: null,
-  win_height: null,
   formula_text: null,
 
   animator: null,
