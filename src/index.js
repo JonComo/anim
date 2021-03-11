@@ -9,6 +9,7 @@ import Pen from './tools/pen';
 import Shape from './tools/shape';
 import Text from './tools/text';
 import Transition from './graphics/transition';
+import meter, { initVolumeMeter } from './audio/volume-meter';
 import {
   rtv,
   math,
@@ -1576,8 +1577,7 @@ math.import({
         rtv.speech.synth.speak(utterThis);
     },
     enableVolMeter: function () {
-        if (!meterInitialized) {
-            meterInitialized = true;
+        if (meter === undefined) {
             initVolumeMeter();
         }
     },
