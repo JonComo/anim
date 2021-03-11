@@ -5,10 +5,26 @@ import {
   transition_with_next,
 } from '../index';
 import Button from '../ui/button';
-import { rtv, GRID_SIZE } from '../resources';
+import {
+  rtv,
+  DARK,
+  GRID_SIZE,
+  SCALE_FACTOR,
+} from '../resources';
+
+export function configureCanvas() {
+  rtv.c.width = rtv.c.clientWidth * SCALE_FACTOR;
+  rtv.c.height = rtv.c.clientHeight * SCALE_FACTOR;
+
+  rtv.ctx.fillStyle = DARK;
+  rtv.ctx.strokeStyle = DARK;
+  rtv.ctx.lineWidth = 4;
+  rtv.ctx.textAlign = 'left';
+  rtv.ctx.textBaseline = 'middle';
+  rtv.ctx.lineJoin = 'round';
+}
 
 export default function Frames(pos) {
-  this.pos = pos;
   this.size = GRID_SIZE / 2;
 
   this.frame_pos = (i) => {
@@ -20,7 +36,11 @@ export default function Frames(pos) {
       yoffset -= hcon;
       xoff++;
     }
-    return { x: this.pos.x + xoff * GRID_SIZE * (2 / 3), y: this.pos.y + yoffset + GRID_SIZE / 2 };
+    const p = pos();
+    return {
+      x: p.x + xoff * GRID_SIZE * (2 / 3),
+      y: p.y + yoffset + GRID_SIZE / 2,
+    };
   };
 
   this.create_buttons = () => {
@@ -34,6 +54,7 @@ export default function Frames(pos) {
   };
 
   this.create_buttons();
+  window.addEventListener('resize', this.create_buttons);
 
   this.mouse_down = () => {
     for (let i = 0; i < this.buttons.length; i++) {
