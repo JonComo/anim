@@ -8,5 +8,9 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module',
   },
-  rules: {},
+  rules: {
+    'no-plusplus': 'off',
+    'no-underscore-dangle': 'off',
+    'prefer-destructuring': 'off',
+  },
 };
