@@ -76,6 +76,9 @@ export const rtv = {
   debug: false,
   view_frame: false,
 
+  // Volume meter
+  meter: undefined,
+
   // speech synthesis
   speech: {
     synth: null,
