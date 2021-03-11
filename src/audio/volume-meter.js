@@ -112,10 +112,10 @@ export default function initVolumeMeter() {
     {
       audio: {
         mandatory: {
-          googEchoCancellation: 'false',
-          googAutoGainControl: 'false',
-          googNoiseSuppression: 'false',
-          googHighpassFilter: 'false',
+          googEchoCancellation: false,
+          googAutoGainControl: false,
+          googNoiseSuppression: false,
+          googHighpassFilter: false,
         },
       },
     },
