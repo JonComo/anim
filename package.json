@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "start": "webpack serve --open --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "lint": "eslint --cache --ext .js ./",
+    "format": "eslint --fix --cache --ext .js ./"
   },
   "repository": {
     "type": "git",
