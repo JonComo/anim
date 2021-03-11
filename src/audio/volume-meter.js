@@ -127,7 +127,6 @@ export function initVolumeMeter() {
           googNoiseSuppression: 'false',
           googHighpassFilter: 'false',
         },
-        optional: [],
       },
     },
   ).then(gotStream).catch(didntGetStream);
