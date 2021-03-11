@@ -38,9 +38,6 @@ clipLag: how long you would like the "clipping" indicator to show
 Access the clipping through node.checkClipping(); use node.shutdown to get rid of it.
 */
 
-let meter;
-export default meter;
-
 function volumeAudioProcess(event) {
   const buf = event.inputBuffer.getChannelData(0);
   const bufLength = buf.length;
@@ -94,8 +91,9 @@ function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
   return processor;
 }
 
-export function initVolumeMeter() {
+export default function initVolumeMeter() {
   let mediaStreamSource;
+  let meter;
 
   // grab an audio context
   const audioContext = new AudioContext();
@@ -126,4 +124,6 @@ export function initVolumeMeter() {
       },
     },
   ).then(gotStream).catch(didntGetStream);
+
+  return meter;
 }
