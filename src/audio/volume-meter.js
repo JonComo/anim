@@ -117,28 +117,18 @@ export function initVolumeMeter() {
     alert('Stream generation failed.');
   }
 
-  // Attempt to get audio input
-  try {
-    // monkeypatch getUserMedia
-    navigator.getUserMedia ??= navigator.webkitGetUserMedia ?? navigator.mozGetUserMedia;
-
-    // ask for an audio input
-    navigator.getUserMedia(
-      {
-        audio: {
-          mandatory: {
-            googEchoCancellation: 'false',
-            googAutoGainControl: 'false',
-            googNoiseSuppression: 'false',
-            googHighpassFilter: 'false',
-          },
-          optional: [],
+  // Ask for an audio input
+  navigator.mediaDevices.getUserMedia(
+    {
+      audio: {
+        mandatory: {
+          googEchoCancellation: 'false',
+          googAutoGainControl: 'false',
+          googNoiseSuppression: 'false',
+          googHighpassFilter: 'false',
         },
-      }, gotStream, didntGetStream,
-    );
-  } catch (e) {
-    alert(`getUserMedia threw exception :${e}`);
-  }
-
-  mediaStreamSource = null;
+        optional: [],
+      },
+    },
+  ).then(gotStream).catch(didntGetStream);
 }
