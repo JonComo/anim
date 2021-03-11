@@ -10,7 +10,7 @@ This section explains the process of setting up your own environment for develop
 
 ### Prerequisites
 
-Before starting, you must have Node.js (https://nodejs.org/) and NPM (https://npmjs.com)installed on your system. Make sure you have Git (https://git-scm.com/) installed if you're planning to submit your modifications (or just want to keep track of your changes)!
+Before starting, you must have Node.js (https://nodejs.org/) and NPM (https://npmjs.com) installed on your system. Make sure you have Git (https://git-scm.com/) installed if you're planning to submit your modifications (or just want to keep track of your changes)!
 
 ### Obtaining the code
 
