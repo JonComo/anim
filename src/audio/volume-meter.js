@@ -97,10 +97,6 @@ function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
 export function initVolumeMeter() {
   let mediaStreamSource;
 
-  // volume meter
-  // monkeypatch Web Audio
-  window.AudioContext ??= window.webkitAudioContext;
-
   // grab an audio context
   const audioContext = new AudioContext();
 
