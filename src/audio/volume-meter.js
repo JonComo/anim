@@ -72,9 +72,9 @@ function createAudioMeter(audioContext, clipLevel, averaging, clipLag) {
   processor.clipping = false;
   processor.lastClip = 0;
   processor.volume = 0;
-  processor.clipLevel = clipLevel || 0.98;
-  processor.averaging = averaging || 0.95;
-  processor.clipLag = clipLag || 750;
+  processor.clipLevel = clipLevel ?? 0.98;
+  processor.averaging = averaging ?? 0.95;
+  processor.clipLag = clipLag ?? 750;
 
   // this will have no effect, since we don't copy the input to the output,
   // but works around a current Chrome bug.
