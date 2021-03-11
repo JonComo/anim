@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "start": "webpack serve --open --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "lint": "eslint --cache --ext .js ./",
+    "format": "eslint --fix --cache --ext .js ./"
   },
   "repository": {
     "type": "git",
@@ -32,8 +34,9 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
+    "ccapture.js-npmfixed": "^1.1.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.5.1",
-    "mathjs": "^3.10.0"
+    "mathjs": "^9.2.0"
   }
 }
