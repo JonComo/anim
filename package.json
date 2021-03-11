@@ -35,6 +35,6 @@
     "ccapture.js-npmfixed": "^1.1.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.5.1",
-    "mathjs": "^3.10.0"
+    "mathjs": "^9.2.0"
   }
 }
