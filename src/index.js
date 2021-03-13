@@ -920,7 +920,7 @@ math.import({
                         v = [v[0]/n, v[1]/n, v[2]/n];
                     }
 
-                    a = rtv.cam.graph_to_screen(x + flo*v[0], y + flo*v[1], z + flo*v[2]);
+                    const a = rtv.cam.graph_to_screen(x + flo*v[0], y + flo*v[1], z + flo*v[2]);
 
                     rtv.ctx.beginPath();
                     rtv.ctx.arc(a[0], a[1], 5, 0, PI2);
