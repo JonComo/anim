@@ -3580,9 +3580,7 @@ export function transition_with_next(next) {
         rtv.frame = targ;
         parser.set('frame', rtv.frame);
 
-        const N = rtv.objs.length;
-        for (let i = 0; i < N; i++) {
-            let obj = rtv.objs[i];
+        rtv.objs.forEach((obj) => {
             if (typeof obj.parse_text == 'function') {
                 obj.parse_text(obj.properties[rtv.frame].t);
             }
@@ -3590,7 +3588,7 @@ export function transition_with_next(next) {
             if (typeof obj.eval == 'function') {
                 obj.eval();
             }
-        }
+        });
     });
 }
 
