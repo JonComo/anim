@@ -1190,7 +1190,7 @@ math.import({
         charges = charges._data;
 
         if (arguments.length == 1) {
-            n = 5;
+            const n = 5;
             let d = 20 / n;
             let p = [0, 0];
             let pl = 5; // path length
@@ -1248,7 +1248,7 @@ math.import({
             }
         } else if (arguments.length == 2) {
             // calculate field at the provided location
-            loc = location._data;
+            const loc = location._data;
 
             var xp = loc[0];
             var yp = loc[1];
