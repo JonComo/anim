@@ -2996,7 +2996,7 @@ export function draw_matrix(matrix, color_ij) {
         }
     }
 
-    size = matrix_size(matrix);
+    const size = matrix_size(matrix);
     draw_brackets(0, 0, size[0], size[1]);
 
     rtv.ctx.restore();
