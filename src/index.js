@@ -2893,7 +2893,7 @@ export function draw_network(layers, pos) {
     let pad = 120;
     let radius = 20;
 
-    loc = function(i, j, units) {
+    function loc(i, j, units) {
         let pad2 = 250;
         //return [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
         return [pos[0] - pad2 * units/2 + pad2/2 + i*pad2, -pad + pos[1] - j*pad2];
