@@ -519,9 +519,7 @@ math.import({
         if (N === 1) {
             let shape = arguments[0];
             let m = cached(shape._data);
-            m = m.map(function (value, index, matrix) {
-                return randn_bm();
-            });
+            m = m.map(randn_bm);
 
             return m;
         }
