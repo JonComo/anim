@@ -716,13 +716,13 @@ math.import({
             return;
         }
 
-        _x = 0;
-        _y = 0;
-        _z = 0;
+        let _x = 0;
+        let _y = 0;
+        let _z = 0;
 
-        x = 0;
-        y = 0;
-        z = 0;
+        let x = 0;
+        let y = 0;
+        let z = 0;
 
         if ('re' in a && a.im) {
             a = math.matrix([a.re, a.im]);
@@ -912,7 +912,7 @@ math.import({
                         v = [v[0]/n, v[1]/n, v[2]/n];
                     }
 
-                    a = rtv.cam.graph_to_screen(x + flo*v[0], y + flo*v[1], z + flo*v[2]);
+                    const a = rtv.cam.graph_to_screen(x + flo*v[0], y + flo*v[1], z + flo*v[2]);
 
                     rtv.ctx.beginPath();
                     rtv.ctx.arc(a[0], a[1], 5, 0, PI2);
@@ -1183,7 +1183,7 @@ math.import({
         charges = charges._data;
 
         if (arguments.length == 1) {
-            n = 5;
+            const n = 5;
             let d = 20 / n;
             let p = [0, 0];
             let pl = 5; // path length
@@ -1241,7 +1241,7 @@ math.import({
             }
         } else if (arguments.length == 2) {
             // calculate field at the provided location
-            loc = location._data;
+            const loc = location._data;
 
             var xp = loc[0];
             var yp = loc[1];
@@ -1445,7 +1445,7 @@ math.import({
     },
     magfield(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
 
-        n = 5;
+        const n = 5;
         let d = 20 / n;
 
         function b_at(x, y, z, path, current) {
@@ -1510,12 +1510,12 @@ math.import({
         return math.matrix(path);
     },
     interp(a, b, divisions) { // interpolate from [x1,y1,z1,...] -> [x2,y2,z2,...]
-        ad = a._data;
-        bd = b._data;
+        const ad = a._data;
+        const bd = b._data;
 
         divisions -= 1;
 
-        L = cached([divisions+1, ad.length]);
+        const L = cached([divisions+1, ad.length]);
 
         for (let i = 0; i <= divisions; i ++) {
             let t = i/divisions;
@@ -2258,11 +2258,11 @@ math.import({
     dirField(f) { // draws direction field of dy/dx = f(x,y)
         for (let x = -10; x <= 10; x+=2) {
             for (let y = -10; y <= 10; y+=2) {
-                dydx = f(x+.0001, y+.0001); // to avoid asymptotes at x=0 or y=0
+                const dydx = f(x+.0001, y+.0001); // to avoid asymptotes at x=0 or y=0
                 if (dydx.im) {
                     continue;
                 }
-                uv = [1, dydx];
+                let uv = [1, dydx];
                 uv = math.matrix(uv)
                 uv = math.multiply(uv, 1/math.norm(uv));
                 draw_vect(x, y, 0, x+uv._data[0], y+uv._data[1], 0);
@@ -2270,27 +2270,19 @@ math.import({
         }
     },
     eulerMeth(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
-        n = 10;
-        h = .1;
+        const n = _n > 0 ? _n : 10;
+        const h = _h > 0 ? _h : .1;
 
-        if (_n > 0) {
-            n = _n;
-        }
-
-        if (_h > 0) {
-            h = _h;
-        }
-
-        x = x0
-        y = y0
+        let x = x0
+        let y = y0
 
         rtv.ctx.beginPath();
 
-        p = rtv.cam.graph_to_screen(x, y, 0);
+        let p = rtv.cam.graph_to_screen(x, y, 0);
         rtv.ctx.moveTo(p[0], p[1]);
 
         for (let i = 0; i < n; i++) {
-            dydx = f(x, y);
+            const dydx = f(x, y);
 
             if (dydx.im) {
                 rtv.ctx.stroke();
@@ -2328,7 +2320,7 @@ math.import({
         rtv.ctx.beginPath();
         rtv.ctx.moveTo(p[0], p[1]);
         for (let i = 0; i < n; i++) {
-            ypp = (-b*yp - c*y)/a;
+            const ypp = (-b*yp - c*y)/a;
             yp += ypp * dt;
             y += yp * dt;
             x += 1 * dt;
@@ -2358,7 +2350,7 @@ math.import({
         rtv.ctx.beginPath();
         rtv.ctx.moveTo(p[0], p[1]);
         for (let i = 0; i < n; i++) {
-            ypp = (f(x) - b*yp - c*y)/a;
+            const ypp = (f(x) - b*yp - c*y)/a;
             yp += ypp * dt;
             y += yp * dt;
             x += 1 * dt;
@@ -2389,7 +2381,7 @@ math.import({
         rtv.ctx.beginPath();
         rtv.ctx.moveTo(p[0], p[1]);
         for (let i = 0; i < n; i++) {
-            yppp = (-b*ypp - c*yp - d*y)/a;
+            const yppp = (-b*ypp - c*yp - d*y)/a;
             ypp += yppp * dt;
             yp += ypp * dt;
             y += yp * dt;
@@ -2399,8 +2391,8 @@ math.import({
         }
         rtv.ctx.stroke();
     },
-    factors (n) { // list positive factors of n
-        f = [];
+    factors(n) { // list positive factors of n
+        const f = [];
         for (let i = 0; i <= n/2; i++) {
             if (n / i % 1 == 0) {
                 f.push(i);
@@ -2411,7 +2403,7 @@ math.import({
 
         return math.matrix(f);
     },
-    primeFactors (n) { // list prime factors of n
+    primeFactors(n) { // list prime factors of n
 
         let factors = math.factors(n);
         let d = factors._data;
@@ -2836,8 +2828,8 @@ function draw_r(o, p, d) {
 }
 
 function draw_vect(_x, _y, _z, x, y, z) {
-    a = rtv.cam.graph_to_screen(_x, _y, _z);
-    b = rtv.cam.graph_to_screen(x, y, z);
+    let a = rtv.cam.graph_to_screen(_x, _y, _z);
+    let b = rtv.cam.graph_to_screen(x, y, z);
 
     a = {x: a[0], y: a[1]};
     b = {x: b[0], y: b[1]};
@@ -2892,7 +2884,7 @@ export function draw_network(layers, pos) {
     let pad = 120;
     let radius = 20;
 
-    let pad2 = 250;
+    const pad2 = 250;
     // [pos[0] - pad2/2 - j*(pad2+80), pos[1] + pad2/2 - pad2 * units/2 + i*pad2];
     const loc = (i, j, units) => [
         pos[0] - pad2 * units/2 + pad2/2 + i*pad2,
@@ -2996,7 +2988,7 @@ export function draw_matrix(matrix, color_ij) {
         }
     }
 
-    size = matrix_size(matrix);
+    const size = matrix_size(matrix);
     draw_brackets(0, 0, size[0], size[1]);
 
     rtv.ctx.restore();
@@ -4133,7 +4125,6 @@ window.onload = () => {
 
     save_state();
 
-    var fps;
     rtv.millis = Date.now();
     var targ_millis = rtv.millis + 1; // set below
 
@@ -4145,12 +4136,12 @@ window.onload = () => {
             return;
         }
 
-        targ_millis = rtv.millis + 1000/fps;
+        targ_millis = rtv.millis + 1000/rtv.fps;
 
         if (rtv.presenting) {
-            fps = 60;
+            rtv.fps = 60;
         } else {
-            fps = 30; // save power when editing
+            rtv.fps = 30; // save power when editing
         }
 
         parser.set('_frame', rtv.t);
