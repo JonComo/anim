@@ -1452,7 +1452,7 @@ math.import({
     },
     magfield: function(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
 
-        n = 5;
+        const n = 5;
         let d = 20 / n;
 
         let b_at = function(x, y, z, path, current) {
