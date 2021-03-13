@@ -2482,11 +2482,11 @@ function rgb1ToHex(a) {
 }
 
 // http://www.javascriptkit.com/javatutors/requestanimationframe.shtml
-window.requestAnimationFrame = window.requestAnimationFrame
-    || window.mozRequestAnimationFrame
-    || window.webkitRequestAnimationFrame
-    || window.msRequestAnimationFrame
-    || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60
+window.requestAnimationFrame
+    ??= window.mozRequestAnimationFrame
+    ?? window.webkitRequestAnimationFrame
+    ?? window.msRequestAnimationFrame
+    ?? function(f){return setTimeout(f, 1000/rtv.fps)} // simulate calling code 60
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export function guid() {
