@@ -1,0 +1,24 @@
+name: ESLint Formatter
+
+on:
+  push:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure Git
+        run: git config user.name "ESLint Formatter"
+
+      - name: Format
+        run: npm run format
+
+      - name: Commit and push
+        run: |
+          git commit --all --message "Format" && git push
