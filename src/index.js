@@ -9,6 +9,7 @@ import Pen from './tools/pen';
 import Shape from './tools/shape';
 import Text from './tools/text';
 import Transition from './graphics/transition';
+import initVolumeMeter from './audio/volume-meter';
 import {
   rtv,
   math,
@@ -1576,9 +1577,8 @@ math.import({
         rtv.speech.synth.speak(utterThis);
     },
     enableVolMeter: function () {
-        if (!meterInitialized) {
-            meterInitialized = true;
-            initVolumeMeter();
+        if (rtv.meter === undefined) {
+            rtv.meter = initVolumeMeter();
         }
     },
     traceToggle: function() { // enable or disable canvas clearing
@@ -2076,8 +2076,8 @@ math.import({
         rtv.ctx.strokeStyle = "#000000";
         rtv.ctx.translate(x + -8.4375, y + 11.1875);
         rtv.ctx.rotate(0);
-        if (meter && meter.volume) {
-            rtv.ctx.scale(1-meter.volume*2, 1+meter.volume*2);
+        if (rtv.meter && rtv.meter.volume) {
+            rtv.ctx.scale(1-rtv.meter.volume*2, 1+rtv.meter.volume*2);
         } else {
             rtv.ctx.scale(1, 1);
         }
@@ -2097,8 +2097,8 @@ math.import({
         rtv.ctx.scale(1, 1);
         rtv.ctx.beginPath();
         let np = 28.125;
-        if (meter && meter.volume) {
-            np -= meter.volume * 20;
+        if (rtv.meter && rtv.meter.volume) {
+            np -= rtv.meter.volume * 20;
         }
         rtv.ctx.moveTo(0, -28.125);
         rtv.ctx.lineTo(0, np);
@@ -4193,8 +4193,8 @@ window.onload = function() {
         parser.set('_mx', mp.x);
         parser.set('_my', mp.y);
 
-        if (meter) {
-            parser.set('_vol', meter.volume);
+        if (rtv.meter) {
+            parser.set('_vol', rtv.meter.volume);
         }
 
         if (rtv.presenting) {
