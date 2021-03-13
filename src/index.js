@@ -2837,8 +2837,8 @@ function draw_r(o, p, d) {
 }
 
 function draw_vect(_x, _y, _z, x, y, z) {
-    a = rtv.cam.graph_to_screen(_x, _y, _z);
-    b = rtv.cam.graph_to_screen(x, y, z);
+    let a = rtv.cam.graph_to_screen(_x, _y, _z);
+    let b = rtv.cam.graph_to_screen(x, y, z);
 
     a = {x: a[0], y: a[1]};
     b = {x: b[0], y: b[1]};
