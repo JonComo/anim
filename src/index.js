@@ -1054,7 +1054,7 @@ math.import({
         let h = layers.length * pad;
         let w = Math.max(...layers) * pad;
 
-        loc = function(i, j, units) {
+        function loc(i, j, units) {
             return [pos[0] + 30 + w/2 - pad * units/2 + i*pad, pos[1] + h - j*pad - 120];
         }
 
