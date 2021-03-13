@@ -192,7 +192,7 @@ function implies(p, q) {
 }
 
 math.import({
-    logicTable: function() {
+    logicTable() {
         const O = [true, false];
 
         for (let k = 0; k < arguments.length; k++) {
@@ -237,15 +237,15 @@ math.import({
             rtv.ctx.restore();
         }
     },
-    implies: function(p, q) { // LOGIC: Returns whether p => q is a true statement. Only false when p=T and q=F
+    implies(p, q) { // LOGIC: Returns whether p => q is a true statement. Only false when p=T and q=F
         return implies(p, q);
     },
-    beval: function(statement) { // LOGIC: Boolean evaluation, "true^false||true"
+    beval(statement) { // LOGIC: Boolean evaluation, "true^false||true"
         statement = statement.toLowerCase();
         statement = statement.replace("^", "&&");
         return eval(statement);
     },
-    tautology: function(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
+    tautology(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
         const O = [true, false];
 
         for (let i = 0; i < 2; i++) {
@@ -265,7 +265,7 @@ math.import({
 
         return true;
     },
-    contradiction: function(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always false
+    contradiction(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always false
         const O = [true, false];
 
         for (let i = 0; i < 2; i++) {
@@ -285,7 +285,7 @@ math.import({
 
         return true;
     },
-    egg: function(f) {
+    egg(f) {
         f = f._data;
 
         let radius = 100;
@@ -371,13 +371,13 @@ math.import({
 
         rtv.ctx.restore();
     },
-    rad: function(deg) { // converts to radians
+    rad(deg) { // converts to radians
         return deg * math.pi/180;
     },
-    deg: function(rad) { // converts to degrees
+    deg(rad) { // converts to degrees
         return rad * 180.0 / math.pi;
     },
-    loop: function(fn, count) { // function of index 0 to count-1
+    loop(fn, count) { // function of index 0 to count-1
         if (count <= 0) {
             return;
         }
@@ -386,7 +386,7 @@ math.import({
             fn(i);
         }
     },
-    fifo: function(matrix, value) {
+    fifo(matrix, value) {
         matrix = matrix._data;
         let first = matrix[0];
         let N = matrix.length;
@@ -397,15 +397,15 @@ math.import({
 
         return math.matrix(matrix);
     },
-    push: function(matrix, value) {
+    push(matrix, value) {
         matrix = matrix._data;
         matrix.push(value);
         return math.matrix(matrix);
     },
-    dims: function(m) {
+    dims(m) {
         return math.matrix(m.size());
     },
-    surface: function(fn) {
+    surface(fn) {
         let d = 21; let d2 = d/2;
         let dims = [d*d, 3];
         let m = cached(dims);
@@ -460,7 +460,7 @@ math.import({
             rtv.ctx.stroke();
         }
     },
-    surfacez: function(fn) {
+    surfacez(fn) {
         let d = 21; let d2 = d/2;
         let dims = [d*d, 3];
         let m = cached(dims);
@@ -514,7 +514,7 @@ math.import({
             rtv.ctx.stroke();
         }
     },
-    randn: function() { // no args: random normal, 1 arg shape: dims of matrix to return
+    randn() { // no args: random normal, 1 arg shape: dims of matrix to return
         let N = arguments.length;
         if (N === 1) {
             let shape = arguments[0];
@@ -527,15 +527,15 @@ math.import({
         }
         return randn_bm();
     },
-    axes: function(x,y,z) { // replace default camera axis names
+    axes(x,y,z) { // replace default camera axis names
         rtv.cam.axes_names = [x,y,z];
     },
-    block: function() { // exectutes each argument
+    block() { // exectutes each argument
     },
-    rotation: function(rx, ry, rz) { // creates a 3x3 rotation matrix
+    rotation(rx, ry, rz) { // creates a 3x3 rotation matrix
         return math.matrix(rotation_matrix(rx, ry, rz));
     },
-    grid: function(rangex, rangey) { // returns matrix x*y by 2
+    grid(rangex, rangey) { // returns matrix x*y by 2
         if (!rangey) {
             rangey = rangex;
         }
@@ -559,7 +559,7 @@ math.import({
 
         return m;
     },
-    rotateCamera: function(rx, ry, rz) { // rotates the camera
+    rotateCamera(rx, ry, rz) { // rotates the camera
         let rxyz = [rx, ry, rz];
         if (!isNaN(math.sum(rxyz))) {
             rtv.cam.properties[rtv.frame].rxyz = rxyz;
@@ -567,10 +567,10 @@ math.import({
             rtv.cam.properties[rtv.frame].rxyz = [0, 0, 0];
         }
     },
-    T: function(m) { // transpose m
+    T(m) { // transpose m
         return math.transpose(m);
     },
-    scatter: function(points, point_size, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+    scatter(points, point_size, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
         let size = points.size();
         let n = size[0];
         let points_d = points._data;
@@ -615,7 +615,7 @@ math.import({
         }
         rtv.ctx.restore();
     },
-    point: function(a, size, color) { // point [x,y,z] size color[r,g,b]
+    point(a, size, color) { // point [x,y,z] size color[r,g,b]
         let psize = 8;
         if (size){
             psize = size;
@@ -642,25 +642,25 @@ math.import({
 
         rtv.ctx.restore();
     },
-    graph: function(fn) { // graphs y=f(x)
+    graph(fn) { // graphs y=f(x)
         graph(fn, 0, 1, 2);
     },
-    paral: function(r, tmin, tmax, units) { // parametric line, graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
+    paral(r, tmin, tmax, units) { // parametric line, graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
         para(r, tmin, tmax, units);
     },
-    graphxy: function(fn) { // graphs y=f(x)
+    graphxy(fn) { // graphs y=f(x)
         graph(fn, 0, 1, 2);
     },
-    graphyx: function(fn) { // graphs x=f(y)
+    graphyx(fn) { // graphs x=f(y)
         graph(fn, 1, 0, 2);
     },
-    graphxz: function(fn) {
+    graphxz(fn) {
         graph(fn, 0, 2, 1);
     },
-    graphyz: function(fn) {
+    graphyz(fn) {
         graph(fn, 1, 2, 0);
     },
-    draw: function(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
+    draw(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
         let N = points.size()[0];
         points = rtv.cam.graph_to_screen_mat(points);
 
@@ -686,7 +686,7 @@ math.import({
         }
         rtv.ctx.restore();
     },
-    drawxy: function(xs, ys) {
+    drawxy(xs, ys) {
         let N = xs.size()[0];
         let m = cached([N, 3]);
         for (let i = 0; i < N; i++) {
@@ -697,7 +697,7 @@ math.import({
 
         math.draw(m);
     },
-    oval: function(_p, hr, vr, _n) {
+    oval(_p, hr, vr, _n) {
         let n = 10;
         if (arguments.length >= 4) {
             n = _n;
@@ -712,7 +712,7 @@ math.import({
 
         return math.matrix(path);
     },
-    vect: function(a, b) {
+    vect(a, b) {
 
         if (!a) {
             return;
@@ -759,14 +759,14 @@ math.import({
 
         draw_vect(_x, _y, _z, x, y, z);
     },
-    if: function(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
+    if(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
         if (fn_condition()) {
             fn_a();
         } else {
             fn_b();
         }
     },
-    list: function(fn, array) { // [fn(v) for v in array]
+    list(fn, array) { // [fn(v) for v in array]
         let N = array.size()[0];
         let d = array._data;
 
@@ -793,7 +793,7 @@ math.import({
 
         return m;
     },
-    view: function(x, p) { // matrix, position: [x, y, z]
+    view(x, p) { // matrix, position: [x, y, z]
 
         let t = [];
         if (x._data) {
@@ -823,7 +823,7 @@ math.import({
             rtv.ctx.fillText(t[i], p[0], p[1] + GRID_SIZE * i);
         }
     },
-    labels: function(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
+    labels(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
         points = rtv.cam.graph_to_screen_mat(points);
         let N = labels.size()[0];
         let p;
@@ -835,7 +835,7 @@ math.import({
         }
         rtv.ctx.restore();
     },
-    sig: function(x) { // sigmoid(x)
+    sig(x) { // sigmoid(x)
         if (x._data) {
             var b = x.map(function (value, index, matrix) {
                 return sig(value);
@@ -845,7 +845,7 @@ math.import({
 
         return sig(x);
     },
-    sigp: function(x) { // sigmoid_prime(x)
+    sigp(x) { // sigmoid_prime(x)
         if (x._data) {
             var b = x.map(function (value, index, matrix) {
                 return sigp(value);
@@ -855,7 +855,7 @@ math.import({
 
         return sigp(x);
     },
-    field: function(f, _n, _uv) { // plots a vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
+    field(f, _n, _uv) { // plots a vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
         let n = 10;
         let uv = false;
 
@@ -887,7 +887,7 @@ math.import({
             }
         }
     },
-    fielda: function(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
+    fielda(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
         let n = 10;
         let uv = false;
 
@@ -930,7 +930,7 @@ math.import({
         }
         rtv.ctx.restore();
     },
-    paras: function(r, _urs, _ure, _vrs, _vre, _n=1, f) { // parametric surface r(u,v) with optional field f
+    paras(r, _urs, _ure, _vrs, _vre, _n=1, f) { // parametric surface r(u,v) with optional field f
         let n = 10;
 
         if ((_ure-_urs) <= 0 || (_vre-_vrs) <= 0 || n <= 0) {
@@ -1002,7 +1002,7 @@ math.import({
 
         rtv.ctx.restore();
     },
-    integral: function(f, a, b, _n) {
+    integral(f, a, b, _n) {
         if (a == b) {
             return 0;
         }
@@ -1032,7 +1032,7 @@ math.import({
 
         return sum;
     },
-    der: function(f, _h) { // return derivative approximation function _h = dx default .001
+    der(f, _h) { // return derivative approximation function _h = dx default .001
         let h = .001;
         if (arguments.length >= 2) {
             h = _h;
@@ -1042,7 +1042,7 @@ math.import({
             return (f(a+h)-f(a))/h;
         }
     },
-    visnet: function(layers, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
+    visnet(layers, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
         layers = layers._data;
 
         let props = parser.evaluate("text_props");
@@ -1183,10 +1183,10 @@ math.import({
             return [high_conn, high_neur];
         }
     },
-    int: function(n) {
+    int(n) {
         return n | 0;
     },
-    elefield: function(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
+    elefield(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
         charges = charges._data;
 
         if (arguments.length == 1) {
@@ -1279,7 +1279,7 @@ math.import({
             return [xt, yt, zt];
         }
     },
-    eleforce: function(charges, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
+    eleforce(charges, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
         charges = charges._data;
 
         var oc = charges[j*4];
@@ -1315,7 +1315,7 @@ math.import({
 
         return [fx, fy, fz];
     },
-    vismult: function(W, x) { // visualize matrix vector multiplication
+    vismult(W, x) { // visualize matrix vector multiplication
         let pad = 24;
 
         let props = parser.evaluate("text_props");
@@ -1386,7 +1386,7 @@ math.import({
 
         rtv.ctx.restore();
     },
-    visdot: function(W, x) { // visualize matrix vector multiplication but as dot products
+    visdot(W, x) { // visualize matrix vector multiplication but as dot products
         let pad = 24;
 
         let props = parser.evaluate("text_props");
@@ -1450,7 +1450,7 @@ math.import({
 
         rtv.ctx.restore();
     },
-    magfield: function(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+    magfield(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
 
         n = 5;
         let d = 20 / n;
@@ -1501,7 +1501,7 @@ math.import({
         }
 
     },
-    circle: function(_p, r, _n) {
+    circle(_p, r, _n) {
         let n = 10;
         if (arguments.length >= 3) {
             n = _n;
@@ -1516,7 +1516,7 @@ math.import({
 
         return math.matrix(path);
     },
-    interp: function(a, b, divisions) { // interpolate from [x1,y1,z1,...] -> [x2,y2,z2,...]
+    interp(a, b, divisions) { // interpolate from [x1,y1,z1,...] -> [x2,y2,z2,...]
         ad = a._data;
         bd = b._data;
 
@@ -1533,10 +1533,10 @@ math.import({
 
         return L;
     },
-    zer: function() {
+    zer() {
         return [0, 0, 0];
     },
-    linspace: function(a, b, steps) {
+    linspace(a, b, steps) {
         let path = [];
 
         path.push(a);
@@ -1554,7 +1554,7 @@ math.import({
 
         return math.matrix(path);
     },
-    say: function(text, _voice, _rate, _pitch) { // text to speech
+    say(text, _voice, _rate, _pitch) { // text to speech
         let voice = 11;
 
         if (_voice) {
@@ -1576,12 +1576,12 @@ math.import({
         rtv.speech.synth.cancel();
         rtv.speech.synth.speak(utterThis);
     },
-    enableVolMeter: function () {
+    enableVolMeter () {
         if (rtv.meter === undefined) {
             rtv.meter = initVolumeMeter();
         }
     },
-    traceToggle: function() { // enable or disable canvas clearing
+    traceToggle() { // enable or disable canvas clearing
         try {
             parser.evaluate("_trace");
         } catch (e) {
@@ -1590,7 +1590,7 @@ math.import({
 
         parser.set("_trace", !parser.evaluate("_trace"));
     },
-    drawFarmer: function() {
+    drawFarmer() {
 
         rtv.ctx.save();
 
@@ -1772,7 +1772,7 @@ math.import({
         rtv.ctx.restore();
 
     },
-    drawComputer: function() {
+    drawComputer() {
 
         rtv.ctx.save();
 
@@ -2010,7 +2010,7 @@ math.import({
 
         rtv.ctx.restore();
     },
-    drawFace: function() {
+    drawFace() {
         rtv.ctx.save();
 
         let props = parser.evaluate("text_props");
@@ -2111,7 +2111,7 @@ math.import({
 
         rtv.ctx.restore();
     },
-    drawDog: function() {
+    drawDog() {
         rtv.ctx.save();
 
         let props = parser.evaluate("text_props");
@@ -2262,7 +2262,7 @@ math.import({
 
         rtv.ctx.restore();
     },
-    dirField: function(f) { // draws direction field of dy/dx = f(x,y)
+    dirField(f) { // draws direction field of dy/dx = f(x,y)
         for (let x = -10; x <= 10; x+=2) {
             for (let y = -10; y <= 10; y+=2) {
                 dydx = f(x+.0001, y+.0001); // to avoid asymptotes at x=0 or y=0
@@ -2276,7 +2276,7 @@ math.import({
             }
         }
     },
-    eulerMeth: function(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
+    eulerMeth(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
         n = 10;
         h = .1;
 
@@ -2314,7 +2314,7 @@ math.import({
         rtv.ctx.stroke();
         return math.matrix([x, y]);
     },
-    diffEq: function(a, b, c, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = 0 numerically plotted for _n steps and _dt accuracy
+    diffEq(a, b, c, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = 0 numerically plotted for _n steps and _dt accuracy
         let n = 1000;
         let dt = .001;
 
@@ -2344,7 +2344,7 @@ math.import({
         }
         rtv.ctx.stroke();
     },
-    diffEqF: function(a, b, c, f, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = f(x) numerically plotted for _n steps and _dt accuracy
+    diffEqF(a, b, c, f, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = f(x) numerically plotted for _n steps and _dt accuracy
         let n = 1000;
         let dt = .001;
 
@@ -2374,7 +2374,7 @@ math.import({
         }
         rtv.ctx.stroke();
     },
-    diffEqTri: function(a, b, c, d, x0, y0, yp0, ypp0, _n, _dt) { // ay''' + by'' + cy' + dy = 0 numerically plotted for _n steps and _dt accuracy
+    diffEqTri(a, b, c, d, x0, y0, yp0, ypp0, _n, _dt) { // ay''' + by'' + cy' + dy = 0 numerically plotted for _n steps and _dt accuracy
         let n = 1000;
         let dt = .001;
 
@@ -2406,7 +2406,7 @@ math.import({
         }
         rtv.ctx.stroke();
     },
-    factors: function (n) { // list positive factors of n
+    factors (n) { // list positive factors of n
         f = [];
         for (let i = 0; i <= n/2; i++) {
             if (n / i % 1 == 0) {
@@ -2418,7 +2418,7 @@ math.import({
 
         return math.matrix(f);
     },
-    primeFactors: function (n) { // list prime factors of n
+    primeFactors (n) { // list prime factors of n
 
         let factors = math.factors(n);
         let d = factors._data;
@@ -2436,7 +2436,7 @@ math.import({
 
         return math.matrix(primes);
     },
-    laplace: function(f, _ti, _tf, _dt) {
+    laplace(f, _ti, _tf, _dt) {
         let ti = 0;
         let tf = 1000;
         let dt = .01;
