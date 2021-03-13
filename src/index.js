@@ -3580,7 +3580,7 @@ export function transition_with_next(next) {
         rtv.frame = targ;
         parser.set('frame', rtv.frame);
 
-        let N = rtv.objs.length;
+        const N = rtv.objs.length;
         for (let i = 0; i < N; i++) {
             let obj = rtv.objs[i];
             if (typeof obj.parse_text == 'function') {
