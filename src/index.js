@@ -2399,7 +2399,7 @@ math.import({
         rtv.ctx.stroke();
     },
     factors: function (n) { // list positive factors of n
-        f = [];
+        const f = [];
         for (let i = 0; i <= n/2; i++) {
             if (n / i % 1 == 0) {
                 f.push(i);
