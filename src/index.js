@@ -3668,24 +3668,24 @@ window.onload = () => {
         rtv.speech.voices = window.speechSynthesis.getVoices();
     };
 
-    document.getElementById("save").onclick = function(evt) {
+    document.getElementById("save").onclick = (evt) => {
+        evt.preventDefault();
         save(rtv.objs);
-        return false;
     };
 
-    document.getElementById("file").onchange = function(evt) {
+    document.getElementById("file").onchange = (evt) => {
         enter_select();
         load(evt);
     };
 
-    document.getElementById("load_to_frame").onclick = function(evt) {
+    document.getElementById("load_to_frame").onclick = () => {
         let text = document.getElementById("selected_objects_text").value;
         let arr = JSON.parse(text);
         rtv.objs = rtv.objs.concat(text_array_to_objs(arr, false));
     };
 
     rtv.formula_text = document.getElementById("formula_text");
-    document.getElementById("load_clear_formula_text").onclick = function(evt) {
+    document.getElementById("load_clear_formula_text").onclick = () => {
         let t = rtv.formula_text.value;
         for (let i = 0; i < rtv.objs.length; i++) {
             let obj = rtv.objs[i];
@@ -3694,43 +3694,32 @@ window.onload = () => {
             }
         }
     };
-    document.getElementById("load_insert_formula_text").onclick = function(evt) {
+    document.getElementById("load_insert_formula_text").onclick = () => {
         let t = rtv.formula_text.value;
-        for (let i = 0; i < rtv.objs.length; i++) {
-            let obj = rtv.objs[i];
+        rtv.objs.forEach((obj) => {
             if (typeof obj.replace_selected_text == "function" && obj.is_selected()) {
                 obj.change_text(obj.replace_selected_text(t));
             }
-        }
+        });
     };
 
-    document.getElementById("gen_js").onclick = function(evt) {
+    document.getElementById("gen_js").onclick = () => {
         let js = "";
 
-        for (let i = 0; i < rtv.selected_objs.length; i++) {
-            let obj = rtv.selected_objs[i];
+        rtv.selected_objs.forEach((obj) => {
             if (obj.generate_javascript) {
                 let s = obj.generate_javascript();
                 js += s + "\n";
             }
-        }
+        });
 
         document.getElementById("generic").value = js;
     };
 
-    document.getElementById("gen_script").onclick = function(evt) {
+    document.getElementById("gen_script").onclick = () => {
         let script = document.getElementById("generic").value;
         script = script.split("\n");
-
-        let s_clean = [];
-        for (let i = 0; i < script.length; i++) {
-            let s = script[i];
-            if (s.length != 0) {
-                s_clean.push(s);
-            }
-        }
-
-        script = s_clean;
+        script = script.filter((s) => s.length !== 0);
 
         let t = new Text("", {x: 20, y: rtv.c.clientHeight*2 - 60});
         t.properties[rtv.frame].w = .6;
@@ -3776,21 +3765,19 @@ window.onload = () => {
         x: rtv.c.width - GRID_SIZE*2,
         y: GRID_SIZE/4,
     }));
-    rtv.frames.on_click = function(idx) {
-        transition_with_next(idx);
-    };
+    rtv.frames.on_click = transition_with_next;
 
     rtv.menu = new Menu({x: GRID_SIZE/4, y: GRID_SIZE/2});
     rtv.cam = new Camera();
     rtv.pen = new Pen();
 
-    $(window).focus(function(){
+    $(window).focus(() => {
         rtv.keys.meta = false;
         rtv.keys.ctrl = false;
     });
 
-    window.onkeydown = function(evt) {
-        let key = evt.key;
+    window.onkeydown = (evt) => {
+        const key = evt.key;
 
         if (key == "Escape" && rtv.presenting && rtv.tool != "camera" && rtv.tool != "pen") {
             rtv.presenting = false;
@@ -3884,9 +3871,7 @@ window.onload = () => {
         }
     };
 
-    window.onkeyup = function(evt) {
-        let key = evt.key;
-
+    window.onkeyup = ({ key }) => {
         if (key == "Tab") {
             rtv.keys.tab = false;
         }
@@ -3906,7 +3891,7 @@ window.onload = () => {
         save_state();
     }
 
-    window.onmousedown = function(evt) {
+    window.onmousedown = (evt) => {
         if (evt.srcElement != rtv.c) {
             return;
         }
@@ -3965,7 +3950,7 @@ window.onload = () => {
         }
     };
 
-    window.onmousemove = function(evt) {
+    window.onmousemove = (evt) => {
         // update mouse
         rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
         rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
@@ -4009,7 +3994,7 @@ window.onload = () => {
         rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
     };
 
-    window.onmouseup = function(evt) {
+    window.onmouseup = (evt) => {
         if (evt.srcElement != rtv.c) {
             return;
         }
