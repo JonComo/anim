@@ -2280,16 +2280,16 @@ math.import({
         const n = _n > 0 ? _n : 10;
         const h = _h > 0 ? _h : .1;
 
-        x = x0
-        y = y0
+        let x = x0
+        let y = y0
 
         rtv.ctx.beginPath();
 
-        p = rtv.cam.graph_to_screen(x, y, 0);
+        let p = rtv.cam.graph_to_screen(x, y, 0);
         rtv.ctx.moveTo(p[0], p[1]);
 
         for (let i = 0; i < n; i++) {
-            dydx = f(x, y);
+            const dydx = f(x, y);
 
             if (dydx.im) {
                 rtv.ctx.stroke();
