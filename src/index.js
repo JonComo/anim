@@ -2277,16 +2277,8 @@ math.import({
         }
     },
     eulerMeth: function(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
-        n = 10;
-        h = .1;
-
-        if (_n > 0) {
-            n = _n;
-        }
-
-        if (_h > 0) {
-            h = _h;
-        }
+        const n = _n > 0 ? _n : 10;
+        const h = _h > 0 ? _h : .1;
 
         x = x0
         y = y0
