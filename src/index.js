@@ -588,7 +588,7 @@ math.import({
             var indices = new Array(n);
             for (var i = 0; i < n; ++i) indices[i] = i;
 
-            indices.sort(function(a, b) {
+            indices.sort((a, b) => {
                 a = cam_data[a][2];
                 b = cam_data[b][2];
                 return a < b ? 1 : (a > b ? -1 : 1);
@@ -795,9 +795,7 @@ math.import({
 
         let t = [];
         if (x._data) {
-            x = x.map(function (value, index, matrix) {
-                return pretty_round(value);
-            });
+            x = x.map(pretty_round);
 
             let d = x._data;
             if (x._size.length == 1) {
@@ -835,9 +833,7 @@ math.import({
     },
     sig(x) { // sigmoid(x)
         if (x._data) {
-            var b = x.map(function (value, index, matrix) {
-                return sig(value);
-            });
+            var b = x.map(sig);
             return b;
         }
 
@@ -845,9 +841,7 @@ math.import({
     },
     sigp(x) { // sigmoid_prime(x)
         if (x._data) {
-            var b = x.map(function (value, index, matrix) {
-                return sigp(value);
-            });
+            var b = x.map(sigp);
             return b;
         }
 
@@ -1052,9 +1046,10 @@ math.import({
         let h = layers.length * pad;
         let w = Math.max(...layers) * pad;
 
-        loc = function(i, j, units) {
-            return [pos[0] + 30 + w/2 - pad * units/2 + i*pad, pos[1] + h - j*pad - 120];
-        }
+        const loc = (i, j, units) => [
+            pos[0] + 30 + w/2 - pad * units/2 + i*pad,
+            pos[1] + h - j*pad - 120
+        ];
 
         rtv.ctx.save();
 
@@ -1345,7 +1340,7 @@ math.import({
         rtv.ctx.font = FONT.ANIM;
 
         rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-        draw_matrix(rformat, function(i, j) {
+        draw_matrix(rformat, (i, j) => {
             rtv.ctx.fillStyle = "black";
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
@@ -1360,7 +1355,7 @@ math.import({
 
         // draw W matrix
         rtv.ctx.translate(rsize[0] + pad*3, 0);
-        draw_matrix(Wformat, function(i, j) {
+        draw_matrix(Wformat, (i, j) => {
             rtv.ctx.fillStyle = "black";
             if (high_conn.length && high_conn[0] == j && high_conn[1] == i) {
                 rtv.ctx.fillStyle = COLORS[3];
@@ -1371,7 +1366,7 @@ math.import({
 
         // draw x matrix
         rtv.ctx.translate(Wsize[0] + pad*3, rsize[1]/2-xsize[1]/2);
-        draw_matrix(xformat, function(i,j) {
+        draw_matrix(xformat, (i,j) => {
             rtv.ctx.fillStyle = "black";
 
             for (let n = 0; n < high_neur.length; n ++) {
@@ -1411,7 +1406,7 @@ math.import({
         rtv.ctx.font = FONT.ANIM;
 
         rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-        draw_matrix(rformat, function(i, j) {
+        draw_matrix(rformat, (i, j) => {
             rtv.ctx.fillStyle = "black";
             for (let n = 0; n < high_neur.length; n ++) {
                 let highn = high_neur[n];
@@ -1453,7 +1448,7 @@ math.import({
         n = 5;
         let d = 20 / n;
 
-        let b_at = function(x, y, z, path, current) {
+        function b_at(x, y, z, path, current) {
             path = path._data;
 
             let b = math.zeros(3);
@@ -2451,7 +2446,7 @@ math.import({
             _dt = dt;
         }
 
-        let F = function(s) {
+        function F(s) {
             let sum = 0;
             for (rtv.t = ti; rtv.t <= tf; rtv.t += dt) {
                 sum += math.exp(-s*rtv.t) * f(rtv.t);
