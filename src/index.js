@@ -3653,8 +3653,7 @@ function draw_cursor() {
     }
 }
 
-window.onload = function() {
-
+window.onload = () => {
     rtv.objs = [];
 
     rtv.c = document.getElementById('viewport');
@@ -3665,9 +3664,8 @@ window.onload = function() {
 
     // speech synth
     rtv.speech.synth = window.speechSynthesis; // speech synthesis
-    window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.onvoiceschanged = () => {
         rtv.speech.voices = window.speechSynthesis.getVoices();
-
     };
 
     document.getElementById("save").onclick = function(evt) {
