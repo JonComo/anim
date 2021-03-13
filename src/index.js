@@ -2265,11 +2265,11 @@ math.import({
     dirField: function(f) { // draws direction field of dy/dx = f(x,y)
         for (let x = -10; x <= 10; x+=2) {
             for (let y = -10; y <= 10; y+=2) {
-                dydx = f(x+.0001, y+.0001); // to avoid asymptotes at x=0 or y=0
+                const dydx = f(x+.0001, y+.0001); // to avoid asymptotes at x=0 or y=0
                 if (dydx.im) {
                     continue;
                 }
-                uv = [1, dydx];
+                let uv = [1, dydx];
                 uv = math.matrix(uv)
                 uv = math.multiply(uv, 1/math.norm(uv));
                 draw_vect(x, y, 0, x+uv._data[0], y+uv._data[1], 0);
