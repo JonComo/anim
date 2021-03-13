@@ -2446,15 +2446,13 @@ math.import({
             _dt = dt;
         }
 
-        function F(s) {
+        return (s) => {
             let sum = 0;
             for (rtv.t = ti; rtv.t <= tf; rtv.t += dt) {
                 sum += math.exp(-s*rtv.t) * f(rtv.t);
             }
             return sum;
         }
-
-        return F;
     },
     step(t) {
         if (t > 0) {
