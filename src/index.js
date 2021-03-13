@@ -3576,7 +3576,7 @@ export function transition_with_next(next) {
         steps = 0;
     }
 
-    rtv.transition.run(steps, next, function(targ) {
+    rtv.transition.run(steps, next, (targ) => {
         rtv.frame = targ;
         parser.set('frame', rtv.frame);
 
