@@ -3319,12 +3319,7 @@ function load(evt) {
 
     var reader = new FileReader();
 
-    // Closure to capture the file information.
-    reader.onload = ((theFile) => (e) => {
-            let string = e.target.result;
-            str_to_state(string);
-        }
-    )(f);
+    reader.onload = ({ target: { result: string }}) => str_to_state(string);
 
     reader.readAsText(f);
 }
