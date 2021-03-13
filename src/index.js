@@ -718,13 +718,13 @@ math.import({
             return;
         }
 
-        _x = 0;
-        _y = 0;
-        _z = 0;
+        let _x = 0;
+        let _y = 0;
+        let _z = 0;
 
-        x = 0;
-        y = 0;
-        z = 0;
+        let x = 0;
+        let y = 0;
+        let z = 0;
 
         if ('re' in a && a.im) {
             a = math.matrix([a.re, a.im]);
