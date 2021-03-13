@@ -56,21 +56,21 @@ export const rtv = {
     text: 0,
   },
 
-  c: null,
-  ctx: null,
-  formula_text: null,
+  c: undefined,
+  ctx: undefined,
+  formula_text: undefined,
 
-  animator: null,
-  transition: null,
+  animator: undefined,
+  transition: undefined,
   objs: [],
   selected_objs: [],
-  frames: null,
-  menu: null,
-  cam: null,
-  pen: null,
+  frames: undefined,
+  menu: undefined,
+  cam: undefined,
+  pen: undefined,
   num_frames: 3,
   frame: 1, // current frame
-  next_frame: null,
+  next_frame: undefined,
   rendering: false,
   presenting: false,
   debug: false,
@@ -81,8 +81,8 @@ export const rtv = {
 
   // speech synthesis
   speech: {
-    synth: null,
-    voices: null,
+    synth: undefined,
+    voices: undefined,
   },
 
   t_ease: 0,
@@ -91,8 +91,8 @@ export const rtv = {
 
   tool: 'select',
   selecting: false,
-  new_line: null,
-  text_copied: null,
+  new_line: undefined,
+  text_copied: undefined,
 
   keys: {
     tab: false,
