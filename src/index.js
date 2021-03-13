@@ -2487,7 +2487,7 @@ window.requestAnimationFrame
     ??= window.mozRequestAnimationFrame
     ?? window.webkitRequestAnimationFrame
     ?? window.msRequestAnimationFrame
-    ?? function(f){return setTimeout(f, 1000/rtv.fps)} // simulate calling code 60
+    ?? ((f) => setTimeout(f, 1000 / rtv.fps)); // simulate calling code 60
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export function guid() {
