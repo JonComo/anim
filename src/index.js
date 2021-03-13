@@ -2487,7 +2487,7 @@ window.requestAnimationFrame = window.requestAnimationFrame
     || window.mozRequestAnimationFrame
     || window.webkitRequestAnimationFrame
     || window.msRequestAnimationFrame
-    || function(f){return setTimeout(f, 1000/fps)} // simulate calling code 60
+    || function(f){return setTimeout(f, 1000/rtv.fps)} // simulate calling code 60
 
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export function guid() {
@@ -4159,7 +4159,6 @@ window.onload = function() {
 
     save_state();
 
-    var fps;
     rtv.millis = Date.now();
     var targ_millis = rtv.millis + 1; // set below
 
@@ -4171,12 +4170,12 @@ window.onload = function() {
             return;
         }
 
-        targ_millis = rtv.millis + 1000/fps;
+        targ_millis = rtv.millis + 1000/rtv.fps;
 
         if (rtv.presenting) {
-            fps = 60;
+            rtv.fps = 60;
         } else {
-            fps = 30; // save power when editing
+            rtv.fps = 30; // save power when editing
         }
 
         parser.set('_frame', rtv.t);
