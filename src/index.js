@@ -1517,12 +1517,12 @@ math.import({
         return math.matrix(path);
     },
     interp: function(a, b, divisions) { // interpolate from [x1,y1,z1,...] -> [x2,y2,z2,...]
-        ad = a._data;
-        bd = b._data;
+        const ad = a._data;
+        const bd = b._data;
 
         divisions -= 1;
 
-        L = cached([divisions+1, ad.length]);
+        const L = cached([divisions+1, ad.length]);
 
         for (let i = 0; i <= divisions; i ++) {
             let t = i/divisions;
