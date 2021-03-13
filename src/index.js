@@ -2327,7 +2327,7 @@ math.import({
         rtv.ctx.beginPath();
         rtv.ctx.moveTo(p[0], p[1]);
         for (let i = 0; i < n; i++) {
-            ypp = (-b*yp - c*y)/a;
+            const ypp = (-b*yp - c*y)/a;
             yp += ypp * dt;
             y += yp * dt;
             x += 1 * dt;
