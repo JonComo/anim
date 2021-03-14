@@ -24,4 +24,4 @@ jobs:
 
       - name: Commit and push
         run: |
-          git commit --all --message "Format" && git push
+          git commit --all --message "Format" && git push || true
