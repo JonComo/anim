@@ -3763,10 +3763,10 @@ window.onload = () => {
     rtv.cam = new Camera();
     rtv.pen = new Pen();
 
-    $(window).focus(() => {
+    window.addEventListener('focus', () => {
         rtv.keys.meta = false;
         rtv.keys.ctrl = false;
-    });
+    })
 
     window.onkeydown = (evt) => {
         const key = evt.key;
