@@ -3863,7 +3863,7 @@ window.addEventListener('load', () => {
         }
     });
 
-    window.onkeyup = ({ key }) => {
+    window.addEventListener('keyup', ({ key }) => {
         if (key === "Tab") {
             rtv.keys.tab = false;
         }
@@ -3881,7 +3881,7 @@ window.addEventListener('load', () => {
         }
 
         save_state();
-    }
+    });
 
     window.onmousedown = (evt) => {
         if (evt.srcElement !== rtv.c) {
