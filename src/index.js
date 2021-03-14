@@ -3659,10 +3659,10 @@ window.addEventListener('load', () => {
         rtv.speech.voices = window.speechSynthesis.getVoices();
     });
 
-    document.getElementById("save").onclick = (evt) => {
+    document.getElementById("save").addEventListener('click', (evt) => {
         evt.preventDefault();
         save(rtv.objs);
-    };
+    });
 
     document.getElementById("file").onchange = (evt) => {
         enter_select();
