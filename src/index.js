@@ -3986,7 +3986,7 @@ window.addEventListener('load', () => {
         rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
     }));
 
-    window.addEventListener('mouseup', (evt) => {
+    ['mouseup', 'touchend'].forEach((key) => window.addEventListener(key, (evt) => {
         if (evt.srcElement !== rtv.c) {
             return;
         }
@@ -4117,9 +4117,7 @@ window.addEventListener('load', () => {
         }
 
         save_state();
-    });
-
-    window.ontouchend = window.onmouseup;
+    }));
 
     save_state();
 
