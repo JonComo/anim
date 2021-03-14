@@ -3942,7 +3942,7 @@ window.addEventListener('load', () => {
         }
     });
 
-    window.onmousemove = (evt) => {
+    window.addEventListener('mousemove', (evt) => {
         // update mouse
         rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
         rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
@@ -3984,7 +3984,7 @@ window.addEventListener('load', () => {
 
         rtv.mouse.last = get_mouse_pos(rtv.c, evt);
         rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
-    };
+    });
 
     window.onmouseup = (evt) => {
         if (evt.srcElement !== rtv.c) {
