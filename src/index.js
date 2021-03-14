@@ -3883,64 +3883,64 @@ window.addEventListener('load', () => {
         save_state();
     });
 
-    window.addEventListener('mousedown', (evt) => {
-        if (evt.srcElement !== rtv.c) {
-            return;
-        }
-
-        rtv.mouse.down = true;
-        rtv.mouse.start = get_mouse_pos(rtv.c, evt);
-
-        try {
-            math.compile('click()').evaluate(parser.scope);
-        } catch(e) {
-
-        }
-
-        if (rtv.cam.mouse_down(evt)) {
-            return;
-        }
-
-        if (rtv.pen.mouse_down(evt)) {
-            return;
-        }
-
-        if (rtv.presenting) {
-            return false;
-        }
-
-        let captured = false;
-        for (let i = rtv.objs.length-1; i >= 0; i--) {
-            let obj = rtv.objs[i];
-            if (typeof obj.mouse_down === 'function') {
-                if (obj.mouse_down(evt)) {
-                    captured = true;
-                    break;
+    ['mousedown', 'touchstart'].forEach((key) => window.addEventListener(key, (evt) => {
+            if (evt.srcElement !== rtv.c) {
+                return;
+            }
+    
+            rtv.mouse.down = true;
+            rtv.mouse.start = get_mouse_pos(rtv.c, evt);
+    
+            try {
+                math.compile('click()').evaluate(parser.scope);
+            } catch(e) {
+    
+            }
+    
+            if (rtv.cam.mouse_down(evt)) {
+                return;
+            }
+    
+            if (rtv.pen.mouse_down(evt)) {
+                return;
+            }
+    
+            if (rtv.presenting) {
+                return false;
+            }
+    
+            let captured = false;
+            for (let i = rtv.objs.length-1; i >= 0; i--) {
+                let obj = rtv.objs[i];
+                if (typeof obj.mouse_down === 'function') {
+                    if (obj.mouse_down(evt)) {
+                        captured = true;
+                        break;
+                    }
                 }
             }
-        }
-
-        if (captured) {
-            return false;
-        }
-
-        if (rtv.frames.mouse_down()) {
-            return;
-        }
-
-        // didn't touch an obj, if tool is move start a rect
-        let obj_selected = false;
-        let N = rtv.objs.length;
-        for (let i = 0; i < N; i++) {
-            if (rtv.objs[i].is_selected()) {
-                obj_selected = true;
+    
+            if (captured) {
+                return false;
             }
-        }
-
-        if (rtv.tool === "select" && obj_selected === false) {
-            rtv.selecting = true;
-        }
-    });
+    
+            if (rtv.frames.mouse_down()) {
+                return;
+            }
+    
+            // didn't touch an obj, if tool is move start a rect
+            let obj_selected = false;
+            let N = rtv.objs.length;
+            for (let i = 0; i < N; i++) {
+                if (rtv.objs[i].is_selected()) {
+                    obj_selected = true;
+                }
+            }
+    
+            if (rtv.tool === "select" && obj_selected === false) {
+                rtv.selecting = true;
+            }
+    }));
 
     window.addEventListener('mousemove', (evt) => {
         // update mouse
@@ -4119,7 +4119,6 @@ window.addEventListener('load', () => {
         save_state();
     });
 
-    window.ontouchstart = window.onmousedown;
     window.ontouchmove = window.onmousemove;
     window.ontouchend = window.onmouseup;
 
