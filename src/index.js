@@ -3694,7 +3694,7 @@ window.addEventListener('load', () => {
         });
     });
 
-    document.getElementById("gen_js").onclick = () => {
+    document.getElementById("gen_js").addEventListener('click', () => {
         let js = "";
 
         rtv.selected_objs.forEach((obj) => {
@@ -3705,7 +3705,7 @@ window.addEventListener('load', () => {
         });
 
         document.getElementById("generic").value = js;
-    };
+    });
 
     document.getElementById("gen_script").onclick = () => {
         let script = document.getElementById("generic").value;
