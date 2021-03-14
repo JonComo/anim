@@ -3310,7 +3310,7 @@ function load(evt) {
 
     var reader = new FileReader();
 
-    reader.onload = ({ target: { result: string }}) => str_to_state(string);
+    reader.addEventListener('load', ({ target: { result: string } }) => str_to_state(string));
 
     reader.readAsText(f);
 }
