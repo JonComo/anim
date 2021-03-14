@@ -3883,7 +3883,7 @@ window.addEventListener('load', () => {
         save_state();
     });
 
-    window.onmousedown = (evt) => {
+    window.addEventListener('mousedown', (evt) => {
         if (evt.srcElement !== rtv.c) {
             return;
         }
@@ -3940,7 +3940,7 @@ window.addEventListener('load', () => {
         if (rtv.tool === "select" && obj_selected === false) {
             rtv.selecting = true;
         }
-    };
+    });
 
     window.onmousemove = (evt) => {
         // update mouse
