@@ -3644,7 +3644,7 @@ function draw_cursor() {
     }
 }
 
-window.onload = () => {
+window.addEventListener('load', () => {
     rtv.objs = [];
 
     rtv.c = document.getElementById('viewport');
@@ -4249,4 +4249,4 @@ window.onload = () => {
     }
 
     requestAnimationFrame(animate);
-}
+});
