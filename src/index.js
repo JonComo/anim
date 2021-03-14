@@ -3669,11 +3669,11 @@ window.addEventListener('load', () => {
         load(evt);
     });
 
-    document.getElementById("load_to_frame").onclick = () => {
+    document.getElementById("load_to_frame").addEventListener('click', () => {
         let text = document.getElementById("selected_objects_text").value;
         let arr = JSON.parse(text);
         rtv.objs = rtv.objs.concat(text_array_to_objs(arr, false));
-    };
+    });
 
     rtv.formula_text = document.getElementById("formula_text");
     document.getElementById("load_clear_formula_text").onclick = () => {
