@@ -3655,9 +3655,9 @@ window.addEventListener('load', () => {
 
     // speech synth
     rtv.speech.synth = window.speechSynthesis; // speech synthesis
-    window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.addEventListener('voiceschanged', () => {
         rtv.speech.voices = window.speechSynthesis.getVoices();
-    };
+    });
 
     document.getElementById("save").onclick = (evt) => {
         evt.preventDefault();
