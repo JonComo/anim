@@ -3942,7 +3942,7 @@ window.addEventListener('load', () => {
             }
     }));
 
-    window.addEventListener('mousemove', (evt) => {
+    ['mousemove', 'touchmove'].forEach((key) => window.addEventListener(key, (evt) => {
         // update mouse
         rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
         rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
@@ -3984,7 +3984,7 @@ window.addEventListener('load', () => {
 
         rtv.mouse.last = get_mouse_pos(rtv.c, evt);
         rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
-    });
+    }));
 
     window.addEventListener('mouseup', (evt) => {
         if (evt.srcElement !== rtv.c) {
@@ -4119,7 +4119,6 @@ window.addEventListener('load', () => {
         save_state();
     });
 
-    window.ontouchmove = window.onmousemove;
     window.ontouchend = window.onmouseup;
 
     save_state();
