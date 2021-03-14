@@ -3767,7 +3767,7 @@ window.addEventListener('load', () => {
         rtv.keys.ctrl = false;
     })
 
-    window.onkeydown = (evt) => {
+    window.addEventListener('keydown', (evt) => {
         const key = evt.key;
 
         if (key === "Escape" && rtv.presenting && rtv.tool !== "camera" && rtv.tool !== "pen") {
@@ -3861,7 +3861,7 @@ window.addEventListener('load', () => {
                 rtv.tool = tools[key];
             }
         }
-    };
+    });
 
     window.onkeyup = ({ key }) => {
         if (key === "Tab") {
