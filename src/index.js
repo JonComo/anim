@@ -3986,7 +3986,7 @@ window.addEventListener('load', () => {
         rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
     });
 
-    window.onmouseup = (evt) => {
+    window.addEventListener('mouseup', (evt) => {
         if (evt.srcElement !== rtv.c) {
             return;
         }
@@ -4117,7 +4117,7 @@ window.addEventListener('load', () => {
         }
 
         save_state();
-    }
+    });
 
     window.ontouchstart = window.onmousedown;
     window.ontouchmove = window.onmousemove;
