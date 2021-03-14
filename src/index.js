@@ -3664,10 +3664,10 @@ window.addEventListener('load', () => {
         save(rtv.objs);
     });
 
-    document.getElementById("file").onchange = (evt) => {
+    document.getElementById("file").addEventListener('change', (evt) => {
         enter_select();
         load(evt);
-    };
+    });
 
     document.getElementById("load_to_frame").onclick = () => {
         let text = document.getElementById("selected_objects_text").value;
