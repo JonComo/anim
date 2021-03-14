@@ -3685,14 +3685,14 @@ window.addEventListener('load', () => {
             }
         }
     });
-    document.getElementById("load_insert_formula_text").onclick = () => {
+    document.getElementById("load_insert_formula_text").addEventListener('click', () => {
         let t = rtv.formula_text.value;
         rtv.objs.forEach((obj) => {
             if (typeof obj.replace_selected_text === "function" && obj.is_selected()) {
                 obj.change_text(obj.replace_selected_text(t));
             }
         });
-    };
+    });
 
     document.getElementById("gen_js").onclick = () => {
         let js = "";
