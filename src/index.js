@@ -3707,7 +3707,7 @@ window.addEventListener('load', () => {
         document.getElementById("generic").value = js;
     });
 
-    document.getElementById("gen_script").onclick = () => {
+    document.getElementById("gen_script").addEventListener('click', () => {
         let script = document.getElementById("generic").value;
         script = script.split("\n");
         script = script.filter((s) => s.length !== 0);
@@ -3731,7 +3731,7 @@ window.addEventListener('load', () => {
         rtv.frames.create_buttons();
 
         save_state();
-    };
+    });
 
     document.addEventListener('paste', (event) => {
         let paste = (event.clipboardData || window.clipboardData).getData('text');
