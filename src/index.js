@@ -3832,6 +3832,7 @@ window.onload = () => {
             if (typeof obj.onkeydown === 'function') {
                 if (obj.onkeydown(evt)) {
                     captured = true;
+                    evt.preventDefault(); // Prevent default if event has been handled
                     if (key === "ArrowUp" || key === "ArrowDown") {
                         // stops text selection from propagating as you iterate the array
                         break;
