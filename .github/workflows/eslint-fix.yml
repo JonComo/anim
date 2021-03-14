@@ -16,6 +16,9 @@ jobs:
       - name: Configure Git
         run: git config user.name "ESLint Formatter"
 
+      - name: Install NPM packages
+        run: npm install
+
       - name: Format
         run: npm run format || true
 
