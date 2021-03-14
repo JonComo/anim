@@ -3676,7 +3676,7 @@ window.addEventListener('load', () => {
     });
 
     rtv.formula_text = document.getElementById("formula_text");
-    document.getElementById("load_clear_formula_text").onclick = () => {
+    document.getElementById("load_clear_formula_text").addEventListener('click', () => {
         let t = rtv.formula_text.value;
         for (let i = 0; i < rtv.objs.length; i++) {
             let obj = rtv.objs[i];
@@ -3684,7 +3684,7 @@ window.addEventListener('load', () => {
                 obj.change_text(t);
             }
         }
-    };
+    });
     document.getElementById("load_insert_formula_text").onclick = () => {
         let t = rtv.formula_text.value;
         rtv.objs.forEach((obj) => {
