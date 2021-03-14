@@ -1,5 +1,4 @@
 import { saveAs } from 'file-saver';
-import $ from 'jquery';
 import Camera from './graphics/camera';
 import Circle from './tools/circle';
 import Frames, { configureCanvas } from './graphics/frames';
