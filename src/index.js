@@ -2390,17 +2390,21 @@ math.import({
         }
         rtv.ctx.stroke();
     },
-    factors(n) { // list positive factors of n
-        const f = [];
-        for (let i = 0; i <= n/2; i++) {
-            if (n / i % 1 === 0) {
-                f.push(i);
+    factors(n) { // Returns positive factors of positive integer 'n'
+        const factors = []; // Initialize array to contain factors
+
+        for (let i = Math.floor(Math.sqrt(n)); i > 0; i--) { // Loop through smaller factors of closest to farthest factor pairs
+            const c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+
+            if (Number.isInteger(corresponding)) { // Check if 'n' is divisible by 'i'
+                factors.unshift(i); // Insert 'i' at start of 'factors'
+                if (i !== corresponding) { // Check that 'n' is not a perfect square
+                    factors.push(corresponding); // Append 'c' to the end of 'factors'
+                }
             }
         }
 
-        f.push(n);
-
-        return math.matrix(f);
+        return math.matrix(factors); // Create and return matrix from 'factors'
     },
     primeFactors(n) { // list prime factors of n
 
