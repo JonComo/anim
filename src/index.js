@@ -3378,8 +3378,14 @@ export function insert_frame() {
     rtv.frames.create_buttons();
 }
 
+/**
+ * Enters presentation mode.
+ */
 export function present() {
-    function setUpPresentationMode() { // Set page up for presentation mode
+    /**
+     * Sets page up for presentation mode.
+     */
+    function setUpPresentationMode() {
         enter_select(); // Enter select mode
         document.body.style.cursor = 'none'; // Hide cursor
         document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
@@ -3392,15 +3398,18 @@ export function present() {
             behavior: 'smooth' // Smooth scroll
         }); // Scroll window
 
+        /**
+         * Sets up presentation mode once window is scrolled to top.
+         */
         function scrollListener() { // Scroll listener
             if (window.scrollY === 0) { // Check if smooth scroll finished
                 window.removeEventListener('scroll', scrollListener); // Stop listening
-                setUpPresentationMode(); // Set up presentation mode
+                setUpPresentationMode();
             }
         }
         window.addEventListener('scroll', scrollListener); // Attach scroll listener
     } else {
-        setUpPresentationMode(); // Set up presentation mode
+        setUpPresentationMode();
     }
 }
 
