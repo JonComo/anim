@@ -3380,8 +3380,8 @@ export function insert_frame() {
 
 export function present() {
     rtv.tool = "select";
-    rtv.presenting = true;
     document.body.style.cursor = 'none';
+    rtv.presenting = true;
 
     if (window.scrollY !== 0) { // Check if already at top
         window.scrollTo({
