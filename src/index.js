@@ -3379,11 +3379,11 @@ export function insert_frame() {
 }
 
 export function present() {
-    function setUpPresentationMode() {
-        enter_select();
-        document.body.style.cursor = 'none';
+    function setUpPresentationMode() { // Set page up for presentation mode
+        enter_select(); // Enter select mode
+        document.body.style.cursor = 'none'; // Hide cursor
         document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
-        rtv.presenting = true;
+        rtv.presenting = true; // Declare presentation mode entered
     }
 
     if (window.scrollY !== 0) { // Check if already at top
@@ -3392,7 +3392,7 @@ export function present() {
             behavior: 'smooth' // Smooth scroll
         }); // Scroll window
 
-        function scrollListener() {
+        function scrollListener() { // Scroll listener
             if (window.scrollY === 0) { // Check if smooth scroll finished
                 window.removeEventListener('scroll', scrollListener); // Stop listening
                 setUpPresentationMode(); // Set up presentation mode
