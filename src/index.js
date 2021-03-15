@@ -3379,10 +3379,6 @@ export function insert_frame() {
 }
 
 export function present() {
-    rtv.tool = "select";
-    document.body.style.cursor = 'none';
-    rtv.presenting = true;
-
     if (window.scrollY !== 0) { // Check if already at top
         window.scrollTo({
             top: 0, // Scroll to top
@@ -3391,13 +3387,20 @@ export function present() {
 
         function scrollListener() {
             if (window.scrollY === 0) { // Check if smooth scroll finished
+                rtv.tool = "select";
+                document.body.style.cursor = 'none';
                 document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
+                rtv.presenting = true;
+
                 window.removeEventListener('scroll', scrollListener); // Stop listening
             }
         }
         window.addEventListener('scroll', scrollListener); // Attach scroll listener
     } else {
+        rtv.tool = "select";
+        document.body.style.cursor = 'none';
         document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
+        rtv.presenting = true;
     }
 }
 
