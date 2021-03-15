@@ -3380,7 +3380,7 @@ export function insert_frame() {
 
 export function present() {
     function setUpPresentationMode() {
-        rtv.tool = "select";
+        enter_select();
         document.body.style.cursor = 'none';
         document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
         rtv.presenting = true;
