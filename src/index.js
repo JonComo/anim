@@ -3387,12 +3387,12 @@ export function present() {
 
         function scrollListener() {
             if (window.scrollY === 0) { // Check if smooth scroll finished
+                window.removeEventListener('scroll', scrollListener); // Stop listening
+
                 rtv.tool = "select";
                 document.body.style.cursor = 'none';
                 document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
                 rtv.presenting = true;
-
-                window.removeEventListener('scroll', scrollListener); // Stop listening
             }
         }
         window.addEventListener('scroll', scrollListener); // Attach scroll listener
