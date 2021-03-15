@@ -3773,7 +3773,7 @@ window.addEventListener('load', () => {
         if (key === "Escape" && rtv.presenting && rtv.tool !== "camera" && rtv.tool !== "pen") {
             rtv.presenting = false;
             document.body.style.cursor = '';
-            document.body.style.overflow = 'scroll'; // Enable and show scrollbar
+            document.body.style.overflow = 'auto'; // Enable and show scrollbar
             return false;
         }
 
