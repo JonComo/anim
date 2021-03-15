@@ -2406,23 +2406,30 @@ math.import({
 
         return math.matrix(factors); // Create and return matrix from 'factors'
     },
-    primeFactors(n) { // list prime factors of n
+    primeFactors(n) { // Returns prime factors of positive integer 'n'
+        let dividend = n; // Do not assign to parameter 'n'
+        const primes = []; // Initialize array to contain prime factors
 
-        let factors = math.factors(n);
-        let d = factors._data;
+        // Checks if 'dividend' is divisible by 'f'
+        const isValid = (f) => dividend % f === 0;
 
-        let primes = [];
-        // this gonna be real inefficient! fun times...
-        for (let i = 0; i < factors._size[0]; i++) {
-            let num = d[i];
-            let f = math.factors(num);
-            if (f._size[0] === 1 || f._size[0] === 2) {
-                // prime
-                primes.push(num);
+        // Checks if 'f' was previously registered as a prime factor
+        const isUsed = (f) => primes[primes.length - 1] === f;
+
+        // Checks if 'f' is a prime number
+        const isPrime = (f) => primes.every((p) => f % p !== 0);
+
+        let i = 2; // Initialize 'i' at smallest prime number
+        while (dividend > 1) { // Loop until all factors are extracted (AKA until 'dividend' is equal to 1)
+            if (isValid(i) && (isUsed(i) || isPrime(i))) {
+                primes.push(i); // Append 'i' to the end of 'primes'
+                dividend /= i; // Divide 'dividend' by 'i' and assign for next iteration
+            } else { // 'f' is not a prime factor of 'dividend' (anymore)
+                i++; // Increment 'i' by 1
             }
         }
 
-        return math.matrix(primes);
+        return math.matrix(primes); // Create and return matrix from 'primes'
     },
     laplace(f, _ti, _tf, _dt) {
         let ti = 0;
