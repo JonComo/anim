@@ -3382,9 +3382,23 @@ export function present() {
     rtv.tool = "select";
     rtv.presenting = true;
     document.body.style.cursor = 'none';
-    document.body.scrollTop = 0; // Scroll to top in Safari
-    document.documentElement.scrollTop = 0; // Scroll to top in other browsers
-    document.body.style.overflow = 'hidden'; // Disable and hide scrollbar
+
+    if (window.scrollY !== 0) { // Check if already at top
+        window.scrollTo({
+            top: 0, // Scroll to top
+            behavior: 'smooth' // Smooth scroll
+        }); // Scroll window
+
+        function scrollListener() {
+            if (window.scrollY === 0) { // Check if smooth scroll finished
+                document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
+                window.removeEventListener('scroll', scrollListener); // Stop listening
+            }
+        }
+        window.addEventListener('scroll', scrollListener); // Attach scroll listener
+    } else {
+        document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
+    }
 }
 
 function constrain_frame(f) {
