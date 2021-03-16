@@ -561,7 +561,7 @@ math.import({
   scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
-    const points_d = points._data;
+    const pointsD = points._data;
 
     let psize = 8;
     if (arguments.length >= 2) {
@@ -588,7 +588,7 @@ math.import({
       for (let j = 0; j < n; j++) {
         const i = indices[j];
 
-        const p = points_d[i];
+        const p = pointsD[i];
 
         // constrain
         col = colorFn(p)._data;
