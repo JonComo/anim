@@ -2,7 +2,7 @@ import {
   copy,
   insertFrame,
   loopFrame,
-  transition_with_next,
+  transitionWithNext,
 } from '../index';
 import Button from '../ui/button';
 import {
@@ -117,16 +117,16 @@ export default function Frames(pos) {
         insertFrame();
       }
 
-      transition_with_next(loopFrame(rtv.frame + 1));
+      transitionWithNext(loopFrame(rtv.frame + 1));
       return true;
     } if (key === 'ArrowLeft') {
-      transition_with_next(loopFrame(rtv.frame - 1));
+      transitionWithNext(loopFrame(rtv.frame - 1));
       return true;
     }
 
     if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) !== -1) {
       if (!rtv.transition.transitioning) {
-        transition_with_next(Number(key));
+        transitionWithNext(Number(key));
         return true;
       }
 

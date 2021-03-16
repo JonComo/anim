@@ -3518,7 +3518,7 @@ function drawAxes(ctx) {
   ctx.restore();
 }
 
-export function transition_with_next(next) {
+export function transitionWithNext(next) {
   if (rtv.transition.transitioning) {
     return;
   }
@@ -3737,7 +3737,7 @@ window.addEventListener('load', () => {
     x: rtv.c.width - GRID_SIZE * 2,
     y: GRID_SIZE / 4,
   }));
-  rtv.frames.on_click = transition_with_next;
+  rtv.frames.on_click = transitionWithNext;
 
   rtv.menu = new Menu({ x: GRID_SIZE / 4, y: GRID_SIZE / 2 });
   rtv.cam = new Camera();
