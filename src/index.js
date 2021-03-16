@@ -786,7 +786,7 @@ math.import({
   view(x, { _data: p } = { _data: [0, 0] }) { // matrix, position: [x, y, z]
     let t = [];
     if (x._data) {
-      const d = x.map(pretty_round)._data;
+      const d = x.map(prettyRound)._data;
       if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
@@ -1396,7 +1396,7 @@ math.import({
 
     let round = prettyRoundOne;
     if (rtv.keys.ctrl) {
-      round = pretty_round;
+      round = prettyRound;
     }
 
     for (let i = 0; i < W._data.length; i++) {
@@ -2453,7 +2453,7 @@ export function guid() {
     s4()}-${s4()}${s4()}${s4()}`;
 }
 
-export function pretty_round(num) {
+export function prettyRound(num) {
   return (Math.round(num * 100) / 100).toFixed(2);
 }
 
@@ -2954,7 +2954,7 @@ export function format_matrix(matrix) {
   let round = prettyRoundOne;
 
   if (rtv.keys.ctrl) {
-    round = pretty_round;
+    round = prettyRound;
   }
 
   if (typeof matrix[0] === 'number') {

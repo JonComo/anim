@@ -13,7 +13,7 @@ import {
   guidIndex,
   interpolate,
   matrix_size,
-  pretty_round,
+  prettyRound,
   rgbToHex,
   save_state,
   transform_props,
@@ -556,7 +556,7 @@ export default function Text(text, pos) {
             // nothing
             this.text_val = `=${val}`;
           } else {
-            this.text_val = `=${pretty_round(val)}`;
+            this.text_val = `=${prettyRound(val)}`;
           }
         } else if (type === 'boolean') {
           this.text_val = ` = ${val}`;
@@ -570,9 +570,9 @@ export default function Text(text, pos) {
               // nothing
               this.text_val = `=${val}`;
             } else {
-              this.text_val = `=${pretty_round(
+              this.text_val = `=${prettyRound(
                 val.re,
-              ).toString()} + ${pretty_round(val.im).toString()}i`;
+              ).toString()} + ${prettyRound(val.im).toString()}i`;
             }
           }
         } else if (val) {
@@ -699,7 +699,7 @@ export default function Text(text, pos) {
         }
 
         const newVal = oldVal + delta;
-        this.text_val = `=${pretty_round(newVal)}`;
+        this.text_val = `=${prettyRound(newVal)}`;
 
         try {
           parser.set(varName, newVal);
