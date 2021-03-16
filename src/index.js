@@ -1366,7 +1366,7 @@ math.import({
     const cols = W._size[1];
 
     const high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
-    const high_conn = high[0];
+    const highConn = high[0];
     const high_neur = high[1];
 
     // draw matrices
