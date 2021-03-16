@@ -3252,7 +3252,7 @@ function strToState(str) {
     rtv.cam.update_props();
   }
 
-  rtv.objs = text_array_to_objs(arr, true);
+  rtv.objs = textArrayToObjs(arr, true);
 }
 
 function save(objs) {
@@ -3285,7 +3285,7 @@ export function loadLocal() {
   }
 }
 
-function text_array_to_objs(arr, keep_animation) {
+function textArrayToObjs(arr, keep_animation) {
   const new_objs = [];
   for (let i = 0; i < arr.length; i++) {
     const o = arr[i];
@@ -3653,7 +3653,7 @@ window.addEventListener('load', () => {
   document.getElementById('load_to_frame').addEventListener('click', () => {
     const text = document.getElementById('selected_objects_text').value;
     const arr = JSON.parse(text);
-    rtv.objs = rtv.objs.concat(text_array_to_objs(arr, false));
+    rtv.objs = rtv.objs.concat(textArrayToObjs(arr, false));
   });
 
   rtv.formula_text = document.getElementById('formula_text');
