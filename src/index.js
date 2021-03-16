@@ -749,11 +749,11 @@ math.import({
 
     draw_vect(_x, _y, _z, x, y, z);
   },
-  if(fnCondition, fnA, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
+  if(fnCondition, fnA, fnB) { // if fn_condition() == true then fn_a() else fn_b()
     if (fnCondition()) {
       fnA();
     } else {
-      fn_b();
+      fnB();
     }
   },
   list(fn, array) { // [fn(v) for v in array]
