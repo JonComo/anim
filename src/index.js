@@ -3289,27 +3289,27 @@ function textArrayToObjs(arr, keepAnimation) {
   const newObjs = [];
   for (let i = 0; i < arr.length; i++) {
     const o = arr[i];
-    let new_obj = null;
+    let newObj = null;
 
     if (o.type === 'Shape') {
-      new_obj = new Shape();
+      newObj = new Shape();
     } else if (o.type === 'Circle') {
-      new_obj = new Circle();
+      newObj = new Circle();
     } else if (o.type === 'Text') {
-      new_obj = new Text();
+      newObj = new Text();
     }
 
     if (keepAnimation) {
-      new_obj.properties = o.properties;
+      newObj.properties = o.properties;
     } else {
-      new_obj.properties = {};
-      new_obj.properties[rtv.frame] = o.properties[1];
-      new_obj.select();
+      newObj.properties = {};
+      newObj.properties[rtv.frame] = o.properties[1];
+      newObj.select();
     }
 
-    new_obj.guid = o.guid;
+    newObj.guid = o.guid;
 
-    newObjs.push(new_obj);
+    newObjs.push(newObj);
   }
 
   return newObjs;
