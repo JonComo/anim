@@ -2999,7 +2999,7 @@ function getMousePos(canvas, evt) {
   };
 }
 
-function constrain_to_grid(p) {
+function constrainToGrid(p) {
   const gs = GRID_SIZE / 4;
   return { x: Math.floor((p.x + gs / 2) / gs) * gs, y: Math.floor((p.y + gs / 2) / gs) * gs };
 }
@@ -3924,7 +3924,7 @@ window.addEventListener('load', () => {
   ['mousemove', 'touchmove'].forEach((key) => window.addEventListener(key, (evt) => {
     // update mouse
     rtv.mouse.pos = getMousePos(rtv.c, evt);
-    rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
+    rtv.mouse.grid = constrainToGrid(rtv.mouse.pos);
     rtv.mouse.graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
 
     parser.set('_y', rtv.mouse.graph.x);
@@ -3962,7 +3962,7 @@ window.addEventListener('load', () => {
     }
 
     rtv.mouse.last = getMousePos(rtv.c, evt);
-    rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
+    rtv.mouse.gridLast = constrainToGrid(rtv.mouse.pos);
   }));
 
   ['mouseup', 'touchend'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
