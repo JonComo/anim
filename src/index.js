@@ -2874,12 +2874,12 @@ export function drawNetwork(layers, pos) {
   }
 }
 
-const cache_fn = {};
+const cacheFn = {};
 export function draw_fn(fn) {
   let tree;
 
-  if (cache_fn[fn]) {
-    tree = cache_fn[fn];
+  if (cacheFn[fn]) {
+    tree = cacheFn[fn];
   } else {
     try {
       tree = math.parse(fn);
@@ -2888,7 +2888,7 @@ export function draw_fn(fn) {
     }
 
     if (tree) {
-      cache_fn[fn] = tree;
+      cacheFn[fn] = tree;
     }
   }
 
