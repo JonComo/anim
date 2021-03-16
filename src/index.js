@@ -803,13 +803,13 @@ math.import({
     }
   },
   labels(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
-    points = rtv.cam.graph_to_screen_mat(points);
+    const graphed = rtv.cam.graph_to_screen_mat(points);
     const N = labels.size()[0];
     let p;
     rtv.ctx.save();
     rtv.ctx.textAlign = 'center';
     for (let i = 0; i < N; i++) {
-      p = points[i];
+      p = graphed[i];
       rtv.ctx.fillText(labels._data[i], p[0], p[1]);
     }
     rtv.ctx.restore();
