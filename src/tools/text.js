@@ -3,7 +3,7 @@ import {
   copy,
   distance,
   drawBrackets,
-  draw_fn,
+  drawFn,
   draw_matrix,
   drawNetwork,
   drawSimple,
@@ -761,7 +761,7 @@ export default function Text(text, pos) {
 
     if (this.command === 'f' && !this.is_selected()) {
       const fn = t.slice(this.command.length + 1); // +1 for semicolon
-      size = draw_fn(fn);
+      size = drawFn(fn);
     } else {
       const N = t.length;
       size = { w: N * CHAR.SIZE, h: CHAR.SIZE * 2 };

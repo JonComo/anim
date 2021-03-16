@@ -2875,7 +2875,7 @@ export function drawNetwork(layers, pos) {
 }
 
 const cacheFn = {};
-export function draw_fn(fn) {
+export function drawFn(fn) {
   let tree;
 
   if (cacheFn[fn]) {
