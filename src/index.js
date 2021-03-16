@@ -2833,7 +2833,7 @@ export function drawSimple(text) {
   return text.length * CHAR.SIZE;
 }
 
-export function draw_network(layers, pos) {
+export function drawNetwork(layers, pos) {
   const pad = 120;
   const radius = 20;
 

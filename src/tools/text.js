@@ -5,7 +5,7 @@ import {
   drawBrackets,
   draw_fn,
   draw_matrix,
-  draw_network,
+  drawNetwork,
   drawSimple,
   enter_select,
   format_matrix,
@@ -254,7 +254,7 @@ export default function Text(text, pos) {
 
       const l = math.evaluate(t.substring(t.indexOf('['), t.indexOf(']') + 1));
 
-      draw_network(l._data, [p.x, p.y]);
+      drawNetwork(l._data, [p.x, p.y]);
 
       // hide
       this.properties[rtv.frame].c[3] = 0;
