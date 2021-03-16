@@ -558,7 +558,7 @@ math.import({
   T(m) { // transpose m
     return math.transpose(m);
   },
-  scatter(points, point_size, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+  scatter(points, pointSize, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
     const points_d = points._data;
