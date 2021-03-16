@@ -618,14 +618,14 @@ math.import({
       colorL = color._data.map(constrain);
     }
 
-    const cam_data = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
+    const camData = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     if (color) {
       rtv.ctx.fillStyle = rgbToHex(math.multiply(colorL, 255));
     }
-    rtv.ctx.arc(cam_data[0], cam_data[1], psize, 0, PI2);
+    rtv.ctx.arc(camData[0], camData[1], psize, 0, PI2);
     rtv.ctx.fill();
 
     rtv.ctx.restore();
