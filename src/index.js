@@ -747,7 +747,7 @@ math.import({
       }
     }
 
-    draw_vect(_x, _y, _z, x, y, z);
+    drawVect(_x, _y, _z, x, y, z);
   },
   if(fnCondition, fnA, fnB) { // if fn_condition() == true then fn_a() else fn_b()
     if (fnCondition()) {
@@ -857,7 +857,7 @@ math.import({
             v = [v[0] / n, v[1] / n, v[2] / n];
           }
 
-          draw_vect(x, y, z, x + v[0], y + v[1], z + v[2]);
+          drawVect(x, y, z, x + v[0], y + v[1], z + v[2]);
         }
       }
     }
@@ -969,7 +969,7 @@ math.import({
           const p = r(u, v)._data;
 
           const vect = f(p[0], p[1], p[2])._data;
-          draw_vect(p[0], p[1], p[2], p[0] + vect[0], p[1] + vect[1], p[2] + vect[2]);
+          drawVect(p[0], p[1], p[2], p[0] + vect[0], p[1] + vect[1], p[2] + vect[2]);
         }
       }
     }
@@ -1452,7 +1452,7 @@ math.import({
 
           if (math.norm(b) > 0.1) {
             b = b._data;
-            draw_vect(x, y, z, x + b[0], y + b[1], z + b[2]);
+            drawVect(x, y, z, x + b[0], y + b[1], z + b[2]);
           }
         }
       }
@@ -2216,7 +2216,7 @@ math.import({
         let uv = [1, dydx];
         uv = math.matrix(uv);
         uv = math.multiply(uv, 1 / math.norm(uv));
-        draw_vect(x, y, 0, x + uv._data[0], y + uv._data[1], 0);
+        drawVect(x, y, 0, x + uv._data[0], y + uv._data[1], 0);
       }
     }
   },
@@ -2781,7 +2781,7 @@ function drawR(o, p, d) {
   return size;
 }
 
-function draw_vect(_x, _y, _z, x, y, z) {
+function drawVect(_x, _y, _z, x, y, z) {
   let a = rtv.cam.graph_to_screen(_x, _y, _z);
   let b = rtv.cam.graph_to_screen(x, y, z);
 
