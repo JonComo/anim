@@ -1,6 +1,6 @@
 import {
   copy,
-  insert_frame,
+  insertFrame,
   loop_frame,
   transition_with_next,
 } from '../index';
@@ -100,7 +100,7 @@ export default function Frames(pos) {
         } if (i === this.buttons.length - 1) {
           // add frame
           // copy to next from frame
-          insert_frame();
+          insertFrame();
           return;
         }
         this.on_click(i + 1);
@@ -114,7 +114,7 @@ export default function Frames(pos) {
     if (key === 'ArrowRight') {
       if (!rtv.presenting && rtv.frame + 1 > rtv.num_frames) {
         // create a new one
-        insert_frame();
+        insertFrame();
       }
 
       transition_with_next(loop_frame(rtv.frame + 1));

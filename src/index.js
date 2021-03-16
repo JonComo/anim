@@ -3315,7 +3315,7 @@ function textArrayToObjs(arr, keepAnimation) {
   return newObjs;
 }
 
-export function insert_frame() {
+export function insertFrame() {
   rtv.num_frames += 1;
   for (let f = rtv.num_frames; f >= rtv.frame; f--) {
     for (let i = 0; i < rtv.objs.length; i++) {
