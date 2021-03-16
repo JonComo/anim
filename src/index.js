@@ -2804,7 +2804,7 @@ function drawVect(_x, _y, _z, x, y, z) {
   rtv.ctx.stroke();
 }
 
-export function draw_brackets(sx, sy, width, height) {
+export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
   rtv.ctx.lineTo(sx, sy);
@@ -2939,7 +2939,7 @@ export function draw_matrix(matrix, color_ij) {
   }
 
   const size = matrix_size(matrix);
-  draw_brackets(0, 0, size[0], size[1]);
+  drawBrackets(0, 0, size[0], size[1]);
 
   rtv.ctx.restore();
 }

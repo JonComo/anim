@@ -2,7 +2,7 @@ import {
   constrain,
   copy,
   distance,
-  draw_brackets,
+  drawBrackets,
   draw_fn,
   draw_matrix,
   draw_network,
@@ -288,7 +288,7 @@ export default function Text(text, pos) {
       }
 
       const size = matrix_size(matrix);
-      draw_brackets(0, 0, size[0], size[1]);
+      drawBrackets(0, 0, size[0], size[1]);
 
       return;
     }
