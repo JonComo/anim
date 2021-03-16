@@ -1153,9 +1153,7 @@ math.import({
   int(n) {
     return n | 0;
   },
-  elefield(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
-    charges = charges._data;
-
+  elefield({ _data: charges }, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
     if (arguments.length === 1) {
       const n = 5;
       const d = 20 / n;
