@@ -1414,7 +1414,7 @@ math.import({
 
     rtv.ctx.restore();
   },
-  magfield(path, current, { _data: at_point }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+  magfield(path, current, { _data: atPoint }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
 
@@ -1441,7 +1441,7 @@ math.import({
     }
 
     if (arguments.length >= 3) {
-      const b = b_at(at_point[0], at_point[1], at_point[2], path, current);
+      const b = b_at(atPoint[0], atPoint[1], atPoint[2], path, current);
 
       return b;
     }
