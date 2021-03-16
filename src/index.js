@@ -3190,7 +3190,7 @@ function interpolateColors(ac, bc, interp) {
   return ic;
 }
 
-export function save_state() {
+export function saveState() {
   // save state
   const str = state_to_string();
   if (states.length > 0) {
@@ -3711,7 +3711,7 @@ window.addEventListener('load', () => {
     rtv.num_frames = script.length;
     rtv.frames.create_buttons();
 
-    save_state();
+    saveState();
   });
 
   document.addEventListener('paste', (event) => {
@@ -3863,7 +3863,7 @@ window.addEventListener('load', () => {
       rtv.keys.ctrl = false;
     }
 
-    save_state();
+    saveState();
   });
 
   ['mousedown', 'touchstart'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
@@ -3990,12 +3990,12 @@ window.addEventListener('load', () => {
       rtv.new_line = null;
       rtv.selecting = false;
 
-      save_state();
+      saveState();
       return;
     }
 
     if (rtv.pen.mouse_up(evt)) {
-      save_state();
+      saveState();
       return;
     }
 
@@ -4087,14 +4087,14 @@ window.addEventListener('load', () => {
         document.getElementById('selected_objects_text').value = string;
       }
 
-      save_state();
+      saveState();
       return false;
     }
 
-    save_state();
+    saveState();
   }));
 
-  save_state();
+  saveState();
 
   rtv.millis = Date.now();
   let targ_millis = rtv.millis + 1; // set below

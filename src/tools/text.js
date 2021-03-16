@@ -15,7 +15,7 @@ import {
   matrixSize,
   prettyRound,
   rgbToHex,
-  save_state,
+  saveState,
   transformProps,
 } from '../index';
 import {
@@ -394,7 +394,7 @@ export default function Text(text, pos) {
         const newT = new Text('', { x: p.x, y: p.y + CHAR.SIZE * 2 });
         rtv.objs.push(newT);
         newT.select();
-        save_state();
+        saveState();
       } else {
         enter_select();
       }
