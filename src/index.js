@@ -3206,7 +3206,7 @@ export function saveState() {
 function undo() {
   if (states.length > 1) {
     states = states.splice(0, states.length - 1);
-    str_to_state(states[states.length - 1]);
+    strToState(states[states.length - 1]);
   }
 }
 
@@ -3228,7 +3228,7 @@ function stateToString() {
   });
 }
 
-function str_to_state(str) {
+function strToState(str) {
   const dict = JSON.parse(str);
   const arr = dict.objs;
 
@@ -3268,7 +3268,7 @@ function load(evt) {
 
   const reader = new FileReader();
 
-  reader.addEventListener('load', ({ target: { result: string } }) => str_to_state(string));
+  reader.addEventListener('load', ({ target: { result: string } }) => strToState(string));
 
   reader.readAsText(f);
 }
@@ -3281,7 +3281,7 @@ export function load_local() {
   // Grab the objects from storage
   const page = localStorage.getItem('page');
   if (page && page.length) {
-    str_to_state(page);
+    strToState(page);
   }
 }
 
