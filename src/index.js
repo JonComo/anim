@@ -3400,14 +3400,14 @@ function drawAxes(ctx) {
 
   // do a fade in and out
   if (rtv.transition.transitioning) {
-    const csys_next_style = rtv.cam.properties[rtv.next_frame].style;
+    const csysNextStyle = rtv.cam.properties[rtv.next_frame].style;
 
-    if (csys_next_style != null && csys_next_style !== csysStyle) {
+    if (csysNextStyle != null && csysNextStyle !== csysStyle) {
       // changing text
       const constrained = constrain(rtv.t_ease);
       ctx.globalAlpha = Math.cos(constrained * 2 * Math.PI) / 2 + 0.5;
       if (constrained >= 0.5) {
-        csysStyle = csys_next_style;
+        csysStyle = csysNextStyle;
         if (rtv.cam.properties[rtv.next_frame]) {
           props = rtv.cam.properties[rtv.next_frame];
         }
