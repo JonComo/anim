@@ -3378,7 +3378,7 @@ export function constrain(v) {
   return Math.min(1, Math.max(0, v));
 }
 
-export function loop_frame(f) {
+export function loopFrame(f) {
   if (f >= rtv.num_frames + 1) {
     return 1;
   } if (f < 1) {

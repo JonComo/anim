@@ -1,7 +1,7 @@
 import {
   copy,
   insertFrame,
-  loop_frame,
+  loopFrame,
   transition_with_next,
 } from '../index';
 import Button from '../ui/button';
@@ -117,10 +117,10 @@ export default function Frames(pos) {
         insertFrame();
       }
 
-      transition_with_next(loop_frame(rtv.frame + 1));
+      transition_with_next(loopFrame(rtv.frame + 1));
       return true;
     } if (key === 'ArrowLeft') {
-      transition_with_next(loop_frame(rtv.frame - 1));
+      transition_with_next(loopFrame(rtv.frame - 1));
       return true;
     }
 
