@@ -3343,7 +3343,7 @@ export function present() {
      * Sets page up for presentation mode.
      */
   function setUpPresentationMode() {
-    enter_select(); // Enter select mode
+    enterSelect(); // Enter select mode
     document.body.style.cursor = 'none'; // Hide cursor
     document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
     rtv.presenting = true; // Declare presentation mode entered
@@ -3528,7 +3528,7 @@ export function transitionWithNext(next) {
   }
 
   if (rtv.tool === 'copy frame') {
-    enter_select();
+    enterSelect();
     // copy properties
     for (let i = 0; i < rtv.objs.length; i++) {
       const obj = rtv.objs[i];
@@ -3565,7 +3565,7 @@ export function transitionWithNext(next) {
   });
 }
 
-export function enter_select() {
+export function enterSelect() {
   rtv.tool = 'select';
   rtv.new_line = null;
 }
@@ -3646,7 +3646,7 @@ window.addEventListener('load', () => {
   });
 
   document.getElementById('file').addEventListener('change', (evt) => {
-    enter_select();
+    enterSelect();
     load(evt);
   });
 
@@ -3759,7 +3759,7 @@ window.addEventListener('load', () => {
     }
 
     if (key === 'Escape') {
-      enter_select();
+      enterSelect();
     }
 
     if (key === 'Tab') {

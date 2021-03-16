@@ -7,7 +7,7 @@ import {
   drawMatrix,
   drawNetwork,
   drawSimple,
-  enter_select,
+  enterSelect,
   formatMatrix,
   guid,
   guidIndex,
@@ -396,7 +396,7 @@ export default function Text(text, pos) {
         newT.select();
         saveState();
       } else {
-        enter_select();
+        enterSelect();
       }
 
       return false;

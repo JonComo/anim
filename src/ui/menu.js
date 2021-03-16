@@ -1,5 +1,5 @@
 import {
-  enter_select,
+  enterSelect,
   hexToRgb,
   loadLocal,
   present,
@@ -18,7 +18,7 @@ export default function Menu(pos) {
   this.buttons = [];
 
   this.buttons.push(new Button('select', { x: 0, y: 0 }, (() => {
-    enter_select();
+    enterSelect();
   })));
 
   this.buttons.push(new Button('text', { x: 0, y: 0 }, (() => {
