@@ -705,6 +705,9 @@ math.import({
       return;
     }
 
+    let aL;
+    let bL;
+
     let _x = 0;
     let _y = 0;
     let _z = 0;
@@ -713,34 +716,34 @@ math.import({
     let y = 0;
     let z = 0;
 
-    if ('re' in a && a.im) {
-      a = math.matrix([a.re, a.im]);
+    if ('re' in aL && aL.im) {
+      aL = math.matrix([a.re, a.im]);
     }
 
     if (b && b.re && b.im) {
-      b = math.matrix([b.re, b.im]);
+      bL = math.matrix([b.re, b.im]);
     }
 
-    if (!b) {
-      x = a._data[0];
-      y = a._data[1];
+    if (!bL) {
+      x = aL._data[0];
+      y = aL._data[1];
 
-      if (a.size()[0] === 3) {
-        z = a._data[2];
+      if (aL.size()[0] === 3) {
+        z = aL._data[2];
       }
     } else {
-      _x = a._data[0];
-      _y = a._data[1];
+      _x = aL._data[0];
+      _y = aL._data[1];
 
-      if (a.size()[0] === 3) {
-        _z = a._data[2];
+      if (aL.size()[0] === 3) {
+        _z = aL._data[2];
       }
 
-      x = b._data[0];
-      y = b._data[1];
+      x = bL._data[0];
+      y = bL._data[1];
 
-      if (b.size()[0] === 3) {
-        z = b._data[2];
+      if (bL.size()[0] === 3) {
+        z = bL._data[2];
       }
     }
 
