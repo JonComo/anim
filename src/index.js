@@ -1291,9 +1291,9 @@ math.import({
     const rformat = format_matrix(result._data);
     const Wformat = format_matrix(W._data);
 
-    const rsize = matrix_size(rformat);
-    const Wsize = matrix_size(format_matrix(W._data));
-    const xsize = matrix_size(xformat);
+    const rsize = matrixSize(rformat);
+    const Wsize = matrixSize(format_matrix(W._data));
+    const xsize = matrixSize(xformat);
 
     // draw neural network
     const rows = W._size[0];
@@ -1359,7 +1359,7 @@ math.import({
     const result = math.multiply(W, x);
 
     const rformat = format_matrix(result._data);
-    const rsize = matrix_size(rformat);
+    const rsize = matrixSize(rformat);
 
     // draw neural network
     const rows = W._size[0];
@@ -2906,7 +2906,7 @@ export function drawFn(fn) {
   return size;
 }
 
-export function matrix_size(matrix) {
+export function matrixSize(matrix) {
   if (matrix && matrix.length === 0) {
     return;
   }
@@ -2938,7 +2938,7 @@ export function draw_matrix(matrix, color_ij) {
     }
   }
 
-  const size = matrix_size(matrix);
+  const size = matrixSize(matrix);
   drawBrackets(0, 0, size[0], size[1]);
 
   rtv.ctx.restore();
