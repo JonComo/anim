@@ -1483,12 +1483,10 @@ math.import({
     const ad = a._data;
     const bd = b._data;
 
-    divisions -= 1;
+    const L = cached([divisions, ad.length]);
 
-    const L = cached([divisions + 1, ad.length]);
-
-    for (let i = 0; i <= divisions; i++) {
-      const t = i / divisions;
+    for (let i = 0; i < divisions; i++) {
+      const t = i / (divisions - 1);
       for (let j = 0; j < ad.length; j++) {
         L._data[i][j] = ad[j] * (1 - t) + t * bd[j];
       }
