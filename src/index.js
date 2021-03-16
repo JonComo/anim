@@ -1019,7 +1019,7 @@ math.import({
       return (f(a + h) - f(a)) / h;
     };
   },
-  visnet({ _data: layers }, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
+  visnet({ _data: layers }, retHighlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
     const props = parser.evaluate('text_props');
     const pos = [props.p.x, props.p.y];
 
@@ -1149,7 +1149,7 @@ math.import({
 
     rtv.ctx.restore();
 
-    if (arguments.length >= 2 && ret_highlighted) {
+    if (arguments.length >= 2 && retHighlighted) {
       return [high_conn, high_neur];
     }
   },
