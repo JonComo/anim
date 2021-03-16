@@ -2419,7 +2419,7 @@ math.import({
   },
 });
 
-function report_error(e) {
+function reportError(e) {
   console.log(e);
   rtv.error.timer = 100;
   rtv.error.text = e;
