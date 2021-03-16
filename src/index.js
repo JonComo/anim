@@ -3853,7 +3853,7 @@ window.addEventListener('load', () => {
       return false;
     }
 
-    if (rtv.tool === 'select' && evt.srcElement === document.body) {
+    if (rtv.tool === 'select' && evt.target === document.body) {
       const tools = {
         t: 'text', s: 'shape', c: 'camera', v: 'vector',
       };
