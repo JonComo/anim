@@ -1301,7 +1301,7 @@ math.import({
 
     const high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
     const highConn = high[0];
-    const high_neur = high[1];
+    const highNeur = high[1];
 
     // draw matrices
 
@@ -1313,8 +1313,8 @@ math.import({
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
     draw_matrix(rformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
-      for (let n = 0; n < high_neur.length; n++) {
-        const highn = high_neur[n];
+      for (let n = 0; n < highNeur.length; n++) {
+        const highn = highNeur[n];
         if (highn[1] === 1 && highn[0] === i) {
           rtv.ctx.fillStyle = COLORS[2];
         }
@@ -1340,8 +1340,8 @@ math.import({
     draw_matrix(xformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
 
-      for (let n = 0; n < high_neur.length; n++) {
-        const highn = high_neur[n];
+      for (let n = 0; n < highNeur.length; n++) {
+        const highn = highNeur[n];
         if (highn[1] === 0 && highn[0] === i) {
           rtv.ctx.fillStyle = COLORS[1];
         }
