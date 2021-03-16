@@ -382,15 +382,15 @@ math.import({
     }
   },
   fifo(matrix, value) {
-    matrix = matrix._data;
-    const first = matrix[0];
-    const N = matrix.length;
+    const matrixL = matrix._data.slice();
+    const first = matrixL[0];
+    const N = matrixL.length;
     for (let i = 0; i < N - 1; i++) {
-      matrix[i] = matrix[i + 1];
+      matrixL[i] = matrixL[i + 1];
     }
-    matrix[N - 1] = value;
+    matrixL[N - 1] = value;
 
-    return math.matrix(matrix);
+    return math.matrix(matrixL);
   },
   push(matrix, value) {
     matrix = matrix._data;
