@@ -282,9 +282,7 @@ math.import({
 
     return true;
   },
-  egg(f) {
-    f = f._data;
-
+  egg({ _data: f }) {
     const radius = 100;
 
     let col = 'white';
