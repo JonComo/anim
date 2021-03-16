@@ -2916,7 +2916,7 @@ export function matrixSize(matrix) {
   return [matrix[0].length * (MAT_NUM_WIDTH + pad), matrix.length * GRID_SIZE];
 }
 
-export function drawMatrix(matrix, color_ij) {
+export function drawMatrix(matrix, colorIJ) {
   rtv.ctx.save();
   rtv.ctx.textAlign = 'right';
 
@@ -2931,8 +2931,8 @@ export function drawMatrix(matrix, color_ij) {
 
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[i].length; j++) {
-      if (color_ij) {
-        color_ij(i, j);
+      if (colorIJ) {
+        colorIJ(i, j);
       }
       rtv.ctx.fillText(matrix[i][j], j * (MAT_NUM_WIDTH + pad) + 124 + shift, i * GRID_SIZE + 20, max_width);
     }
