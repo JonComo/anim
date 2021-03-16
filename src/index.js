@@ -2461,7 +2461,7 @@ function prettyRoundOne(num) {
   return (Math.round(num * 10) / 10).toFixed(1);
 }
 
-function draw_r(o, p, d) {
+function drawR(o, p, d) {
   // o tree object
   // p position
   // d should draw, false to just get the size
@@ -2487,7 +2487,7 @@ function draw_r(o, p, d) {
     if (text === '+' || text === '-' || text === '*') {
       if (argc === 1) {
         if (d) rtv.ctx.fillText(text, p.x, p.y);
-        const s1 = draw_r(args[0], { x: p.x + CHAR.SIZE, y: p.y }, d);
+        const s1 = drawR(args[0], { x: p.x + CHAR.SIZE, y: p.y }, d);
 
         size.w = s1.w + CHAR.SIZE;
         size.h = s1.h;
@@ -2500,8 +2500,8 @@ function draw_r(o, p, d) {
           pad2 = 0;
         }
 
-        let s1 = draw_r(args[0], { x: 0, y: 0 }, false);
-        let s2 = draw_r(args[1], { x: 0, y: 0 }, false);
+        let s1 = drawR(args[0], { x: 0, y: 0 }, false);
+        let s2 = drawR(args[1], { x: 0, y: 0 }, false);
 
         size.w = s1.w + text.length * CHAR.SIZE + 2 * pad2 + s2.w;
         size.h = Math.max(s1.h, s2.h);
@@ -2509,14 +2509,14 @@ function draw_r(o, p, d) {
         if (d) {
           let opp = { x: 0, y: 0 };
           if (center) {
-            s1 = draw_r(args[0], { x: p.x, y: p.y + size.h / 2 - s1.h / 2 }, d);
+            s1 = drawR(args[0], { x: p.x, y: p.y + size.h / 2 - s1.h / 2 }, d);
             opp = { x: p.x + s1.w + pad2, y: p.y + size.h / 2 - CHAR.SIZE };
-            s2 = draw_r(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h / 2 - s2.h / 2 }, d);
+            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h / 2 - s2.h / 2 }, d);
           } else {
             // bottom align
-            s1 = draw_r(args[0], { x: p.x, y: p.y + size.h - s1.h }, d);
+            s1 = drawR(args[0], { x: p.x, y: p.y + size.h - s1.h }, d);
             opp = { x: p.x + s1.w + pad2, y: p.y + size.h - CHAR.SIZE * 2 };
-            s2 = draw_r(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
+            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
           }
 
           if (text === '*') {
@@ -2538,15 +2538,15 @@ function draw_r(o, p, d) {
           b = b.content;
         }
 
-        const s1 = draw_r(a, { x: 0, y: 0 }, false);
-        const s2 = draw_r(b, { x: 0, y: 0 }, false);
+        const s1 = drawR(a, { x: 0, y: 0 }, false);
+        const s2 = drawR(b, { x: 0, y: 0 }, false);
 
         size.w = s1.w + s2.w;
         size.h = s1.h + s2.h - CHAR.SIZE;
 
         if (d) {
-          draw_r(a, { x: p.x, y: p.y + size.h - s1.h }, d);
-          draw_r(b, { x: p.x + s1.w, y: p.y }, d);
+          drawR(a, { x: p.x, y: p.y + size.h - s1.h }, d);
+          drawR(b, { x: p.x + s1.w, y: p.y }, d);
         }
       }
     } else if (text === '/') {
@@ -2563,15 +2563,15 @@ function draw_r(o, p, d) {
           b = b.content;
         }
 
-        const s1 = draw_r(a, { x: 0, y: 0 }, false);
-        const s2 = draw_r(b, { x: 0, y: 0 }, false);
+        const s1 = drawR(a, { x: 0, y: 0 }, false);
+        const s2 = drawR(b, { x: 0, y: 0 }, false);
 
         size.w = Math.max(s1.w, s2.w) + CHAR.PAD * 2;
         size.h = Math.max(s1.h, s2.h) * 2 + CHAR.PAD * 4;
 
         if (d) {
-          draw_r(a, { x: p.x + size.w / 2 - s1.w / 2, y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2 }, d);
-          draw_r(b, { x: p.x + size.w / 2 - s2.w / 2, y: p.y + size.h / 2 + CHAR.PAD * 2 }, d);
+          drawR(a, { x: p.x + size.w / 2 - s1.w / 2, y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2 }, d);
+          drawR(b, { x: p.x + size.w / 2 - s2.w / 2, y: p.y + size.h / 2 + CHAR.PAD * 2 }, d);
 
           rtv.ctx.beginPath();
           rtv.ctx.moveTo(p.x, p.y + size.h / 2);
@@ -2580,7 +2580,7 @@ function draw_r(o, p, d) {
         }
       }
     } else if (text === '!') {
-      const s1 = draw_r(args[0], { x: p.x, y: p.y }, d);
+      const s1 = drawR(args[0], { x: p.x, y: p.y }, d);
       if (d) rtv.ctx.fillText(text, p.x + s1.w, p.y);
 
       size.w = s1.w + CHAR.SIZE;
@@ -2593,7 +2593,7 @@ function draw_r(o, p, d) {
       const N = args.length;
       const hs = [];
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(args[i], { x: 0, y: 0 }, false);
+        const s1 = drawR(args[i], { x: 0, y: 0 }, false);
         hs.push(s1);
 
         h = Math.max(h, s1.h);
@@ -2614,7 +2614,7 @@ function draw_r(o, p, d) {
       let xo = text.length * CHAR.SIZE;
 
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(args[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
+        const s1 = drawR(args[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
         if (i === N - 1) {
@@ -2639,23 +2639,23 @@ function draw_r(o, p, d) {
 
     if (o.content) {
       // parens
-      let s1 = draw_r(o.content, { x: 0, y: 0 }, false);
+      let s1 = drawR(o.content, { x: 0, y: 0 }, false);
       // ctx.save();
       // ctx.scale(1, s1.h/(char_size*2));
       if (d) rtv.ctx.fillText('(', p.x, p.y + s1.h / 2 - CHAR.SIZE);
       if (d) rtv.ctx.fillText(')', p.x + s1.w + CHAR.SIZE, p.y + s1.h / 2 - CHAR.SIZE);
       // ctx.restore();
 
-      s1 = draw_r(o.content, { x: p.x + CHAR.SIZE, y: p.y }, d);
+      s1 = drawR(o.content, { x: p.x + CHAR.SIZE, y: p.y }, d);
 
       size.w = s1.w + CHAR.SIZE * 2;
       size.h = s1.h;
     } else if (o.node) {
-      size = draw_r(o.node, { x: p.x, y: p.y }, d);
+      size = drawR(o.node, { x: p.x, y: p.y }, d);
     } else if (o.object && o.value) {
       // assignment
 
-      const s1 = draw_r(o.value, { x: 0, y: 0 }, false);
+      const s1 = drawR(o.value, { x: 0, y: 0 }, false);
       const text = `${o.object.name} = `;
 
       if (d) {
@@ -2664,7 +2664,7 @@ function draw_r(o, p, d) {
         draw_simple(text);
         rtv.ctx.restore();
 
-        draw_r(o.value, { x: p.x + text.length * CHAR.SIZE, y: p.y }, d);
+        drawR(o.value, { x: p.x + text.length * CHAR.SIZE, y: p.y }, d);
       }
 
       size.w = s1.w + text.length * CHAR.SIZE;
@@ -2679,7 +2679,7 @@ function draw_r(o, p, d) {
       const N = items.length;
       const hs = [];
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: 0, y: 0 }, false);
+        const s1 = drawR(items[i], { x: 0, y: 0 }, false);
         hs.push(s1);
 
         h = Math.max(h, s1.h);
@@ -2692,7 +2692,7 @@ function draw_r(o, p, d) {
       let xo = 0;
 
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
+        const s1 = drawR(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
         if (i !== N - 1) {
@@ -2714,7 +2714,7 @@ function draw_r(o, p, d) {
       const N = items.length;
       const hs = [];
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: 0, y: 0 }, false);
+        const s1 = drawR(items[i], { x: 0, y: 0 }, false);
         hs.push(s1);
 
         h = Math.max(h, s1.h);
@@ -2727,7 +2727,7 @@ function draw_r(o, p, d) {
       let xo = CHAR.SIZE; // first open bracket
 
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
+        const s1 = drawR(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
         if (i !== N - 1) {
@@ -2745,7 +2745,7 @@ function draw_r(o, p, d) {
       size.w = xo;
     } else if (o.expr) {
       // function definition
-      const s1 = draw_r(o.expr, { x: 0, y: 0 }, false);
+      const s1 = drawR(o.expr, { x: 0, y: 0 }, false);
 
       text = o.name;
       text += `(${o.params.join(',')}) = `;
@@ -2759,7 +2759,7 @@ function draw_r(o, p, d) {
 
       const xo = text.length * CHAR.SIZE;
 
-      draw_r(o.expr, { x: p.x + xo, y: p.y }, d);
+      drawR(o.expr, { x: p.x + xo, y: p.y }, d);
 
       size.w = xo + s1.w;
       size.h = s1.h;
@@ -2899,8 +2899,8 @@ export function draw_fn(fn) {
   rtv.ctx.save();
   rtv.ctx.textAlign = 'left';
   rtv.ctx.textBaseline = 'top';
-  const size = draw_r(tree, { x: 0, y: 0 }, false);
-  draw_r(tree, { x: 0, y: -size.h / 2 }, true);
+  const size = drawR(tree, { x: 0, y: 0 }, false);
+  drawR(tree, { x: 0, y: -size.h / 2 }, true);
   rtv.ctx.restore();
 
   return size;
