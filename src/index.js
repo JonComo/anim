@@ -783,12 +783,10 @@ math.import({
 
     return m;
   },
-  view(x, p) { // matrix, position: [x, y, z]
+  view(x, { _data: p } = { _data: [0, 0] }) { // matrix, position: [x, y, z]
     let t = [];
     if (x._data) {
-      x = x.map(pretty_round);
-
-      const d = x._data;
+      const d = x.map(pretty_round)._data;
       if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
@@ -798,16 +796,10 @@ math.import({
       }
     }
 
-    if (p) {
-      p = p._data;
-    } else {
-      p = [0, 0];
-    }
-
-    p = rtv.cam.graph_to_screen(p[0], p[1], 0);
+    const graphed = rtv.cam.graph_to_screen(p[0], p[1], 0);
     for (let i = 0; i < t.length; i++) {
       rtv.ctx.textAlign = 'left';
-      rtv.ctx.fillText(t[i], p[0], p[1] + GRID_SIZE * i);
+      rtv.ctx.fillText(t[i], graphed[0], graphed[1] + GRID_SIZE * i);
     }
   },
   labels(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
