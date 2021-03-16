@@ -1415,13 +1415,11 @@ math.import({
 
     rtv.ctx.restore();
   },
-  magfield(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+  magfield(path, current, { _data: at_point }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
 
-    function b_at(x, y, z, path, current) {
-      path = path._data;
-
+    function b_at(x, y, z, { _data: path }, current) {
       let b = math.zeros(3);
       const c = current * math.magneticConstant.value / 4.0 / math.PI; // u0 I / 4 / pi
 
@@ -1444,7 +1442,6 @@ math.import({
     }
 
     if (arguments.length >= 3) {
-      at_point = at_point._data;
       const b = b_at(at_point[0], at_point[1], at_point[2], path, current);
 
       return b;
