@@ -3060,7 +3060,7 @@ export function copy(d) {
   return JSON.parse(JSON.stringify(d));
 }
 
-function change_frames() {
+function changeFrames() {
   for (let i = 0; i < rtv.objs.length; i++) {
     const obj = rtv.objs[i];
     if (obj.properties[rtv.frame] && obj.properties[rtv.next_frame] == null) {
@@ -3542,7 +3542,7 @@ export function transition_with_next(next) {
 
   rtv.new_line = null;
   rtv.next_frame = next;
-  change_frames();
+  changeFrames();
   let steps = T_STEPS;
   if (!rtv.presenting || rtv.keys.meta || rtv.keys.ctrl) {
     // make it instant when menu open
