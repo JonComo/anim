@@ -4,7 +4,7 @@ import {
   distance,
   drawBrackets,
   drawFn,
-  draw_matrix,
+  drawMatrix,
   drawNetwork,
   drawSimple,
   enter_select,
@@ -810,7 +810,7 @@ export default function Text(text, pos) {
 
       ctx.translate(-100, -20);
       const formatted = format_matrix(this.matrix_vals);
-      draw_matrix(formatted);
+      drawMatrix(formatted);
 
       ctx.restore();
     } else if (!this.selected && this.text_val && this.text_val.length) {

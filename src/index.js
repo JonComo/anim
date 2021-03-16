@@ -1311,7 +1311,7 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    draw_matrix(rformat, (i, j) => {
+    drawMatrix(rformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < highNeur.length; n++) {
         const highn = highNeur[n];
@@ -1326,7 +1326,7 @@ math.import({
 
     // draw W matrix
     rtv.ctx.translate(rsize[0] + pad * 3, 0);
-    draw_matrix(Wformat, (i, j) => {
+    drawMatrix(Wformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       if (highConn.length && highConn[0] === j && highConn[1] === i) {
         rtv.ctx.fillStyle = COLORS[3];
@@ -1337,7 +1337,7 @@ math.import({
 
     // draw x matrix
     rtv.ctx.translate(Wsize[0] + pad * 3, rsize[1] / 2 - xsize[1] / 2);
-    draw_matrix(xformat, (i, j) => {
+    drawMatrix(xformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
 
       for (let n = 0; n < highNeur.length; n++) {
@@ -1377,7 +1377,7 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    draw_matrix(rformat, (i, j) => {
+    drawMatrix(rformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < highNeur.length; n++) {
         const highn = highNeur[n];
@@ -2916,7 +2916,7 @@ export function matrixSize(matrix) {
   return [matrix[0].length * (MAT_NUM_WIDTH + pad), matrix.length * GRID_SIZE];
 }
 
-export function draw_matrix(matrix, color_ij) {
+export function drawMatrix(matrix, color_ij) {
   rtv.ctx.save();
   rtv.ctx.textAlign = 'right';
 
