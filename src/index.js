@@ -3014,7 +3014,7 @@ export function between(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-function grad_2(c, x, y) {
+function grad2(c, x, y) {
   // c is compiled obj
   // depends on x and y
   const h = 0.0001;
