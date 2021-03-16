@@ -558,7 +558,7 @@ math.import({
   T(m) { // transpose m
     return math.transpose(m);
   },
-  scatter(points, pointSize, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+  scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
     const points_d = points._data;
@@ -591,7 +591,7 @@ math.import({
         const p = points_d[i];
 
         // constrain
-        col = color_fn(p)._data;
+        col = colorFn(p)._data;
         col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
         rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
         rtv.ctx.fillRect(cam_data[i][0] - psize_half, cam_data[i][1] - psize_half, psize, psize);
