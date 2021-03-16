@@ -68,7 +68,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
 
   let i = 0;
   let x = -10;
-  let y_last = fn(x);
+  let yLast = fn(x);
   for (; x < 10; x += dx) {
     y = fn(x);
 
@@ -77,7 +77,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     pd[i][d3] = 0;
 
     asyms[i] = 0;
-    if (math.abs(y - y_last) > 20) {
+    if (math.abs(y - yLast) > 20) {
       // vertical asymptote
       asyms[i] = 1;
 
@@ -85,7 +85,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
       pd[i][d2] = math.sign(y) * 1000;
     }
 
-    y_last = y;
+    yLast = y;
     i++;
   }
 
