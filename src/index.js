@@ -36,7 +36,7 @@ function sigp(x) {
 
 // http://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
 // Maxwell Collard
-function randn_bm() {
+function randNBm() {
   const u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
   const v = 1 - Math.random();
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
@@ -514,11 +514,11 @@ math.import({
     if (N === 1) {
       const shape = arguments[0];
       let m = cached(shape._data);
-      m = m.map(randn_bm);
+      m = m.map(randNBm);
 
       return m;
     }
-    return randn_bm();
+    return randNBm();
   },
   axes(x, y, z) { // replace default camera axis names
     rtv.cam.axes_names = [x, y, z];
