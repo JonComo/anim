@@ -3908,15 +3908,15 @@ window.addEventListener('load', () => {
     }
 
     // didn't touch an obj, if tool is move start a rect
-    let obj_selected = false;
+    let objSelected = false;
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
       if (rtv.objs[i].is_selected()) {
-        obj_selected = true;
+        objSelected = true;
       }
     }
 
-    if (rtv.tool === 'select' && obj_selected === false) {
+    if (rtv.tool === 'select' && objSelected === false) {
       rtv.selecting = true;
     }
   }));
