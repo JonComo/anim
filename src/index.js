@@ -149,15 +149,15 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
   rtv.ctx.stroke();
 
   if (units) {
-    let num_dots = tmax - tmin;
-    num_dots = Math.floor(num_dots);
+    let numDots = tmax - tmin;
+    numDots = Math.floor(numDots);
 
-    if (num_dots > 0) {
-      let dots = cached([num_dots, 3]);
+    if (numDots > 0) {
+      let dots = cached([numDots, 3]);
 
       let i = 0;
 
-      for (i = 0; i < num_dots; i++) {
+      for (i = 0; i < numDots; i++) {
         data = r(i + 1)._data;
 
         data[0] = Math.max(Math.min(data[0], 1000), -1000);
@@ -172,7 +172,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
       dots = rtv.cam.graph_to_screen_mat(dots);
 
       rtv.ctx.save();
-      for (let i = 0; i < num_dots; i++) {
+      for (let i = 0; i < numDots; i++) {
         const p = dots[i];
 
         rtv.ctx.beginPath();
