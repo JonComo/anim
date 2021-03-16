@@ -1,7 +1,7 @@
 import {
   enter_select,
   hexToRgb,
-  load_local,
+  loadLocal,
   present,
   saveLocal,
 } from '../index';
@@ -181,7 +181,7 @@ export default function Menu(pos) {
   })));
 
   this.buttons.push(new Button('load local', { x: 0, y: 0 }, (() => {
-    load_local();
+    loadLocal();
   })));
 
   this.buttons.push(new Button(`ver: ${VERSION}`, { x: 0, y: 0 }, (() => {

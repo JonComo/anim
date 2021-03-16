@@ -3277,7 +3277,7 @@ export function saveLocal() {
   localStorage.setItem('page', stateToString());
 }
 
-export function load_local() {
+export function loadLocal() {
   // Grab the objects from storage
   const page = localStorage.getItem('page');
   if (page && page.length) {
