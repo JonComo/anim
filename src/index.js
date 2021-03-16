@@ -567,7 +567,7 @@ math.import({
     if (arguments.length >= 2) {
       psize = arguments[1];
     }
-    const psize_half = psize / 2;
+    const psizeHalf = psize / 2;
 
     const cam_data = rtv.cam.graph_to_screen_mat(points);
 
@@ -594,11 +594,11 @@ math.import({
         col = colorFn(p)._data;
         col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
         rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
-        rtv.ctx.fillRect(cam_data[i][0] - psize_half, cam_data[i][1] - psize_half, psize, psize);
+        rtv.ctx.fillRect(cam_data[i][0] - psizeHalf, cam_data[i][1] - psizeHalf, psize, psize);
       }
     } else {
       for (let i = 0; i < n; i++) {
-        rtv.ctx.fillRect(cam_data[i][0] - psize_half, cam_data[i][1] - psize_half, psize, psize);
+        rtv.ctx.fillRect(cam_data[i][0] - psizeHalf, cam_data[i][1] - psizeHalf, psize, psize);
       }
     }
     rtv.ctx.restore();
