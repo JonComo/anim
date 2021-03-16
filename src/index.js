@@ -749,8 +749,8 @@ math.import({
 
     draw_vect(_x, _y, _z, x, y, z);
   },
-  if(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
-    if (fn_condition()) {
+  if(fnCondition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
+    if (fnCondition()) {
       fn_a();
     } else {
       fn_b();
