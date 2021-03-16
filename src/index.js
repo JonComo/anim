@@ -613,9 +613,9 @@ math.import({
       return;
     }
 
+    let colorL;
     if (color) {
-      color = color._data;
-      color = [constrain(color[0]), constrain(color[1]), constrain(color[2])];
+      colorL = color._data.map(constrain);
     }
 
     const cam_data = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
@@ -623,7 +623,7 @@ math.import({
     rtv.ctx.save();
     rtv.ctx.beginPath();
     if (color) {
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(color, 255));
+      rtv.ctx.fillStyle = rgbToHex(math.multiply(colorL, 255));
     }
     rtv.ctx.arc(cam_data[0], cam_data[1], psize, 0, PI2);
     rtv.ctx.fill();
