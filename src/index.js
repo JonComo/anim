@@ -1242,9 +1242,7 @@ math.import({
       return [xt, yt, zt];
     }
   },
-  eleforce(charges, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
-    charges = charges._data;
-
+  eleforce({ _data: charges }, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
     const oc = charges[j * 4];
     const xp = charges[j * 4 + 1];
     const yp = charges[j * 4 + 2];
