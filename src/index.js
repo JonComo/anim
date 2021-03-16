@@ -2367,10 +2367,10 @@ math.import({
     for (let i = Math.floor(Math.sqrt(n)); i > 0; i--) { // Loop through smaller factors of closest to farthest factor pairs
       const c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
 
-      if (Number.isInteger(corresponding)) { // Check if 'n' is divisible by 'i'
+      if (Number.isInteger(c)) { // Check if 'n' is divisible by 'i'
         factors.unshift(i); // Insert 'i' at start of 'factors'
-        if (i !== corresponding) { // Check that 'n' is not a perfect square
-          factors.push(corresponding); // Append 'c' to the end of 'factors'
+        if (i !== c) { // Check that 'n' is not a perfect square
+          factors.push(c); // Append 'c' to the end of 'factors'
         }
       }
     }
