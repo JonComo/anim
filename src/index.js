@@ -4042,8 +4042,8 @@ window.addEventListener('load', () => {
 
       return;
     } else if (rtv.tool === 'circle') {
-      const new_circle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
-      rtv.objs.push(new_circle);
+      const newCircle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
+      rtv.objs.push(newCircle);
     } else if (rtv.tool === 'network') {
       const n = new Network(rtv.mouse.grid);
       rtv.objs.push(n);
