@@ -579,9 +579,9 @@ math.import({
       for (let i = 0; i < n; ++i) indices[i] = i;
 
       indices.sort((a, b) => {
-        a = cam_data[a][2];
-        b = cam_data[b][2];
-        return a < b ? 1 : (a > b ? -1 : 1);
+        const aC = cam_data[a][2];
+        const bC = cam_data[b][2];
+        return aC < bC ? 1 : (aC > bC ? -1 : 1);
       });
 
       let col;
