@@ -16,7 +16,7 @@ import {
   prettyRound,
   rgbToHex,
   save_state,
-  transform_props,
+  transformProps,
 } from '../index';
 import {
   math,
@@ -345,7 +345,7 @@ export default function Text(text, pos) {
         }
       }
 
-      this.properties[rtv.frame] = transform_props(
+      this.properties[rtv.frame] = transformProps(
         key,
         this.properties[rtv.frame],
       );

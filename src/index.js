@@ -3086,7 +3086,7 @@ export function hexToRgb(hex) {
   ] : null;
 }
 
-export function transform_props(key, props, step = 0.2) {
+export function transformProps(key, props, step = 0.2) {
   const propsL = { ...props };
 
   if (key === 'l') {

@@ -2,7 +2,7 @@ import {
   copy,
   interpolate,
   rotationMatrix,
-  transform_props,
+  transformProps,
 } from '../index';
 import { math, rtv, GRID_SIZE } from '../resources';
 
@@ -139,7 +139,7 @@ export default function Camera() {
     }
 
     const { key } = evt;
-    this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame], 0.01);
+    this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame], 0.01);
   };
 
   this.update_props = () => {
