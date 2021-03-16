@@ -1042,13 +1042,13 @@ math.import({
 
     for (let j = 0; j < layers.length - 1; j++) {
       const units = layers[j];
-      const units_next = layers[j + 1];
+      const unitsNext = layers[j + 1];
 
       for (let i = 0; i < units; i++) {
         const p = loc(i, j, units);
 
-        for (let k = 0; k < units_next; k++) {
-          const p2 = loc(k, j + 1, units_next);
+        for (let k = 0; k < unitsNext; k++) {
+          const p2 = loc(k, j + 1, unitsNext);
 
           /*
                     let vline = [p2[0] - p[0], p2[1] - p[1]];
