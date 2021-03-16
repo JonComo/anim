@@ -1,7 +1,7 @@
 import {
   copy,
   interpolate,
-  rotation_matrix,
+  rotationMatrix,
   transform_props,
 } from '../index';
 import { math, rtv, GRID_SIZE } from '../resources';
@@ -172,7 +172,7 @@ export default function Camera() {
     const ry = this.props.rxyz[1];
     const rz = this.props.rxyz[2];
 
-    this.R = rotation_matrix(rx, ry, rz);
+    this.R = rotationMatrix(rx, ry, rz);
   };
 
   // takes array [x, y, z]

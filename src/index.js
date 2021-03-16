@@ -526,7 +526,7 @@ math.import({
   block() { // exectutes each argument
   },
   rotation(rx, ry, rz) { // creates a 3x3 rotation matrix
-    return math.matrix(rotation_matrix(rx, ry, rz));
+    return math.matrix(rotationMatrix(rx, ry, rz));
   },
   grid(rangex, rangey = rangex) { // returns matrix x*y by 2
     const xd = rangex._data;
@@ -3032,7 +3032,7 @@ function grad2(c, x, y) {
   return [(fxh - fx) / h, (fyh - fy) / h];
 }
 
-export function rotation_matrix(rx, ry, rz) {
+export function rotationMatrix(rx, ry, rz) {
   const Rx = [[1, 0, 0],
     [0, Math.cos(rx), -Math.sin(rx)],
     [0, Math.sin(rx), Math.cos(rx)]];
