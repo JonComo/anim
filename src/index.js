@@ -3370,7 +3370,7 @@ export function present() {
   }
 }
 
-function constrain_frame(f) {
+function constrainFrame(f) {
   return Math.max(1, Math.min(rtv.num_frames, f));
 }
 
