@@ -3388,7 +3388,7 @@ export function loopFrame(f) {
   return f;
 }
 
-function draw_axes(ctx) {
+function drawAxes(ctx) {
   if (!rtv.cam.R) {
     return;
   }
@@ -4134,7 +4134,7 @@ window.addEventListener('load', () => {
 
     rtv.cam.update_props();
 
-    draw_axes(rtv.ctx);
+    drawAxes(rtv.ctx);
 
     rtv.ctx.font = FONT.ANIM;
 
