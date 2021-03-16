@@ -1418,7 +1418,7 @@ math.import({
     const n = 5;
     const d = 20 / n;
 
-    function b_at(x, y, z, { _data: path }, current) {
+    function bAt(x, y, z, { _data: path }, current) {
       let b = math.zeros(3);
       const c = current * math.magneticConstant.value / 4.0 / math.PI; // u0 I / 4 / pi
 
@@ -1441,14 +1441,14 @@ math.import({
     }
 
     if (arguments.length >= 3) {
-      const b = b_at(atPoint[0], atPoint[1], atPoint[2], path, current);
+      const b = bAt(atPoint[0], atPoint[1], atPoint[2], path, current);
 
       return b;
     }
     for (let x = -10; x <= 10; x += d) {
       for (let y = -10; y <= 10; y += d) {
         for (let z = -10; z <= 10; z += d) {
-          let b = b_at(x, y, z, path, current);
+          let b = bAt(x, y, z, path, current);
 
           if (math.norm(b) > 0.1) {
             b = b._data;
