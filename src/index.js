@@ -528,11 +528,7 @@ math.import({
   rotation(rx, ry, rz) { // creates a 3x3 rotation matrix
     return math.matrix(rotation_matrix(rx, ry, rz));
   },
-  grid(rangex, rangey) { // returns matrix x*y by 2
-    if (!rangey) {
-      rangey = rangex;
-    }
-
+  grid(rangex, rangey = rangex) { // returns matrix x*y by 2
     const xd = rangex._data;
     const yd = rangey._data;
     const xN = xd.length; const yN = yd.length;
