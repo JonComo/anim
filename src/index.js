@@ -3395,19 +3395,19 @@ function drawAxes(ctx) {
 
   ctx.save();
 
-  let csys_style = rtv.cam.style();
+  let csysStyle = rtv.cam.style();
   let props = rtv.cam.properties[rtv.frame];
 
   // do a fade in and out
   if (rtv.transition.transitioning) {
     const csys_next_style = rtv.cam.properties[rtv.next_frame].style;
 
-    if (csys_next_style != null && csys_next_style !== csys_style) {
+    if (csys_next_style != null && csys_next_style !== csysStyle) {
       // changing text
       const constrained = constrain(rtv.t_ease);
       ctx.globalAlpha = Math.cos(constrained * 2 * Math.PI) / 2 + 0.5;
       if (constrained >= 0.5) {
-        csys_style = csys_next_style;
+        csysStyle = csys_next_style;
         if (rtv.cam.properties[rtv.next_frame]) {
           props = rtv.cam.properties[rtv.next_frame];
         }
@@ -3415,11 +3415,11 @@ function drawAxes(ctx) {
     }
   }
 
-  if (csys_style === '3d' || csys_style === 'flat') {
+  if (csysStyle === '3d' || csysStyle === 'flat') {
     // draw gridlines
     ctx.strokeStyle = '#DDDDDD';
 
-    if (csys_style === '3d') {
+    if (csysStyle === '3d') {
       let axis = rtv.cam.ticks[0];
       axis = math.matrix(axis);
       axis = rtv.cam.graph_to_screen_mat(axis);
