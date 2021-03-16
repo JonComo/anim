@@ -43,13 +43,13 @@ function randNBm() {
 }
 
 // cache
-const matrix_cache = {};
+const matrixCache = {};
 function cached(dims) {
   const s = dims.join('_');
-  let m = matrix_cache[s];
+  let m = matrixCache[s];
   if (!m) {
     m = math.matrix(math.zeros(dims));
-    matrix_cache[s] = m;
+    matrixCache[s] = m;
   }
 
   return m;
