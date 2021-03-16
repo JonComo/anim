@@ -1016,9 +1016,7 @@ math.import({
       return (f(a + h) - f(a)) / h;
     };
   },
-  visnet(layers, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
-    layers = layers._data;
-
+  visnet({ _data: layers }, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
     const props = parser.evaluate('text_props');
     const pos = [props.p.x, props.p.y];
 
