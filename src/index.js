@@ -977,15 +977,18 @@ math.import({
     rtv.ctx.restore();
   },
   integral(f, a, b, _n) {
-    if (a === b) {
+    let aL = a;
+    let bL = b;
+
+    if (aL === bL) {
       return 0;
     }
 
     let negate = false;
-    if (a > b) {
-      rtv.t = b;
-      b = a;
-      a = rtv.t;
+    if (aL > bL) {
+      rtv.t = bL;
+      bL = aL;
+      aL = rtv.t;
       negate = true;
     }
 
@@ -994,9 +997,9 @@ math.import({
       n = _n;
     }
 
-    const dx = (b - a) / n;
+    const dx = (bL - aL) / n;
     let sum = 0;
-    for (let x = a; x <= b; x += dx) {
+    for (let x = aL; x <= bL; x += dx) {
       sum += f(x) * dx;
     }
 
