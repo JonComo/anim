@@ -2661,7 +2661,7 @@ function drawR(o, p, d) {
       if (d) {
         rtv.ctx.save();
         rtv.ctx.translate(p.x, p.y + s1.h / 2 - CHAR.SIZE);
-        draw_simple(text);
+        drawSimple(text);
         rtv.ctx.restore();
 
         drawR(o.value, { x: p.x + text.length * CHAR.SIZE, y: p.y }, d);
@@ -2753,7 +2753,7 @@ function drawR(o, p, d) {
       if (d) {
         rtv.ctx.save();
         rtv.ctx.translate(p.x, p.y + s1.h - CHAR.SIZE * 2);
-        draw_simple(text);
+        drawSimple(text);
         rtv.ctx.restore();
       }
 
@@ -2820,7 +2820,7 @@ export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.stroke();
 }
 
-export function draw_simple(text) {
+export function drawSimple(text) {
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '*') {
       rtv.ctx.beginPath();

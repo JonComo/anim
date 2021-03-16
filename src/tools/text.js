@@ -6,7 +6,7 @@ import {
   draw_fn,
   draw_matrix,
   draw_network,
-  draw_simple,
+  drawSimple,
   enter_select,
   format_matrix,
   guid,
@@ -766,7 +766,7 @@ export default function Text(text, pos) {
       const N = t.length;
       size = { w: N * CHAR.SIZE, h: CHAR.SIZE * 2 };
 
-      size = { w: draw_simple(t), h: CHAR.SIZE * 2 };
+      size = { w: drawSimple(t), h: CHAR.SIZE * 2 };
 
       let plevel = 0;
       for (let i = 0; i < N; i++) {
@@ -816,7 +816,7 @@ export default function Text(text, pos) {
     } else if (!this.selected && this.text_val && this.text_val.length) {
       ctx.save();
       ctx.translate(size.w, 0);
-      size.w += draw_simple(this.text_val);
+      size.w += drawSimple(this.text_val);
       ctx.restore();
     }
 
@@ -1155,7 +1155,7 @@ export default function Text(text, pos) {
               ctx.translate(0, CHAR.SIZE * 2 + yoff);
               ctx.scale(0.5, 0.5);
               ctx.globalAlpha = 0.5;
-              draw_simple(`${funcName}: ${`${math[funcName]}`.split('\n')[0]}`);
+              drawSimple(`${funcName}: ${`${math[funcName]}`.split('\n')[0]}`);
               ctx.restore();
               yoff += GRID_SIZE;
             }
