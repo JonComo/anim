@@ -3052,7 +3052,7 @@ export function sigmoid(x, num, offset, width) {
   return num / (1.0 + Math.exp(-(x + offset) * width));
 }
 
-export function ease_in_out(x) {
+export function easeInOut(x) {
   return 1.0 / (1.0 + Math.exp(-(x - 0.5) * 10));
 }
 
