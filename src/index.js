@@ -1037,7 +1037,7 @@ math.import({
     rtv.ctx.save();
 
     // connections
-    let high_conn = [];
+    let highConn = [];
     let high_neur = [];
 
     for (let j = 0; j < layers.length - 1; j++) {
@@ -1067,7 +1067,7 @@ math.import({
 
           rtv.ctx.strokeStyle = 'black';
 
-          if (high_conn.length === 0) {
+          if (highConn.length === 0) {
             const dx1 = p[0] - rtv.mouse.pos.x;
             const dy1 = p[1] - rtv.mouse.pos.y;
 
@@ -1082,7 +1082,7 @@ math.import({
 
             if (d1 + d2 < vlen + 1) {
               rtv.ctx.strokeStyle = COLORS[3];
-              high_conn = [i, k, j]; // unit i to unit k in layer j
+              highConn = [i, k, j]; // unit i to unit k in layer j
               high_neur = [[i, j], [k, j + 1]];
             }
           }
@@ -1107,17 +1107,17 @@ math.import({
         rtv.ctx.strokeStyle = 'black';
 
         // if we have a highlighted connection and we're in the right layer
-        if (high_conn.length !== 0) {
-          if (high_conn[2] === j) {
-            if (high_conn[0] === i) {
+        if (highConn.length !== 0) {
+          if (highConn[2] === j) {
+            if (highConn[0] === i) {
               if (j === 0) {
                 rtv.ctx.strokeStyle = COLORS[1];
               } else {
                 rtv.ctx.strokeStyle = COLORS[2];
               }
             }
-          } else if (high_conn[2] === j - 1) {
-            if (high_conn[1] === i) {
+          } else if (highConn[2] === j - 1) {
+            if (highConn[1] === i) {
               if (j === 0) {
                 rtv.ctx.strokeStyle = COLORS[1];
               } else {
@@ -1150,7 +1150,7 @@ math.import({
     rtv.ctx.restore();
 
     if (arguments.length >= 2 && retHighlighted) {
-      return [high_conn, high_neur];
+      return [highConn, high_neur];
     }
   },
   int(n) {
