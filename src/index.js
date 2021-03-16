@@ -3273,7 +3273,7 @@ function load(evt) {
   reader.readAsText(f);
 }
 
-export function save_local() {
+export function saveLocal() {
   localStorage.setItem('page', stateToString());
 }
 

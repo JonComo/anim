@@ -3,7 +3,7 @@ import {
   hexToRgb,
   load_local,
   present,
-  save_local,
+  saveLocal,
 } from '../index';
 import Button from './button';
 import {
@@ -177,7 +177,7 @@ export default function Menu(pos) {
 
   this.buttons.push(new Button('save local', { x: 0, y: 0 }, (() => {
     // Put the object into storage
-    save_local();
+    saveLocal();
   })));
 
   this.buttons.push(new Button('load local', { x: 0, y: 0 }, (() => {
