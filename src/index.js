@@ -3138,7 +3138,7 @@ export function interpolate(a, b) {
       // interpolate colors
       const ac = a[key];
       const bc = b[key];
-      interp[key] = interpolate_colors(ac, bc, constrain(rtv.t_ease));
+      interp[key] = interpolateColors(ac, bc, constrain(rtv.t_ease));
     } else if (key === 'path') {
       // interpolate paths
       const ap = a[key];
@@ -3168,7 +3168,7 @@ export function interpolate(a, b) {
   return interp;
 }
 
-function interpolate_colors(ac, bc, interp) {
+function interpolateColors(ac, bc, interp) {
   let same = true;
   const N = ac.length;
   for (let i = 0; i < N; i++) {
