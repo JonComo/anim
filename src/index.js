@@ -3192,7 +3192,7 @@ function interpolateColors(ac, bc, interp) {
 
 export function saveState() {
   // save state
-  const str = state_to_string();
+  const str = stateToString();
   if (states.length > 0) {
     const last = states[states.length - 1];
     if (str !== last) {
@@ -3222,7 +3222,7 @@ export function guidIndex(objs, obj) {
   return -1;
 }
 
-function state_to_string() {
+function stateToString() {
   return JSON.stringify({
     num_frames: rtv.num_frames, frame: rtv.frame, objs: rtv.objs, cam: rtv.cam, pen: rtv.pen,
   });
@@ -3256,7 +3256,7 @@ function str_to_state(str) {
 }
 
 function save(objs) {
-  const str = state_to_string();
+  const str = stateToString();
   const blob = new Blob([str], { type: 'text/plain;charset=utf-8' });
   const name = document.getElementById('name').value;
   saveAs(blob, name);
@@ -3274,7 +3274,7 @@ function load(evt) {
 }
 
 export function save_local() {
-  localStorage.setItem('page', state_to_string());
+  localStorage.setItem('page', stateToString());
 }
 
 export function load_local() {
