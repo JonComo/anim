@@ -1394,7 +1394,7 @@ math.import({
     rtv.ctx.translate(rsize[0] + pad * 3, 0);
     const dp = [];
 
-    let round = pretty_round_one;
+    let round = prettyRoundOne;
     if (rtv.keys.ctrl) {
       round = pretty_round;
     }
@@ -2457,7 +2457,7 @@ export function pretty_round(num) {
   return (Math.round(num * 100) / 100).toFixed(2);
 }
 
-function pretty_round_one(num) {
+function prettyRoundOne(num) {
   return (Math.round(num * 10) / 10).toFixed(1);
 }
 
@@ -2951,7 +2951,7 @@ export function format_matrix(matrix) {
 
   // format for display
   const formatted = [];
-  let round = pretty_round_one;
+  let round = prettyRoundOne;
 
   if (rtv.keys.ctrl) {
     round = pretty_round;
