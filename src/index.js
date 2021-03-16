@@ -3570,7 +3570,7 @@ export function enterSelect() {
   rtv.new_line = null;
 }
 
-function draw_cursor() {
+function drawCursor() {
   if (rtv.presenting && rtv.tool === 'pen') {
     const pad = 20;
 
@@ -4181,7 +4181,7 @@ window.addEventListener('load', () => {
 
     rtv.pen.render();
 
-    draw_cursor();
+    drawCursor();
 
     if (rtv.view_frame) {
       rtv.ctx.save();
