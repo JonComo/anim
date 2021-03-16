@@ -3285,7 +3285,7 @@ export function loadLocal() {
   }
 }
 
-function textArrayToObjs(arr, keep_animation) {
+function textArrayToObjs(arr, keepAnimation) {
   const new_objs = [];
   for (let i = 0; i < arr.length; i++) {
     const o = arr[i];
@@ -3299,7 +3299,7 @@ function textArrayToObjs(arr, keep_animation) {
       new_obj = new Text();
     }
 
-    if (keep_animation) {
+    if (keepAnimation) {
       new_obj.properties = o.properties;
     } else {
       new_obj.properties = {};
