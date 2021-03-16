@@ -4097,16 +4097,16 @@ window.addEventListener('load', () => {
   saveState();
 
   rtv.millis = Date.now();
-  let targ_millis = rtv.millis + 1; // set below
+  let targMillis = rtv.millis + 1; // set below
 
   function animate() {
     rtv.millis = Date.now();
-    if (rtv.millis < targ_millis) {
-      setTimeout(animate, targ_millis - rtv.millis);
+    if (rtv.millis < targMillis) {
+      setTimeout(animate, targMillis - rtv.millis);
       return;
     }
 
-    targ_millis = rtv.millis + 1000 / rtv.fps;
+    targMillis = rtv.millis + 1000 / rtv.fps;
 
     if (rtv.presenting) {
       rtv.fps = 60;
