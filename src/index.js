@@ -3095,21 +3095,23 @@ export function hexToRgb(hex) {
 }
 
 export function transform_props(key, props, step = 0.2) {
+  const propsL = { ...props };
+
   if (key === 'l') {
-    props.w += step;
+    propsL.w += step;
   } else if (key === 'j') {
-    props.w -= step;
+    propsL.w -= step;
   } else if (key === 'i') {
-    props.h += step;
+    propsL.h += step;
   } else if (key === 'k') {
-    props.h -= step;
+    propsL.h -= step;
   } else if (key === 'u') {
-    props.r -= Math.PI / 12;
+    propsL.r -= Math.PI / 12;
   } else if (key === 'o') {
-    props.r += Math.PI / 12;
+    propsL.r += Math.PI / 12;
   }
 
-  return props;
+  return propsL;
 }
 
 export function interpolate(a, b) {
