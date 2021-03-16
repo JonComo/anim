@@ -1038,7 +1038,7 @@ math.import({
 
     // connections
     let highConn = [];
-    let high_neur = [];
+    let highNeur = [];
 
     for (let j = 0; j < layers.length - 1; j++) {
       const units = layers[j];
@@ -1083,7 +1083,7 @@ math.import({
             if (d1 + d2 < vlen + 1) {
               rtv.ctx.strokeStyle = COLORS[3];
               highConn = [i, k, j]; // unit i to unit k in layer j
-              high_neur = [[i, j], [k, j + 1]];
+              highNeur = [[i, j], [k, j + 1]];
             }
           }
 
@@ -1136,7 +1136,7 @@ math.import({
               rtv.ctx.strokeStyle = COLORS[2];
             }
 
-            high_neur = [[i, j]];
+            highNeur = [[i, j]];
           }
         }
 
@@ -1150,7 +1150,7 @@ math.import({
     rtv.ctx.restore();
 
     if (arguments.length >= 2 && retHighlighted) {
-      return [highConn, high_neur];
+      return [highConn, highNeur];
     }
   },
   int(n) {
