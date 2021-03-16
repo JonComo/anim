@@ -2977,7 +2977,7 @@ export function formatMatrix(matrix) {
   return formatted;
 }
 
-function get_mouse_pos(canvas, evt) {
+function getMousePos(canvas, evt) {
   const rect = canvas.getBoundingClientRect();
   let x; let
     y;
@@ -3868,7 +3868,7 @@ window.addEventListener('load', () => {
 
   ['mousedown', 'touchstart'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
     rtv.mouse.down = true;
-    rtv.mouse.start = get_mouse_pos(rtv.c, evt);
+    rtv.mouse.start = getMousePos(rtv.c, evt);
 
     try {
       math.compile('click()').evaluate(parser.scope);
@@ -3923,7 +3923,7 @@ window.addEventListener('load', () => {
 
   ['mousemove', 'touchmove'].forEach((key) => window.addEventListener(key, (evt) => {
     // update mouse
-    rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
+    rtv.mouse.pos = getMousePos(rtv.c, evt);
     rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
     rtv.mouse.graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
 
@@ -3961,7 +3961,7 @@ window.addEventListener('load', () => {
       rtv.mouse.time = MOUSE_DURATION;
     }
 
-    rtv.mouse.last = get_mouse_pos(rtv.c, evt);
+    rtv.mouse.last = getMousePos(rtv.c, evt);
     rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
   }));
 
