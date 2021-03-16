@@ -8,7 +8,7 @@ import {
   drawNetwork,
   drawSimple,
   enter_select,
-  format_matrix,
+  formatMatrix,
   guid,
   guidIndex,
   interpolate,
@@ -275,7 +275,7 @@ export default function Text(text, pos) {
       // create a bunch of matrix numbers
       const pad = 24;
 
-      const matrix = format_matrix(this.matrix_vals);
+      const matrix = formatMatrix(this.matrix_vals);
 
       for (let i = 0; i < matrix.length; i++) {
         for (let j = 0; j < matrix[i].length; j++) {
@@ -809,7 +809,7 @@ export default function Text(text, pos) {
       ctx.translate(135, 0);
 
       ctx.translate(-100, -20);
-      const formatted = format_matrix(this.matrix_vals);
+      const formatted = formatMatrix(this.matrix_vals);
       drawMatrix(formatted);
 
       ctx.restore();
