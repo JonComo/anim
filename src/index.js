@@ -1300,7 +1300,7 @@ math.import({
     const cols = W._size[1];
 
     const high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
-    const high_conn = high[0];
+    const highConn = high[0];
     const high_neur = high[1];
 
     // draw matrices
@@ -1328,7 +1328,7 @@ math.import({
     rtv.ctx.translate(rsize[0] + pad * 3, 0);
     draw_matrix(Wformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
-      if (high_conn.length && high_conn[0] === j && high_conn[1] === i) {
+      if (highConn.length && highConn[0] === j && highConn[1] === i) {
         rtv.ctx.fillStyle = COLORS[3];
       }
     });
