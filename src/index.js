@@ -3286,7 +3286,7 @@ export function loadLocal() {
 }
 
 function textArrayToObjs(arr, keepAnimation) {
-  const new_objs = [];
+  const newObjs = [];
   for (let i = 0; i < arr.length; i++) {
     const o = arr[i];
     let new_obj = null;
@@ -3309,10 +3309,10 @@ function textArrayToObjs(arr, keepAnimation) {
 
     new_obj.guid = o.guid;
 
-    new_objs.push(new_obj);
+    newObjs.push(new_obj);
   }
 
-  return new_objs;
+  return newObjs;
 }
 
 export function insert_frame() {
