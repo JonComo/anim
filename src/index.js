@@ -393,9 +393,9 @@ math.import({
     return math.matrix(matrixL);
   },
   push(matrix, value) {
-    matrix = matrix._data;
-    matrix.push(value);
-    return math.matrix(matrix);
+    const matrixL = matrix._data.slice();
+    matrixL.push(value);
+    return math.matrix(matrixL);
   },
   dims(m) {
     return math.matrix(m.size());
