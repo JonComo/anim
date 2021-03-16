@@ -238,9 +238,9 @@ math.import({
     return implies(p, q);
   },
   beval(statement) { // LOGIC: Boolean evaluation, "true^false||true"
-    statement = statement.toLowerCase();
-    statement = statement.replace('^', '&&');
-    return eval(statement);
+    return eval(statement
+      .toLowerCase()
+      .replace('^', '&&'));
   },
   tautology(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
     const O = [true, false];
