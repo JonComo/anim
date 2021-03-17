@@ -6,6 +6,7 @@ import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
 import Shape from './tools/shape';
+import { setUpRecordButton } from './graphics/recording';
 import Text from './tools/text';
 import Transition from './graphics/transition';
 import initVolumeMeter from './audio/volume-meter';
@@ -3713,6 +3714,8 @@ window.addEventListener('load', () => {
 
     saveState();
   });
+
+  setUpRecordButton(document.getElementById('record'));
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');

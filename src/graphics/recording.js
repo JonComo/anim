@@ -60,3 +60,9 @@ export default class Recording extends EventTarget {
     this.mediaRecorder.stop(); // Stop recording, triggering event listener and saving
   }
 }
+
+/**
+ * Sets up a button element to control recording functions.
+ * @param {HTMLButtonElement} button The button to control recording.
+ */
+export function setUpRecordButton(button) {}
