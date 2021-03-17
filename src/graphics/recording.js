@@ -51,12 +51,16 @@ export default class Recording extends MediaRecorder {
 
   /**
    * Stops and saves recording.
+   * @param {boolean?} cancel Whether or not the `save` event should be canceled
    * @returns {Promise<Blob>} The saved video data.
    */
-  save() {
+  save(cancel = false) {
     this.stop(); // Stop recording, triggering event listener and saving
     return new Promise((resolve) => {
-      this.addEventListener('save', ({ detail: { blob } }) => resolve(blob), { once: true });
+      this.addEventListener('save', (e) => {
+        resolve(e.detail.blob); // Resolve with 'blob'
+        if (cancel) e.preventDefault(); // Prevent default if 'cancel' is true
+      }, { once: true });
     }); // Return promise that resolves with saved recording
   }
 }
