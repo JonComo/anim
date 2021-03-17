@@ -15,6 +15,7 @@ import {
   math,
   parser,
   DARK,
+  CANVAS_BG,
   COLORS,
   FONT,
   SCALE_FACTOR,
@@ -3626,6 +3627,19 @@ function drawCursor() {
   }
 }
 
+/**
+ * Draws a solid background.
+ * @param {CanvasRenderingContext2D} ctx Canvas context.
+ * @param {string} color Background color.
+ */
+function drawBackground(ctx, color) {
+  ctx.save(); // Save canvas state
+  ctx.globalCompositeOperation = 'destination-over'; // Draw underneath existing content
+  ctx.fillStyle = color; // Set fill style to requested background color
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Draw filled rectangle to cover surface
+  ctx.restore(); // Restore canvas state
+}
+
 window.addEventListener('load', () => {
   rtv.objs = [];
 
@@ -4217,6 +4231,8 @@ window.addEventListener('load', () => {
     rtv.transition.update();
 
     rtv.t += 1;
+
+    drawBackground(rtv.ctx, CANVAS_BG);
 
     requestAnimationFrame(animate);
   }
