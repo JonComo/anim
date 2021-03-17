@@ -56,7 +56,7 @@ export default class Recording extends MediaRecorder {
   save() {
     this.stop(); // Stop recording, triggering event listener and saving
     return new Promise((resolve) => {
-      this.addEventListener('save', ({ detail: { blob } }) => resolve(blob));
+      this.addEventListener('save', ({ detail: { blob } }) => resolve(blob), { once: true });
     }); // Return promise that resolves with saved recording
   }
 }
