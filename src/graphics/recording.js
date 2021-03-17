@@ -23,4 +23,25 @@ export default class Recording {
 
     this.mediaRecorder.start(); // Start recording
   }
+
+  /**
+   * Pauses recording.
+   */
+  pause() {
+    this.mediaRecorder.pause(); // Pause recording
+  }
+
+  /**
+   * Resumes recording.
+   */
+  resume() {
+    this.mediaRecorder.resume(); // Resume recording
+  }
+
+  /**
+   * Stops and saves recording.
+   */
+  save() {
+    this.mediaRecorder.stop(); // Stop recording, triggering event listener and saving
+  }
 }
