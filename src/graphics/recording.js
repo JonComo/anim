@@ -4,26 +4,18 @@ import { saveAs } from 'file-saver';
  * Creates a new recording of `canvas`.
  * @param {HTMLCanvasElement} canvas The canvas to be captured.
  */
-export default class Recording extends EventTarget {
+export default class Recording extends MediaRecorder {
   constructor(canvas) {
-    super();
     const videoStream = canvas.captureStream(); // Obtain media stream from canvas
+    super(videoStream); // Pass 'videoStream' to 'MediaRecorder' constructor
 
     this.chunks = []; // Initialize array to hold recorded media
-    // Initialize a media recorder with the video stream
-    this.mediaRecorder = new MediaRecorder(videoStream);
 
-    this.mediaRecorder.addEventListener('dataavailable', ({ data }) => {
+    this.addEventListener('dataavailable', ({ data }) => {
       this.chunks.push(data); // Store media data
     }); // Attach event listener to the 'dataavailable' event
 
-    // Listen for 'pause' event
-    this.mediaRecorder.addEventListener('pause', (e) => this.dispatchEvent(e)); // Dispatch 'pause' event
-
-    // Listen for 'resume' event
-    this.mediaRecorder.addEventListener('resume', (e) => this.dispatchEvent(e)); // Dispatch 'resume' event
-
-    this.mediaRecorder.addEventListener('stop', () => {
+    this.addEventListener('stop', () => {
       const blob = new Blob(this.chunks, { type: 'video/mp4' }); // Convert media data to MP4 video
 
       const saveEvent = new CustomEvent('save', {
@@ -36,28 +28,14 @@ export default class Recording extends EventTarget {
       }
     }); // Attach event listener to the 'stop' event
 
-    this.mediaRecorder.start(); // Start recording
-  }
-
-  /**
-   * Pauses recording.
-   */
-  pause() {
-    this.mediaRecorder.pause(); // Pause recording
-  }
-
-  /**
-   * Resumes recording.
-   */
-  resume() {
-    this.mediaRecorder.resume(); // Resume recording
+    this.start(); // Start recording
   }
 
   /**
    * Stops and saves recording.
    */
   save() {
-    this.mediaRecorder.stop(); // Stop recording, triggering event listener and saving
+    this.stop(); // Stop recording, triggering event listener and saving
   }
 }
 
