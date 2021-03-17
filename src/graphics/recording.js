@@ -56,11 +56,15 @@ export function setUpRecordButton(button, canvas) {
   button.addEventListener('click', () => {
     if (recording === undefined) { // Check if recording doesn't exist yet
       recording = new Recording(canvas); // Initialize new recording with 'rtv.c' as canvas
-      button.innerText = MSGS.stop; // Use 'MSGS.stop' for button label
+      recording.addEventListener('start', () => {
+        button.innerText = MSGS.stop; // Use 'MSGS.stop' for button label
+      }); // Listen for recording start
     } else { // Recording exists
       recording.save(); // Save recording
-      recording = undefined;
-      button.innerText = MSGS.start; // Use 'MSGS.start' for button label
+      recording.addEventListener('save', () => {
+        recording = undefined; // The 'Recording' instance can now be garbage collected
+        button.innerText = MSGS.start; // Use 'MSGS.start' for button label
+      }); // Listen for recording save
     }
   }); // Add 'click' event listener
 }
