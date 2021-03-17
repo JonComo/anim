@@ -3715,7 +3715,7 @@ window.addEventListener('load', () => {
     saveState();
   });
 
-  setUpRecordButton(document.getElementById('record')); // Set up button to control recording functions
+  setUpRecordButton(document.getElementById('record'), rtv.c); // Set up button to control recording functions
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
