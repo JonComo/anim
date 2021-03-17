@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver';
+import { rtv } from '../resources';
 
 /**
  * Creates a new recording of `canvas`.
@@ -65,4 +66,24 @@ export default class Recording extends EventTarget {
  * Sets up a button element to control recording functions.
  * @param {HTMLButtonElement} button The button to control recording.
  */
-export function setUpRecordButton(button) {}
+export function setUpRecordButton(button) {
+  const MSGS = {
+    start: 'Start recording',
+    stop: 'Stop recording',
+  }; // Button labels for different states
+
+  let recording; // Declare 'recording' to store recording
+
+  button.innerText = MSGS.start; // Start button with 'MSGS.start' message
+
+  button.addEventListener('click', () => {
+    if (recording === undefined) { // Check if recording doesn't exist yet
+      recording = new Recording(rtv.c); // Initialize new recording with 'rtv.c' as canvas
+      button.innerText = MSGS.stop; // Use 'MSGS.stop' for button label
+    } else { // Recording exists
+      recording.save(); // Save recording
+      recording = undefined;
+      button.innerText = MSGS.start; // Use 'MSGS.start' for button label
+    }
+  }); // Add 'click' event listener
+}
