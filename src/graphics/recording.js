@@ -17,6 +17,9 @@ export default class Recording extends EventTarget {
       this.chunks.push(data); // Store media data
     }); // Attach event listener to the 'dataavailable' event
 
+    // Listen for 'pause' event
+    this.mediaRecorder.addEventListener('pause', (e) => this.dispatchEvent(e)); // Dispatch 'pause' event
+
     this.mediaRecorder.addEventListener('stop', () => {
       const blob = new Blob(this.chunks, { type: 'video/mp4' }); // Convert media data to MP4 video
 
