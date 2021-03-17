@@ -20,6 +20,9 @@ export default class Recording extends EventTarget {
     // Listen for 'pause' event
     this.mediaRecorder.addEventListener('pause', (e) => this.dispatchEvent(e)); // Dispatch 'pause' event
 
+    // Listen for 'resume' event
+    this.mediaRecorder.addEventListener('resume', (e) => this.dispatchEvent(e)); // Dispatch 'resume' event
+
     this.mediaRecorder.addEventListener('stop', () => {
       const blob = new Blob(this.chunks, { type: 'video/mp4' }); // Convert media data to MP4 video
 
