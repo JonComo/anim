@@ -33,9 +33,13 @@ export default class Recording extends MediaRecorder {
 
   /**
    * Stops and saves recording.
+   * @returns {Promise<Blob>} The saved video data.
    */
   save() {
     this.stop(); // Stop recording, triggering event listener and saving
+    return new Promise((resolve) => {
+      this.addEventListener('save', ({ detail: { blob } }) => resolve(blob));
+    }); // Return promise that resolves with saved recording
   }
 }
 
@@ -61,10 +65,10 @@ export function setUpRecordButton(button, canvas) {
       }); // Listen for recording start
     } else { // Recording exists
       recording.save(); // Save recording
-      recording.addEventListener('save', () => {
+      recording.save().then(() => {
         recording = undefined; // The 'Recording' instance can now be garbage collected
         button.innerText = MSGS.start; // Use 'MSGS.start' for button label
-      }); // Listen for recording save
+      }); // Callback is run only after 'save' resolves
     }
   }); // Add 'click' event listener
 }
