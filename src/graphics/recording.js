@@ -4,8 +4,9 @@ import { saveAs } from 'file-saver';
  * Creates a new recording of `canvas`.
  * @param {HTMLCanvasElement} canvas The canvas to be captured.
  */
-export default class Recording {
+export default class Recording extends EventTarget {
   constructor(canvas) {
+    super();
     const videoStream = canvas.captureStream(); // Obtain media stream from canvas
 
     this.chunks = []; // Initialize array to hold recorded media
@@ -18,7 +19,15 @@ export default class Recording {
 
     this.mediaRecorder.addEventListener('stop', () => {
       const blob = new Blob(this.chunks, { type: 'video/mp4' }); // Convert media data to MP4 video
-      saveAs(blob, 'recording.mp4'); // Save video
+
+      const saveEvent = new CustomEvent('save', {
+        detail: { blob }, // Pass object with blob as a detail
+      }); // Create custom 'save' event
+
+      // Dispatch event and continue only if it's is not prevented
+      if (this.dispatchEvent(saveEvent)) {
+        saveAs(blob, 'recording.mp4'); // Save video
+      }
     }); // Attach event listener to the 'stop' event
 
     this.mediaRecorder.start(); // Start recording
