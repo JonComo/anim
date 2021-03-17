@@ -44,10 +44,11 @@ export default class Recording extends MediaRecorder {
 }
 
 /**
- * Sets up a button element to control recording functions.
- * @param {HTMLButtonElement} button The button to control recording.
+ * Sets up button elements to control recording functions.
+ * @param {HTMLButtonElement} recordBtn The button to start and stop recording.
+ * @param {HTMLButtonElement} prBtn The button to pause and resume recording.
  */
-export function setUpRecordButton(button, canvas) {
+export function setUpRecordingButtons(recordBtn, prBtn, canvas) {
   const MSGS = {
     start: 'Start recording',
     stop: 'Stop recording',
@@ -55,19 +56,19 @@ export function setUpRecordButton(button, canvas) {
 
   let recording; // Declare 'recording' to store recording
 
-  button.innerText = MSGS.start; // Start button with 'MSGS.start' message
+  recordBtn.innerText = MSGS.start; // Start button with 'MSGS.start' message
 
-  button.addEventListener('click', () => {
+  recordBtn.addEventListener('click', () => {
     if (recording === undefined) { // Check if recording doesn't exist yet
       recording = new Recording(canvas); // Initialize new recording with 'rtv.c' as canvas
       recording.addEventListener('start', () => {
-        button.innerText = MSGS.stop; // Use 'MSGS.stop' for button label
+        recordBtn.innerText = MSGS.stop; // Use 'MSGS.stop' for button label
       }); // Listen for recording start
     } else { // Recording exists
       recording.save(); // Save recording
       recording.save().then(() => {
         recording = undefined; // The 'Recording' instance can now be garbage collected
-        button.innerText = MSGS.start; // Use 'MSGS.start' for button label
+        recordBtn.innerText = MSGS.start; // Use 'MSGS.start' for button label
       }); // Callback is run only after 'save' resolves
     }
   }); // Add 'click' event listener
