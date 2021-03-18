@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver';
+import { rtv } from '../resources';
 
 /**
  * Creates a new recording of `canvas`.
@@ -68,11 +69,24 @@ export default class Recording extends MediaRecorder {
 }
 
 /**
+ * Creates a new recording if one doesn't exist already and assigns it to `rtv.recording`.
+ * @returns {Promise<Event>} The `start` event.
+ */
+export function startRecording() {
+  if (rtv.recording === undefined) {
+    rtv.recording = new Recording(rtv.c);
+    return new Promise((resolve) => {
+      rtv.recording.addEventListener('start', resolve);
+    });
+  }
+}
+
+/**
  * Sets up button elements to control recording functions.
  * @param {HTMLButtonElement} recordBtn The button to start and stop recording.
  * @param {HTMLButtonElement} prBtn The button to pause and resume recording.
  */
-export function setUpRecordingButtons(recordBtn, prBtn, canvas) {
+export function setUpRecordingButtons(recordBtn, prBtn) {
   const LABELS = {
     start: 'Start recording',
     pause: 'Pause recording',
@@ -80,16 +94,12 @@ export function setUpRecordingButtons(recordBtn, prBtn, canvas) {
     stop: 'Stop recording',
   }; // Button labels for different recording states
 
-  let recording;
-
   recordBtn.innerText = LABELS.start;
   prBtn.hidden = true;
 
   recordBtn.addEventListener('click', () => {
-    if (recording === undefined) { // Check if a recording doesn't exist yet
-      // Set up a new recording
-      recording = new Recording(canvas);
-      recording.addEventListener('start', () => {
+    if (rtv.recording === undefined) { // Check if a recording doesn't exist yet
+      startRecording().then(() => {
         recordBtn.innerText = LABELS.stop;
 
         prBtn.innerText = LABELS.pause;
@@ -97,9 +107,9 @@ export function setUpRecordingButtons(recordBtn, prBtn, canvas) {
       });
     } else {
       // Save and forget about old recording
-      recording.save();
-      recording.save().then(() => {
-        recording = undefined; // The 'Recording' instance will now be garbage collected
+      rtv.recording.save();
+      rtv.recording.save().then(() => {
+        rtv.recording = undefined; // The 'Recording' instance will now be garbage collected
         recordBtn.innerText = LABELS.start;
 
         prBtn.hidden = true;
@@ -108,12 +118,12 @@ export function setUpRecordingButtons(recordBtn, prBtn, canvas) {
   });
 
   prBtn.addEventListener('click', () => {
-    if (recording.state === 'paused') {
-      recording.resume().then(() => {
+    if (rtv.recording.state === 'paused') {
+      rtv.recording.resume().then(() => {
         prBtn.innerText = LABELS.pause;
       });
     } else {
-      recording.pause().then(() => {
+      rtv.recording.pause().then(() => {
         prBtn.innerText = LABELS.resume;
       });
     }

@@ -78,6 +78,9 @@ export const rtv = {
   view_frame: false,
   fps: 30,
 
+  // Recording
+  recording: undefined,
+
   // Volume meter
   meter: undefined,
 

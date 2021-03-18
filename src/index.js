@@ -3732,8 +3732,7 @@ window.addEventListener('load', () => {
   setUpRecordingButtons(
     document.getElementById('record'),
     document.getElementById('pause-resume'),
-    rtv.c,
-  ); // Set up button to control recording functions
+  );
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
