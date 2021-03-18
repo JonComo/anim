@@ -82,6 +82,16 @@ export function startRecording() {
 }
 
 /**
+ * Pauses the recording, if it exists.
+ * @returns {Promise<Event>?} The `pause` event.
+ */
+export async function pauseRecording() {
+  if (rtv.recording !== undefined) {
+    return rtv.recording.pause();
+  }
+}
+
+/**
  * If a recording exists, saves it and allows it to be garbage collected.
  * @param {boolean} cancel Whether or not the `save` event should be canceled.
  * @returns {Promise<Blob>?} Saved video data.
@@ -134,7 +144,7 @@ export function setUpRecordingButtons(recordBtn, prBtn) {
         prBtn.innerText = LABELS.pause;
       });
     } else {
-      rtv.recording.pause().then(() => {
+      pauseRecording().then(() => {
         prBtn.innerText = LABELS.resume;
       });
     }
