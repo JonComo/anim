@@ -3736,7 +3736,6 @@ window.addEventListener('load', () => {
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
-    console.log(`pasting: ${paste}`);
 
     const N = rtv.objs.length;
     for (let i = 0; i < rtv.objs.length; i++) {
