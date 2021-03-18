@@ -131,32 +131,28 @@ export function setUpRecordingButtons(recordBtn, prBtn) {
   recordBtn.innerText = LABELS.start;
   prBtn.hidden = true;
 
-  recordBtn.addEventListener('click', () => {
+  recordBtn.addEventListener('click', async () => {
     if (rtv.recording === undefined) { // Check if a recording doesn't exist yet
-      startRecording().then(() => {
-        recordBtn.innerText = LABELS.stop;
+      await startRecording();
+      recordBtn.innerText = LABELS.stop;
 
-        prBtn.innerText = LABELS.pause;
-        prBtn.hidden = false;
-      });
+      prBtn.innerText = LABELS.pause;
+      prBtn.hidden = false;
     } else {
-      saveRecording().then(() => {
-        recordBtn.innerText = LABELS.start;
+      await saveRecording();
+      recordBtn.innerText = LABELS.start;
 
-        prBtn.hidden = true;
-      });
+      prBtn.hidden = true;
     }
   });
 
-  prBtn.addEventListener('click', () => {
+  prBtn.addEventListener('click', async () => {
     if (rtv.recording.state === 'paused') {
-      resumeRecording().then(() => {
-        prBtn.innerText = LABELS.pause;
-      });
+      await resumeRecording();
+      prBtn.innerText = LABELS.pause;
     } else {
-      pauseRecording().then(() => {
-        prBtn.innerText = LABELS.resume;
-      });
+      await pauseRecording();
+      prBtn.innerText = LABELS.resume;
     }
   }); // Add 'click' event listener
 }
