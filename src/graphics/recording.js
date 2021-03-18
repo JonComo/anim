@@ -6,27 +6,25 @@ import { saveAs } from 'file-saver';
  */
 export default class Recording extends MediaRecorder {
   constructor(canvas) {
-    const videoStream = canvas.captureStream(); // Obtain media stream from canvas
+    const videoStream = canvas.captureStream();
     super(videoStream); // Pass 'videoStream' to 'MediaRecorder' constructor
 
     this.chunks = []; // Initialize array to hold recorded media
 
     this.addEventListener('dataavailable', ({ data }) => {
-      this.chunks.push(data); // Store media data
-    }); // Attach event listener to the 'dataavailable' event
+      this.chunks.push(data);
+    });
 
     this.addEventListener('stop', () => {
-      const blob = new Blob(this.chunks, { type: 'video/mp4' }); // Convert media data to MP4 video
+      const blob = new Blob(this.chunks, { type: 'video/mp4' });
 
-      const saveEvent = new CustomEvent('save', {
-        detail: { blob }, // Pass object with blob as a detail
-      }); // Create custom 'save' event
+      const saveEvent = new CustomEvent('save', { detail: { blob } });
 
       // Dispatch event and continue only if it's is not prevented
       if (this.dispatchEvent(saveEvent)) {
-        saveAs(blob, 'recording.mp4'); // Save video
+        saveAs(blob, 'recording.mp4');
       }
-    }); // Attach event listener to the 'stop' event
+    });
 
     this.start(); // Start recording
   }
@@ -37,7 +35,8 @@ export default class Recording extends MediaRecorder {
    */
   pause() {
     super.pause();
-    return new Promise((resolve) => this.addEventListener('pause', resolve, { once: true })); // Return promise that resolves when recording is paused
+    return new Promise((resolve) => this
+      .addEventListener('pause', resolve, { once: true }));
   }
 
   /**
@@ -46,22 +45,25 @@ export default class Recording extends MediaRecorder {
    */
   resume() {
     super.resume();
-    return new Promise((resolve) => this.addEventListener('resume', resolve, { once: true })); // Return promise that resolves when recording is resumed
+    return new Promise((resolve) => this
+      .addEventListener('resume', resolve, { once: true }));
   }
 
   /**
    * Stops and saves recording.
    * @param {boolean?} cancel Whether or not the `save` event should be canceled
-   * @returns {Promise<Blob>} The saved video data.
+   * @returns {Promise<Blob>} Saved video data.
    */
   save(cancel = false) {
     this.stop(); // Stop recording, triggering event listener and saving
     return new Promise((resolve) => {
       this.addEventListener('save', (e) => {
-        resolve(e.detail.blob); // Resolve with 'blob'
-        if (cancel) e.preventDefault(); // Prevent default if 'cancel' is true
+        resolve(e.detail.blob);
+        if (cancel) {
+          e.preventDefault();
+        }
       }, { once: true });
-    }); // Return promise that resolves with saved recording
+    });
   }
 }
 
@@ -71,47 +73,49 @@ export default class Recording extends MediaRecorder {
  * @param {HTMLButtonElement} prBtn The button to pause and resume recording.
  */
 export function setUpRecordingButtons(recordBtn, prBtn, canvas) {
-  const MSGS = {
+  const LABELS = {
     start: 'Start recording',
     pause: 'Pause recording',
     resume: 'Resume recording',
     stop: 'Stop recording',
-  }; // Button labels for different states
+  }; // Button labels for different recording states
 
-  let recording; // Declare 'recording' to store recording
+  let recording;
 
-  recordBtn.innerText = MSGS.start; // Start button with 'MSGS.start' message
-  prBtn.hidden = true; // Hide button
+  recordBtn.innerText = LABELS.start;
+  prBtn.hidden = true;
 
   recordBtn.addEventListener('click', () => {
-    if (recording === undefined) { // Check if recording doesn't exist yet
-      recording = new Recording(canvas); // Initialize new recording with 'rtv.c' as canvas
+    if (recording === undefined) { // Check if a recording doesn't exist yet
+      // Set up a new recording
+      recording = new Recording(canvas);
       recording.addEventListener('start', () => {
-        recordBtn.innerText = MSGS.stop; // Use 'MSGS.stop' for button label
+        recordBtn.innerText = LABELS.stop;
 
-        prBtn.innerText = MSGS.pause; // Use 'MSGS.pause' for button label
-        prBtn.hidden = false; // Show button
-      }); // Listen for recording start
-    } else { // Recording exists
-      recording.save(); // Save recording
+        prBtn.innerText = LABELS.pause;
+        prBtn.hidden = false;
+      });
+    } else {
+      // Save and forget about old recording
+      recording.save();
       recording.save().then(() => {
-        recording = undefined; // The 'Recording' instance can now be garbage collected
-        recordBtn.innerText = MSGS.start; // Use 'MSGS.start' for button label
+        recording = undefined; // The 'Recording' instance will now be garbage collected
+        recordBtn.innerText = LABELS.start;
 
-        prBtn.hidden = true; // Hide button
-      }); // Callback is run only after 'save' resolves
+        prBtn.hidden = true;
+      });
     }
-  }); // Add 'click' event listener
+  });
 
   prBtn.addEventListener('click', () => {
-    if (recording.state === 'paused') { // Check if recording is paused
+    if (recording.state === 'paused') {
       recording.resume().then(() => {
-        prBtn.innerText = MSGS.pause; // Use 'MSGS.pause' for button label
-      }); // Resume recording
+        prBtn.innerText = LABELS.pause;
+      });
     } else {
       recording.pause().then(() => {
-        prBtn.innerText = MSGS.resume; // Use 'MSGS.resume' for button label
-      }); // Pause recording
+        prBtn.innerText = LABELS.resume;
+      });
     }
   }); // Add 'click' event listener
 }
