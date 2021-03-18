@@ -70,7 +70,7 @@ export default class Recording extends MediaRecorder {
 
 /**
  * Creates a new recording if one doesn't exist already and assigns it to `rtv.recording`.
- * @returns {Promise<Event>} The `start` event.
+ * @returns {Promise<Event>?} The `start` event.
  */
 export function startRecording() {
   if (rtv.recording === undefined) {
