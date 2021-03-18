@@ -11,8 +11,10 @@ import { rtv } from '../resources';
  * @param {boolean} handleKeys Whether or not a shortcut handler should be attached
  * @param {EventTarget} kbdEvents Keyoard events target.
  */
-export default class RecordingManager {
+export default class RecordingManager extends EventTarget {
   constructor(canvas, recordBtn, prBtn, handleKeys = true, kbdEvents = window) {
+    super();
+
     this.canvas = canvas;
 
     if (recordBtn !== undefined && prBtn !== undefined) {
@@ -34,6 +36,10 @@ export default class RecordingManager {
   startRecording() {
     if (this.recording === undefined) {
       this.recording = new Recording(this.canvas);
+      this.recording.init.then(() => {
+        const newEvent = new CustomEvent('new', { detail: { recording: this.recording } });
+        this.dispatchEvent(newEvent);
+      });
       return this.recording.init;
     }
   }
@@ -44,7 +50,9 @@ export default class RecordingManager {
    */
   pauseRecording() {
     if (this.recording !== undefined) {
-      return this.recording.pause();
+      const p = this.recording.pause();
+      p.then(() => this.dispatchEvent(new Event('pause')));
+      return p;
     }
   }
 
@@ -54,7 +62,9 @@ export default class RecordingManager {
    */
   resumeRecording() {
     if (this.recording !== undefined) {
-      return this.recording.resume();
+      const p = this.recording.resume();
+      p.then(() => this.dispatchEvent(new Event('resume')));
+      return p;
     }
   }
 
@@ -67,6 +77,8 @@ export default class RecordingManager {
     if (this.recording !== undefined) {
       // Save and forget about old recording
       const blob = await this.recording.save(cancel);
+      const saveEvent = new CustomEvent('save', { detail: { blob } });
+      this.dispatchEvent(saveEvent);
       this.recording = undefined; // The 'Recording' instance should now be garbage collected
       return blob;
     }
@@ -86,30 +98,42 @@ export default class RecordingManager {
     this.recordBtn.innerText = LABELS.start;
     this.prBtn.hidden = true;
 
-    this.recordBtn.addEventListener('click', async () => {
+    this.recordBtn.addEventListener('click', () => {
       if (this.recording === undefined) {
-        await this.startRecording();
-        this.recordBtn.innerText = LABELS.stop;
-
-        this.prBtn.innerText = LABELS.pause;
-        this.prBtn.hidden = false;
+        this.startRecording();
       } else {
-        await this.saveRecording();
-        this.recordBtn.innerText = LABELS.start;
-
-        this.prBtn.hidden = true;
+        this.saveRecording();
       }
     });
 
-    this.prBtn.addEventListener('click', async () => {
+    this.prBtn.addEventListener('click', () => {
       if (this.recording.state === 'paused') {
-        await resumeRecording();
-        this.prBtn.innerText = LABELS.pause;
+        this.resumeRecording();
       } else {
-        await pauseRecording();
-        this.prBtn.innerText = LABELS.resume;
+        this.pauseRecording();
       }
     }); // Add 'click' event listener
+
+    this.addEventListener('new', () => {
+      this.recordBtn.innerText = LABELS.stop;
+
+      this.prBtn.innerText = LABELS.pause;
+      this.prBtn.hidden = false;
+    });
+
+    this.addEventListener('pause', () => {
+      this.prBtn.innerText = LABELS.resume;
+    });
+
+    this.addEventListener('resume', () => {
+      this.prBtn.innerText = LABELS.pause;
+    });
+
+    this.addEventListener('save', () => {
+      this.recordBtn.innerText = LABELS.start;
+
+      this.prBtn.hidden = true;
+    });
   }
 
   /**
