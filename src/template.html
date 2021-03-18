@@ -10,21 +10,26 @@
             <textarea rows="4" cols="50" id="formula_text"></textarea>
             <input type="submit" id="load_clear_formula_text" value="Clear and load to selected text">
             <input type="submit" id="load_insert_formula_text" value="Insert to selected text">
+
             <h3>Save file</h3>
             <input type="text" id="name" placeholder="filename" />
             <a id="save" href="">Save</a>
+
             <h3>Load file</h3>
             <input type="file" id="file" name="files" />
             <h3>Selected objects:</h3>
             <textarea rows="4" cols="50" id="selected_objects_text"></textarea>
             <input type="submit" id="load_to_frame" value="Load to frame">
+
             <h3>Multi use:</h3>
             <textarea rows="4" cols="50" id="generic"></textarea>
             <input type="submit" id="gen_js" value="Generate JS">
             <input type="submit" id="gen_script" value="Generate Script">
+
             <h3>Recording:</h3>
             <button id="record"></button>
             <button id="pause-resume"></button>
+
             <h2>Help:</h2>
             <h3>KEYBOARD SHORTCUTS</h3>
             <code>cmd / ctrl z</code> to undo<br><br>
@@ -37,6 +42,7 @@
             <code>ctrl I or L or K or J</code> to scale selected object<br><br>
             <code>ctrl U or O</code> to rotate selected object<br><br>
             <kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>b</kbd> / <kbd>m</kbd> / <kbd>r</kbd> / <kbd>e</kbd> to start, pause, resume and save a recording, respectively<br><br>
+
             <h3>THINGS TO DO WITH TEXT BOXES</h3>
             <code>x = 5</code> to assign a value to a variable<br><br>
             <code>e:x = x + 0.1</code> to repeatedly update x every frame<br><br>
@@ -44,6 +50,7 @@
             <code>e:expression</code> to run expression each frame<br><br>
             <code>slide:var_name</code> then present, and you can slide the box to change the variable value<br><br>
             <code>e:graph(function_name)</code> to graph function_name(x)<br><br>
+
             <h3>ANIMATION BASICS</h3>
             1) Create a text, circle or drawing<br><br>
             2) Change frames with the <code>left</code> and <code>right</code> arrow keys<br><br>
@@ -51,6 +58,7 @@
             4) Enter presentation mode by hitting <code>ctrl enter</code><br><br>
             5) <code>left</code> and <code>right</code> arrow keys will show animated transition<br><br>
             6) Exit presentation mode by pressing <code>esc</code><br><br>
+
             <h3>CONTROL CAMERA</h3>
             Tap camera or hit <code>c</code> to edit camera<br><br>
             Click and drag to pan<br><br>
@@ -69,6 +77,7 @@
             To save: enter a file name and hit save file<br><br>
             To load: hit load file and select your saved file<br><br>
             As you edit if you make a mistake you can undo by hitting <code>ctrl z</code><br><br>
+
             <h3>MORE FUNCTIONS</h3>
             <code>L = range(a, b, c)</code> to create array of values from <code>a</code> to <code>b</code> incrementing by <code>c</code><br><br>
             <code>e:view(L, [x, y, z])</code> print matrix elements at position [x,y,z]<br><br>
