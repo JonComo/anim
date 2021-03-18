@@ -3820,28 +3820,6 @@ window.addEventListener('load', () => {
       return true;
     }
 
-    if ((rtv.keys.meta || rtv.keys.ctrl) && rtv.keys.shift) {
-      switch (key) {
-        case 'b':
-          // Start recording
-          evt.preventDefault();
-          return;
-        case 'p':
-          // Pause recording
-          evt.preventDefault();
-          return;
-        case 'r':
-          // Resume recording
-          evt.preventDefault();
-          return;
-        case 'e':
-          // Stop recording
-          evt.preventDefault();
-          return;
-        // no default
-      }
-    }
-
     if (document.getElementById('formula_text') === document.activeElement) {
       return true;
     }
