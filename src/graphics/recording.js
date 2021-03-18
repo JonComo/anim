@@ -92,6 +92,16 @@ export async function pauseRecording() {
 }
 
 /**
+ * Resumes the recording, if it exists.
+ * @returns {Promise<SpeechSynthesisEvent>?} The `resume` event
+ */
+export async function resumeRecording() {
+  if (rtv.recording !== undefined) {
+    return rtv.recording.resume();
+  }
+}
+
+/**
  * If a recording exists, saves it and allows it to be garbage collected.
  * @param {boolean} cancel Whether or not the `save` event should be canceled.
  * @returns {Promise<Blob>?} Saved video data.
@@ -140,7 +150,7 @@ export function setUpRecordingButtons(recordBtn, prBtn) {
 
   prBtn.addEventListener('click', () => {
     if (rtv.recording.state === 'paused') {
-      rtv.recording.resume().then(() => {
+      resumeRecording().then(() => {
         prBtn.innerText = LABELS.pause;
       });
     } else {
