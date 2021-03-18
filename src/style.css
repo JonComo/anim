@@ -9,8 +9,33 @@ body {
     font-family: monospace;
 }
 
+h2 ~ *:not(h2) {
+    margin-left: 1em;
+}
+
 #controls {
-    margin: 10px;
+    margin: 1em 1em 3em;
+}
+
+ul {
+    list-style-type: '-→ ';
+}
+
+ol {
+    counter-reset: brackets;
+}
+
+li {
+    margin: 4px 0;
+}
+
+ol > li {
+    list-style: none;
+    counter-increment: brackets;
+}
+
+ol > li::marker {
+    content: counter(brackets) ')\a0';
 }
 
 code {
