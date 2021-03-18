@@ -132,7 +132,7 @@ export function setUpRecordingButtons(recordBtn, prBtn) {
   prBtn.hidden = true;
 
   recordBtn.addEventListener('click', async () => {
-    if (rtv.recording === undefined) { // Check if a recording doesn't exist yet
+    if (rtv.recording === undefined) {
       await startRecording();
       recordBtn.innerText = LABELS.stop;
 
