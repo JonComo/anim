@@ -82,6 +82,20 @@ export function startRecording() {
 }
 
 /**
+ * If a recording exists, saves it and allows it to be garbage collected.
+ * @param {boolean} cancel Whether or not the `save` event should be canceled.
+ * @returns {Promise<Blob>?} Saved video data.
+ */
+export async function saveRecording(cancel = false) {
+  if (rtv.recording !== undefined) {
+    // Save and forget about old recording
+    const blob = await rtv.recording.save(cancel);
+    rtv.recording = undefined; // The 'Recording' instance should now be garbage collected
+    return blob;
+  }
+}
+
+/**
  * Sets up button elements to control recording functions.
  * @param {HTMLButtonElement} recordBtn The button to start and stop recording.
  * @param {HTMLButtonElement} prBtn The button to pause and resume recording.
@@ -106,10 +120,7 @@ export function setUpRecordingButtons(recordBtn, prBtn) {
         prBtn.hidden = false;
       });
     } else {
-      // Save and forget about old recording
-      rtv.recording.save();
-      rtv.recording.save().then(() => {
-        rtv.recording = undefined; // The 'Recording' instance will now be garbage collected
+      saveRecording().then(() => {
         recordBtn.innerText = LABELS.start;
 
         prBtn.hidden = true;
