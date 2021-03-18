@@ -85,7 +85,7 @@ export function startRecording() {
  * Pauses the recording, if it exists.
  * @returns {Promise<Event>?} The `pause` event.
  */
-export async function pauseRecording() {
+export function pauseRecording() {
   if (rtv.recording !== undefined) {
     return rtv.recording.pause();
   }
@@ -95,7 +95,7 @@ export async function pauseRecording() {
  * Resumes the recording, if it exists.
  * @returns {Promise<SpeechSynthesisEvent>?} The `resume` event
  */
-export async function resumeRecording() {
+export function resumeRecording() {
   if (rtv.recording !== undefined) {
     return rtv.recording.resume();
   }
