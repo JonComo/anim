@@ -156,3 +156,32 @@ export function setUpRecordingButtons(recordBtn, prBtn) {
     }
   }); // Add 'click' event listener
 }
+
+/**
+ * Adds keyboard event listeners to `window`.
+ */
+export function setUpRecordingEventListeners() {
+  window.addEventListener('keydown', (e) => {
+    if (rtv.keys.ctrl) {
+      switch (e.key) {
+        case 'B':
+          e.preventDefault();
+          startRecording();
+          break;
+        case 'M':
+          e.preventDefault();
+          pauseRecording();
+          break;
+        case 'R':
+          e.preventDefault();
+          resumeRecording();
+          break;
+        case 'E':
+          e.preventDefault();
+          saveRecording();
+          break;
+        // no default
+      }
+    }
+  });
+}

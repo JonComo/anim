@@ -6,7 +6,7 @@ import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
 import Shape from './tools/shape';
-import { setUpRecordingButtons } from './graphics/recording';
+import { setUpRecordingButtons, setUpRecordingEventListeners } from './graphics/recording';
 import Text from './tools/text';
 import Transition from './graphics/transition';
 import initVolumeMeter from './audio/volume-meter';
@@ -3733,6 +3733,7 @@ window.addEventListener('load', () => {
     document.getElementById('record'),
     document.getElementById('pause-resume'),
   );
+  setUpRecordingEventListeners();
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
@@ -3817,6 +3818,28 @@ window.addEventListener('load', () => {
     if ((rtv.keys.meta || rtv.keys.ctrl) && key === 'Enter') {
       present();
       return true;
+    }
+
+    if ((rtv.keys.meta || rtv.keys.ctrl) && rtv.keys.shift) {
+      switch (key) {
+        case 'b':
+          // Start recording
+          evt.preventDefault();
+          return;
+        case 'p':
+          // Pause recording
+          evt.preventDefault();
+          return;
+        case 'r':
+          // Resume recording
+          evt.preventDefault();
+          return;
+        case 'e':
+          // Stop recording
+          evt.preventDefault();
+          return;
+        // no default
+      }
     }
 
     if (document.getElementById('formula_text') === document.activeElement) {
