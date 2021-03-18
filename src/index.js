@@ -3655,10 +3655,7 @@ window.addEventListener('load', () => {
     rtv.speech.voices = window.speechSynthesis.getVoices();
   });
 
-  document.getElementById('save').addEventListener('click', (evt) => {
-    evt.preventDefault();
-    save(rtv.objs);
-  });
+  document.getElementById('save').addEventListener('click', () => save(rtv.objs));
 
   document.getElementById('file').addEventListener('change', (evt) => {
     enterSelect();
