@@ -28,6 +28,8 @@ export default class Recording extends MediaRecorder {
     });
 
     this.start(); // Start recording
+    this.init = new Promise((resolve) => this
+      .addEventListener('start', resolve, { once: true }));
   }
 
   /**
@@ -75,9 +77,7 @@ export default class Recording extends MediaRecorder {
 export function startRecording() {
   if (rtv.recording === undefined) {
     rtv.recording = new Recording(rtv.c);
-    return new Promise((resolve) => {
-      rtv.recording.addEventListener('start', resolve);
-    });
+    return rtv.recording.init;
   }
 }
 
