@@ -140,27 +140,19 @@ export default class RecordingManager extends EventTarget {
    * Adds a keyboard event listener to `this.kbdEvents` for handling shortcuts.
    */
   attachKeyboardListener() {
+    // Letters for keyboard shortcuts
+    // They are uppercase since shift must be held down to activate them
+    const SHORTCUTS = {
+      B: this.startRecording,
+      M: this.pauseRecording,
+      R: this.resumeRecording,
+      E: this.saveRecording,
+    };
+
     this.kbdEvents.addEventListener('keydown', (e) => {
-      if (rtv.keys.ctrl) {
-        switch (e.key) {
-          case 'B':
-            e.preventDefault();
-            this.startRecording();
-            break;
-          case 'M':
-            e.preventDefault();
-            this.pauseRecording();
-            break;
-          case 'R':
-            e.preventDefault();
-            this.resumeRecording();
-            break;
-          case 'E':
-            e.preventDefault();
-            this.saveRecording();
-            break;
-          // no default
-        }
+      if ((rtv.keys.meta || rtv.keys.ctrl) && e.key in SHORTCUTS) {
+        e.preventDefault();
+        SHORTCUTS[e.key](); // Run shortcut action
       }
     });
   }
