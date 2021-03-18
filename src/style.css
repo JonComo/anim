@@ -39,12 +39,11 @@ ol > li::marker {
 }
 
 code {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-right: 4px;
-    padding-left: 4px;
-    background-color: whitesmoke;
+    display: inline-block;
+    padding: 2px 4px;
     color: crimson;
+    background-color: whitesmoke;
+    border: 2px solid lightgray;
     border-radius: 4px;
     font-weight: bold;
 }
