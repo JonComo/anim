@@ -6,7 +6,7 @@ import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
 import Shape from './tools/shape';
-import { setUpRecordingButtons, setUpRecordingEventListeners } from './graphics/recording';
+import RecordingManager from './graphics/recording-manager';
 import Text from './tools/text';
 import Transition from './graphics/transition';
 import initVolumeMeter from './audio/volume-meter';
@@ -3729,11 +3729,11 @@ window.addEventListener('load', () => {
     saveState();
   });
 
-  setUpRecordingButtons(
+  rtv.recordingManager = new RecordingManager(
+    rtv.c,
     document.getElementById('record'),
     document.getElementById('pause-resume'),
   );
-  setUpRecordingEventListeners();
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');

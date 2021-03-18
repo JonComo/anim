@@ -14,8 +14,13 @@ import { rtv } from '../resources';
 export default class RecordingManager {
   constructor(canvas, recordBtn, prBtn, handleKeys = true, kbdEvents = window) {
     this.canvas = canvas;
-    this.recordBtn = recordBtn;
-    this.prBtn = prBtn;
+
+    if (recordBtn !== undefined && prBtn !== undefined) {
+      this.recordBtn = recordBtn;
+      this.prBtn = prBtn;
+      this.setUpButtons();
+    }
+
     if (handleKeys) {
       this.kbdEvents = kbdEvents;
       this.attachKeyboardListener();
@@ -28,7 +33,7 @@ export default class RecordingManager {
    */
   startRecording() {
     if (this.recording === undefined) {
-      this.recording = new Recording(this.c);
+      this.recording = new Recording(this.canvas);
       return this.recording.init;
     }
   }
@@ -70,7 +75,7 @@ export default class RecordingManager {
   /**
    * Sets up button elements to control recording functions.
    */
-  setUpRecordingButtons() {
+  setUpButtons() {
     const LABELS = {
       start: 'Start recording',
       pause: 'Pause recording',

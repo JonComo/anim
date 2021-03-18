@@ -79,7 +79,7 @@ export const rtv = {
   fps: 30,
 
   // Recording
-  recording: undefined,
+  recordingManager: undefined,
 
   // Volume meter
   meter: undefined,
