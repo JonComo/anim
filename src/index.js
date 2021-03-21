@@ -3340,13 +3340,39 @@ export function insert_frame() {
   rtv.frames.create_buttons();
 }
 
+/**
+ * Enters presentation mode.
+ */
 export function present() {
-  rtv.tool = 'select';
-  rtv.presenting = true;
-  document.body.style.cursor = 'none';
-  document.body.scrollTop = 0; // Scroll to top in Safari
-  document.documentElement.scrollTop = 0; // Scroll to top in other browsers
-  document.body.style.overflow = 'hidden'; // Disable and hide scrollbar
+  /**
+     * Sets page up for presentation mode.
+     */
+  function setUpPresentationMode() {
+    enter_select(); // Enter select mode
+    document.body.style.cursor = 'none'; // Hide cursor
+    document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
+    rtv.presenting = true; // Declare presentation mode entered
+  }
+
+  if (window.scrollY !== 0) { // Check if already at top
+    window.scrollTo({
+      top: 0, // Scroll to top
+      behavior: 'smooth', // Smooth scroll
+    }); // Scroll window
+
+    /**
+         * Sets up presentation mode once window is scrolled to top.
+         */
+    function scrollListener() { // Scroll listener
+      if (window.scrollY === 0) { // Check if smooth scroll finished
+        window.removeEventListener('scroll', scrollListener); // Stop listening
+        setUpPresentationMode();
+      }
+    }
+    window.addEventListener('scroll', scrollListener); // Attach scroll listener
+  } else {
+    setUpPresentationMode();
+  }
 }
 
 function constrain_frame(f) {
@@ -3732,7 +3758,7 @@ window.addEventListener('load', () => {
     if (key === 'Escape' && rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
       rtv.presenting = false;
       document.body.style.cursor = '';
-      document.body.style.overflow = 'scroll'; // Enable and show scrollbar
+      document.body.style.overflow = 'auto'; // Enable and show scrollbar
       return false;
     }
 
