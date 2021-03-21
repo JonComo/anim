@@ -18,6 +18,7 @@ import {
   CANVAS_BG,
   COLORS,
   FONT,
+  HELP_HTML,
   SCALE_FACTOR,
   T_STEPS,
   GRID_SIZE,
@@ -3640,6 +3641,13 @@ function drawBackground(ctx, color) {
   ctx.restore(); // Restore canvas state
 }
 
+/**
+ * Loads help section HTML.
+ */
+function loadHelp() {
+  document.getElementById('help').innerHTML = HELP_HTML;
+}
+
 window.addEventListener('load', () => {
   rtv.objs = [];
 
@@ -3731,6 +3739,8 @@ window.addEventListener('load', () => {
     document.getElementById('record'),
     document.getElementById('pause-resume'),
   );
+
+  loadHelp();
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
