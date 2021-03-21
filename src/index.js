@@ -3696,7 +3696,6 @@ window.onload = () => {
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
-    console.log(`pasting: ${paste}`);
 
     const N = rtv.objs.length;
     for (let i = 0; i < rtv.objs.length; i++) {
@@ -3792,6 +3791,7 @@ window.onload = () => {
       if (typeof obj.onkeydown === 'function') {
         if (obj.onkeydown(evt)) {
           captured = true;
+          evt.preventDefault(); // Prevent default if event has been handled
           if (key === 'ArrowUp' || key === 'ArrowDown') {
             // stops text selection from propagating as you iterate the array
             break;
