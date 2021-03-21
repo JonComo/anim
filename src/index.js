@@ -732,21 +732,21 @@ math.import({
       x = a._data[0];
       y = a._data[1];
 
-      if (a.size()[0] == 3) {
+      if (a.size()[0] === 3) {
         z = a._data[2];
       }
     } else {
       _x = a._data[0];
       _y = a._data[1];
 
-      if (a.size()[0] == 3) {
+      if (a.size()[0] === 3) {
         _z = a._data[2];
       }
 
       x = b._data[0];
       y = b._data[1];
 
-      if (b.size()[0] == 3) {
+      if (b.size()[0] === 3) {
         z = b._data[2];
       }
     }
@@ -793,7 +793,7 @@ math.import({
       x = x.map(pretty_round);
 
       const d = x._data;
-      if (x._size.length == 1) {
+      if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
         for (let r = 0; r < d.length; r++) {
@@ -854,7 +854,7 @@ math.import({
       }
     }
 
-    if (arguments.length >= 3 && _uv == true) {
+    if (arguments.length >= 3 && _uv === true) {
       uv = true;
     }
 
@@ -889,7 +889,7 @@ math.import({
       }
     }
 
-    if (arguments.length >= 4 && _uv == true) {
+    if (arguments.length >= 4 && _uv === true) {
       uv = true;
     }
 
@@ -945,7 +945,7 @@ math.import({
 
         const p = r(u, v)._data;
         const camp = rtv.cam.graph_to_screen(p[0], p[1], p[2]);
-        if (v == 0) {
+        if (v === 0) {
           rtv.ctx.moveTo(camp[0], camp[1]);
         } else {
           rtv.ctx.lineTo(camp[0], camp[1]);
@@ -962,7 +962,7 @@ math.import({
         u = _urs + du * j;
         const p = r(u, v)._data;
         const camp = rtv.cam.graph_to_screen(p[0], p[1], p[2]);
-        if (u == 0) {
+        if (u === 0) {
           rtv.ctx.moveTo(camp[0], camp[1]);
         } else {
           rtv.ctx.lineTo(camp[0], camp[1]);
@@ -989,7 +989,7 @@ math.import({
     rtv.ctx.restore();
   },
   integral(f, a, b, _n) {
-    if (a == b) {
+    if (a === b) {
       return 0;
     }
 
@@ -1078,7 +1078,7 @@ math.import({
 
           rtv.ctx.strokeStyle = 'black';
 
-          if (high_conn.length == 0) {
+          if (high_conn.length === 0) {
             const dx1 = p[0] - rtv.mouse.pos.x;
             const dy1 = p[1] - rtv.mouse.pos.y;
 
@@ -1118,18 +1118,18 @@ math.import({
         rtv.ctx.strokeStyle = 'black';
 
         // if we have a highlighted connection and we're in the right layer
-        if (high_conn.length != 0) {
-          if (high_conn[2] == j) {
-            if (high_conn[0] == i) {
-              if (j == 0) {
+        if (high_conn.length !== 0) {
+          if (high_conn[2] === j) {
+            if (high_conn[0] === i) {
+              if (j === 0) {
                 rtv.ctx.strokeStyle = COLORS[1];
               } else {
                 rtv.ctx.strokeStyle = COLORS[2];
               }
             }
-          } else if (high_conn[2] == j - 1) {
-            if (high_conn[1] == i) {
-              if (j == 0) {
+          } else if (high_conn[2] === j - 1) {
+            if (high_conn[1] === i) {
+              if (j === 0) {
                 rtv.ctx.strokeStyle = COLORS[1];
               } else {
                 rtv.ctx.strokeStyle = COLORS[2];
@@ -1141,7 +1141,7 @@ math.import({
           const dy = rtv.mouse.pos.y - p[1];
 
           if (dx * dx + dy * dy < 400) {
-            if (j == 0) {
+            if (j === 0) {
               rtv.ctx.strokeStyle = COLORS[1];
             } else {
               rtv.ctx.strokeStyle = COLORS[2];
@@ -1170,7 +1170,7 @@ math.import({
   elefield(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
     charges = charges._data;
 
-    if (arguments.length == 1) {
+    if (arguments.length === 1) {
       const n = 5;
       const d = 20 / n;
       let p = [0, 0];
@@ -1215,7 +1215,7 @@ math.import({
                 }
               }
 
-              if (dead == false) {
+              if (dead === false) {
                 p = rtv.cam.graph_to_screen(xp, yp, zp);
                 rtv.ctx.strokeStyle = rgbToHex([math.round((pl - j) / pl * 255), 0, math.round(j / pl * 255)]);
                 rtv.ctx.lineTo(p[0], p[1]);
@@ -1225,7 +1225,7 @@ math.import({
           }
         }
       }
-    } else if (arguments.length == 2) {
+    } else if (arguments.length === 2) {
       // calculate field at the provided location
       const loc = location._data;
 
@@ -1272,7 +1272,7 @@ math.import({
 
     // add up forces from charges
     for (let i = 0; i < charges.length; i += 4) {
-      if (i == j * 4) {
+      if (i === j * 4) {
         continue;
       }
 
@@ -1330,7 +1330,7 @@ math.import({
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < high_neur.length; n++) {
         const highn = high_neur[n];
-        if (highn[1] == 1 && highn[0] == i) {
+        if (highn[1] === 1 && highn[0] === i) {
           rtv.ctx.fillStyle = COLORS[2];
         }
       }
@@ -1343,7 +1343,7 @@ math.import({
     rtv.ctx.translate(rsize[0] + pad * 3, 0);
     draw_matrix(Wformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
-      if (high_conn.length && high_conn[0] == j && high_conn[1] == i) {
+      if (high_conn.length && high_conn[0] === j && high_conn[1] === i) {
         rtv.ctx.fillStyle = COLORS[3];
       }
     });
@@ -1357,7 +1357,7 @@ math.import({
 
       for (let n = 0; n < high_neur.length; n++) {
         const highn = high_neur[n];
-        if (highn[1] == 0 && highn[0] == i) {
+        if (highn[1] === 0 && highn[0] === i) {
           rtv.ctx.fillStyle = COLORS[1];
         }
       }
@@ -1396,7 +1396,7 @@ math.import({
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < high_neur.length; n++) {
         const highn = high_neur[n];
-        if (highn[1] == 1 && highn[0] == i) {
+        if (highn[1] === 1 && highn[0] === i) {
           rtv.ctx.fillStyle = 'red';
         }
       }
@@ -2365,7 +2365,7 @@ math.import({
   factors(n) { // list positive factors of n
     const f = [];
     for (let i = 0; i <= n / 2; i++) {
-      if (n / i % 1 == 0) {
+      if (n / i % 1 === 0) {
         f.push(i);
       }
     }
@@ -2383,7 +2383,7 @@ math.import({
     for (let i = 0; i < factors._size[0]; i++) {
       const num = d[i];
       const f = math.factors(num);
-      if (f._size[0] == 1 || f._size[0] == 2) {
+      if (f._size[0] === 1 || f._size[0] === 2) {
         // prime
         primes.push(num);
       }
@@ -2492,19 +2492,19 @@ function draw_r(o, p, d) {
       text = o.op;
     }
 
-    if (text == '+' || text == '-' || text == '*') {
-      if (argc == 1) {
+    if (text === '+' || text === '-' || text === '*') {
+      if (argc === 1) {
         if (d) rtv.ctx.fillText(text, p.x, p.y);
         const s1 = draw_r(args[0], { x: p.x + CHAR.SIZE, y: p.y }, d);
 
         size.w = s1.w + CHAR.SIZE;
         size.h = s1.h;
-      } else if (argc == 2) {
+      } else if (argc === 2) {
         // draw on the left and the right
 
         const center = false; // false -> bottom align
         let pad2 = CHAR.PAD * 2;
-        if (text == '*') {
+        if (text === '*') {
           pad2 = 0;
         }
 
@@ -2527,7 +2527,7 @@ function draw_r(o, p, d) {
             s2 = draw_r(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
           }
 
-          if (text == '*') {
+          if (text === '*') {
             rtv.ctx.beginPath();
             rtv.ctx.arc(opp.x + CHAR.SIZE / 2, opp.y + CHAR.SIZE, 3, 0, PI2);
             rtv.ctx.fill();
@@ -2536,8 +2536,8 @@ function draw_r(o, p, d) {
           }
         }
       }
-    } else if (text == '^') {
-      if (argc == 2) {
+    } else if (text === '^') {
+      if (argc === 2) {
         // draw on the left and the right, shifted up!
         const a = args[0];
         let b = args[1];
@@ -2557,8 +2557,8 @@ function draw_r(o, p, d) {
           draw_r(b, { x: p.x + s1.w, y: p.y }, d);
         }
       }
-    } else if (text == '/') {
-      if (argc == 2) {
+    } else if (text === '/') {
+      if (argc === 2) {
         // draw on top and bottom
         let a = args[0]; let b = args[1];
 
@@ -2587,7 +2587,7 @@ function draw_r(o, p, d) {
           rtv.ctx.stroke();
         }
       }
-    } else if (text == '!') {
+    } else if (text === '!') {
       const s1 = draw_r(args[0], { x: p.x, y: p.y }, d);
       if (d) rtv.ctx.fillText(text, p.x + s1.w, p.y);
 
@@ -2625,7 +2625,7 @@ function draw_r(o, p, d) {
         const s1 = draw_r(args[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
-        if (i == N - 1) {
+        if (i === N - 1) {
           if (d) rtv.ctx.fillText(')', p.x + xo, cally);
         } else if (d) rtv.ctx.fillText(',', p.x + xo, cally);
 
@@ -2703,7 +2703,7 @@ function draw_r(o, p, d) {
         const s1 = draw_r(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
-        if (i != N - 1) {
+        if (i !== N - 1) {
           if (d) rtv.ctx.fillText(';', p.x + xo, cally);
         }
         xo += CHAR.SIZE;
@@ -2738,7 +2738,7 @@ function draw_r(o, p, d) {
         const s1 = draw_r(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
-        if (i != N - 1) {
+        if (i !== N - 1) {
           if (d) rtv.ctx.fillText(',', p.x + xo, cally);
         }
         xo += CHAR.SIZE;
@@ -2830,7 +2830,7 @@ export function draw_brackets(sx, sy, width, height) {
 
 export function draw_simple(text) {
   for (let i = 0; i < text.length; i++) {
-    if (text[i] == '*') {
+    if (text[i] === '*') {
       rtv.ctx.beginPath();
       rtv.ctx.arc(i * CHAR.SIZE + CHAR.SIZE / 2, 0, 3, 0, PI2);
       rtv.ctx.fill();
@@ -2915,7 +2915,7 @@ export function draw_fn(fn) {
 }
 
 export function matrix_size(matrix) {
-  if (matrix && matrix.length == 0) {
+  if (matrix && matrix.length === 0) {
     return;
   }
 
@@ -2953,7 +2953,7 @@ export function draw_matrix(matrix, color_ij) {
 }
 
 export function format_matrix(matrix) {
-  if (matrix.length == 0) {
+  if (matrix.length === 0) {
     return null;
   }
 
@@ -3095,17 +3095,17 @@ export function hexToRgb(hex) {
 }
 
 export function transform_props(key, props, step = 0.2) {
-  if (key == 'l') {
+  if (key === 'l') {
     props.w += step;
-  } else if (key == 'j') {
+  } else if (key === 'j') {
     props.w -= step;
-  } else if (key == 'i') {
+  } else if (key === 'i') {
     props.h += step;
-  } else if (key == 'k') {
+  } else if (key === 'k') {
     props.h -= step;
-  } else if (key == 'u') {
+  } else if (key === 'u') {
     props.r -= Math.PI / 12;
-  } else if (key == 'o') {
+  } else if (key === 'o') {
     props.r += Math.PI / 12;
   }
 
@@ -3119,7 +3119,7 @@ export function interpolate(a, b) {
 
   const interp = {};
   for (const key in a) {
-    if (key == 'p') {
+    if (key === 'p') {
       // interpolate position
       const ap = a[key];
       const bp = b[key];
@@ -3128,24 +3128,24 @@ export function interpolate(a, b) {
         x: (1 - rtv.t_ease) * ap.x + rtv.t_ease * bp.x,
         y: (1 - rtv.t_ease) * ap.y + rtv.t_ease * bp.y,
       };
-    } else if (key == 'w' || key == 'h' || key == 'r' || key == 'a_s' || key == 'a_e') {
+    } else if (key === 'w' || key === 'h' || key === 'r' || key === 'a_s' || key === 'a_e') {
       // interpolate width, height, or rotation
       const aw = a[key];
       const bw = b[key];
       interp[key] = (1 - rtv.t_ease) * aw + rtv.t_ease * bw;
-    } else if (key == 'rxyz') {
+    } else if (key === 'rxyz') {
       const ar = a[key];
       const br = b[key];
       interp[key] = [0, 0, 0];
       for (let i = 0; i < 3; i++) {
         interp[key][i] = (1 - rtv.t_ease) * ar[i] + rtv.t_ease * br[i];
       }
-    } else if (key == 'c') {
+    } else if (key === 'c') {
       // interpolate colors
       const ac = a[key];
       const bc = b[key];
       interp[key] = interpolate_colors(ac, bc, constrain(rtv.t_ease));
-    } else if (key == 'path') {
+    } else if (key === 'path') {
       // interpolate paths
       const ap = a[key];
       const bp = b[key];
@@ -3160,7 +3160,7 @@ export function interpolate(a, b) {
       }
 
       interp[key] = ip;
-    } else if (key == 't') {
+    } else if (key === 't') {
       if (rtv.t_ease < 0.5) {
         interp[key] = a[key];
       } else {
@@ -3178,7 +3178,7 @@ function interpolate_colors(ac, bc, interp) {
   let same = true;
   const N = ac.length;
   for (let i = 0; i < N; i++) {
-    if (ac[i] != bc[i]) {
+    if (ac[i] !== bc[i]) {
       same = false;
     }
   }
@@ -3201,7 +3201,7 @@ export function save_state() {
   const str = state_to_string();
   if (states.length > 0) {
     const last = states[states.length - 1];
-    if (str != last) {
+    if (str !== last) {
       states.push(str);
     }
   } else {
@@ -3220,7 +3220,7 @@ export function guidIndex(objs, obj) {
   const N = objs.length;
   for (let i = 0; i < N; i++) {
     const tobj = objs[i];
-    if (tobj.guid == obj.guid) {
+    if (tobj.guid === obj.guid) {
       return i;
     }
   }
@@ -3297,11 +3297,11 @@ function text_array_to_objs(arr, keep_animation) {
     const o = arr[i];
     let new_obj = null;
 
-    if (o.type == 'Shape') {
+    if (o.type === 'Shape') {
       new_obj = new Shape();
-    } else if (o.type == 'Circle') {
+    } else if (o.type === 'Circle') {
       new_obj = new Circle();
-    } else if (o.type == 'Text') {
+    } else if (o.type === 'Text') {
       new_obj = new Text();
     }
 
@@ -3382,7 +3382,7 @@ function draw_axes(ctx) {
   if (rtv.transition.transitioning) {
     const csys_next_style = rtv.cam.properties[rtv.next_frame].style;
 
-    if (csys_next_style != null && csys_next_style != csys_style) {
+    if (csys_next_style != null && csys_next_style !== csys_style) {
       // changing text
       const constrained = constrain(rtv.t_ease);
       ctx.globalAlpha = Math.cos(constrained * 2 * Math.PI) / 2 + 0.5;
@@ -3395,17 +3395,17 @@ function draw_axes(ctx) {
     }
   }
 
-  if (csys_style == '3d' || csys_style == 'flat') {
+  if (csys_style === '3d' || csys_style === 'flat') {
     // draw gridlines
     ctx.strokeStyle = '#DDDDDD';
 
-    if (csys_style == '3d') {
+    if (csys_style === '3d') {
       let axis = rtv.cam.ticks[0];
       axis = math.matrix(axis);
       axis = rtv.cam.graph_to_screen_mat(axis);
       const N = axis.length;
       for (let j = 0; j < N; j += 2) {
-        if (j == 20 || j == 62) {
+        if (j === 20 || j === 62) {
           continue;
         }
 
@@ -3507,7 +3507,7 @@ export function transition_with_next(next) {
     return;
   }
 
-  if (rtv.tool == 'copy frame') {
+  if (rtv.tool === 'copy frame') {
     enter_select();
     // copy properties
     for (let i = 0; i < rtv.objs.length; i++) {
@@ -3551,7 +3551,7 @@ export function enter_select() {
 }
 
 function draw_cursor() {
-  if (rtv.presenting && rtv.tool == 'pen') {
+  if (rtv.presenting && rtv.tool === 'pen') {
     const pad = 20;
 
     rtv.ctx.save();
@@ -3586,7 +3586,7 @@ function draw_cursor() {
     } else {
       const pad = 20;
 
-      if (rtv.tool == 'camera') {
+      if (rtv.tool === 'camera') {
         rtv.ctx.moveTo(-pad, 0);
         rtv.ctx.lineTo(pad, 0);
         rtv.ctx.moveTo(0, -pad);
@@ -3701,7 +3701,7 @@ window.onload = () => {
     const N = rtv.objs.length;
     for (let i = 0; i < rtv.objs.length; i++) {
       const obj = rtv.objs[i];
-      if (obj.type == 'Text') {
+      if (obj.type === 'Text') {
         if (obj.is_selected()) {
           obj.paste_text(paste);
         }
@@ -3731,34 +3731,34 @@ window.onload = () => {
   window.onkeydown = (evt) => {
     const key = evt.key;
 
-    if (key == 'Escape' && rtv.presenting && rtv.tool != 'camera' && rtv.tool != 'pen') {
+    if (key === 'Escape' && rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
       rtv.presenting = false;
       document.body.style.cursor = '';
       document.body.style.overflow = 'scroll'; // Enable and show scrollbar
       return false;
     }
 
-    if (key == 'Escape') {
+    if (key === 'Escape') {
       enter_select();
     }
 
-    if (key == 'Tab') {
+    if (key === 'Tab') {
       rtv.keys.tab = true;
     }
 
-    if (key == 'Meta') {
+    if (key === 'Meta') {
       rtv.keys.meta = true;
     }
 
-    if (key == 'Shift') {
+    if (key === 'Shift') {
       rtv.keys.shift = true;
     }
 
-    if (key == 'Control') {
+    if (key === 'Control') {
       rtv.keys.ctrl = true;
     }
 
-    if (key == 'Backspace') {
+    if (key === 'Backspace') {
       if (rtv.keys.ctrl) {
         const N = rtv.objs.length;
         for (let i = 0; i < N; i++) {
@@ -3770,17 +3770,17 @@ window.onload = () => {
       }
     }
 
-    if (key == 'z' && (rtv.keys.meta || rtv.keys.ctrl)) {
+    if (key === 'z' && (rtv.keys.meta || rtv.keys.ctrl)) {
       undo();
       return;
     }
 
-    if ((rtv.keys.meta || rtv.keys.ctrl) && key == 'Enter') {
+    if ((rtv.keys.meta || rtv.keys.ctrl) && key === 'Enter') {
       present();
       return true;
     }
 
-    if (document.getElementById('formula_text') == document.activeElement) {
+    if (document.getElementById('formula_text') === document.activeElement) {
       return true;
     }
 
@@ -3792,7 +3792,7 @@ window.onload = () => {
       if (typeof obj.onkeydown === 'function') {
         if (obj.onkeydown(evt)) {
           captured = true;
-          if (key == 'ArrowUp' || key == 'ArrowDown') {
+          if (key === 'ArrowUp' || key === 'ArrowDown') {
             // stops text selection from propagating as you iterate the array
             break;
           }
@@ -3811,11 +3811,11 @@ window.onload = () => {
     rtv.cam.onkeydown(evt);
     rtv.pen.onkeydown(evt);
 
-    if (key == ' ') {
+    if (key === ' ') {
       return false;
     }
 
-    if (rtv.tool == 'select' && evt.srcElement == document.body) {
+    if (rtv.tool === 'select' && evt.srcElement === document.body) {
       const tools = {
         t: 'text', s: 'shape', c: 'camera', v: 'vector',
       };
@@ -3826,19 +3826,19 @@ window.onload = () => {
   };
 
   window.onkeyup = ({ key }) => {
-    if (key == 'Tab') {
+    if (key === 'Tab') {
       rtv.keys.tab = false;
     }
 
-    if (key == 'Meta') {
+    if (key === 'Meta') {
       rtv.keys.meta = false;
     }
 
-    if (key == 'Shift') {
+    if (key === 'Shift') {
       rtv.keys.shift = false;
     }
 
-    if (key == 'Control') {
+    if (key === 'Control') {
       rtv.keys.ctrl = false;
     }
 
@@ -3846,7 +3846,7 @@ window.onload = () => {
   };
 
   window.onmousedown = (evt) => {
-    if (evt.srcElement != rtv.c) {
+    if (evt.srcElement !== rtv.c) {
       return;
     }
 
@@ -3899,7 +3899,7 @@ window.onload = () => {
       }
     }
 
-    if (rtv.tool == 'select' && obj_selected == false) {
+    if (rtv.tool === 'select' && obj_selected === false) {
       rtv.selecting = true;
     }
   };
@@ -3949,7 +3949,7 @@ window.onload = () => {
   };
 
   window.onmouseup = (evt) => {
-    if (evt.srcElement != rtv.c) {
+    if (evt.srcElement !== rtv.c) {
       return;
     }
 
@@ -3986,7 +3986,7 @@ window.onload = () => {
       return;
     }
 
-    if (rtv.tool == 'select') {
+    if (rtv.tool === 'select') {
       let captured = false;
       const N = rtv.objs.length;
       for (let i = N - 1; i >= 0; i--) {
@@ -3995,7 +3995,7 @@ window.onload = () => {
           captured = obj.mouse_up(evt);
         }
       }
-    } else if (rtv.tool == 'text') {
+    } else if (rtv.tool === 'text') {
       // add a num obj at mouse pos
       const n = new Text('', rtv.mouse.grid);
 
@@ -4009,7 +4009,7 @@ window.onload = () => {
 
       n.select();
       rtv.objs.push(n);
-    } else if (rtv.tool == 'shape' || rtv.tool == 'vector') {
+    } else if (rtv.tool === 'shape' || rtv.tool === 'vector') {
       // add a num obj at mouse pos
       if (rtv.new_line) {
         // add a point
@@ -4017,9 +4017,9 @@ window.onload = () => {
       } else {
         const l = new Shape([0, 0, 0, 1], [{ x: rtv.mouse.grid.x, y: rtv.mouse.grid.y }]);
 
-        if (rtv.tool == 'vector') {
+        if (rtv.tool === 'vector') {
           l.properties[rtv.frame].v = true;
-        } else if (rtv.tool == 'circle') {
+        } else if (rtv.tool === 'circle') {
           l.properties[rtv.frame].circle = true;
         }
 
@@ -4028,10 +4028,10 @@ window.onload = () => {
       }
 
       return;
-    } else if (rtv.tool == 'circle') {
+    } else if (rtv.tool === 'circle') {
       const new_circle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
       rtv.objs.push(new_circle);
-    } else if (rtv.tool == 'network') {
+    } else if (rtv.tool === 'network') {
       const n = new Network(rtv.mouse.grid);
       rtv.objs.push(n);
     }
