@@ -27,8 +27,6 @@ export const FONT = {
 
 export const SCALE_FACTOR = 2; // retina
 
-export { default as HELP_HTML } from './help.md'; // Export help section HTML string
-
 // scatter
 export const POINT_SIZE = 6;
 
