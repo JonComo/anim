@@ -3273,7 +3273,7 @@ function load(evt) {
 
   const reader = new FileReader();
 
-  reader.onload = ({ target: { result: string } }) => str_to_state(string);
+  reader.addEventListener('load', ({ target: { result: string } }) => str_to_state(string));
 
   reader.readAsText(f);
 }
@@ -3604,7 +3604,7 @@ function draw_cursor() {
   }
 }
 
-window.onload = () => {
+window.addEventListener('load', () => {
   rtv.objs = [];
 
   rtv.c = document.getElementById('viewport');
@@ -3615,28 +3615,28 @@ window.onload = () => {
 
   // speech synth
   rtv.speech.synth = window.speechSynthesis; // speech synthesis
-  window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.addEventListener('voiceschanged', () => {
     rtv.speech.voices = window.speechSynthesis.getVoices();
-  };
+  });
 
-  document.getElementById('save').onclick = (evt) => {
+  document.getElementById('save').addEventListener('click', (evt) => {
     evt.preventDefault();
     save(rtv.objs);
-  };
+  });
 
-  document.getElementById('file').onchange = (evt) => {
+  document.getElementById('file').addEventListener('change', (evt) => {
     enter_select();
     load(evt);
-  };
+  });
 
-  document.getElementById('load_to_frame').onclick = () => {
+  document.getElementById('load_to_frame').addEventListener('click', () => {
     const text = document.getElementById('selected_objects_text').value;
     const arr = JSON.parse(text);
     rtv.objs = rtv.objs.concat(text_array_to_objs(arr, false));
-  };
+  });
 
   rtv.formula_text = document.getElementById('formula_text');
-  document.getElementById('load_clear_formula_text').onclick = () => {
+  document.getElementById('load_clear_formula_text').addEventListener('click', () => {
     const t = rtv.formula_text.value;
     for (let i = 0; i < rtv.objs.length; i++) {
       const obj = rtv.objs[i];
@@ -3644,17 +3644,17 @@ window.onload = () => {
         obj.change_text(t);
       }
     }
-  };
-  document.getElementById('load_insert_formula_text').onclick = () => {
+  });
+  document.getElementById('load_insert_formula_text').addEventListener('click', () => {
     const t = rtv.formula_text.value;
     rtv.objs.forEach((obj) => {
       if (typeof obj.replace_selected_text === 'function' && obj.is_selected()) {
         obj.change_text(obj.replace_selected_text(t));
       }
     });
-  };
+  });
 
-  document.getElementById('gen_js').onclick = () => {
+  document.getElementById('gen_js').addEventListener('click', () => {
     let js = '';
 
     rtv.selected_objs.forEach((obj) => {
@@ -3665,9 +3665,9 @@ window.onload = () => {
     });
 
     document.getElementById('generic').value = js;
-  };
+  });
 
-  document.getElementById('gen_script').onclick = () => {
+  document.getElementById('gen_script').addEventListener('click', () => {
     let script = document.getElementById('generic').value;
     script = script.split('\n');
     script = script.filter((s) => s.length !== 0);
@@ -3691,7 +3691,7 @@ window.onload = () => {
     rtv.frames.create_buttons();
 
     save_state();
-  };
+  });
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
@@ -3726,7 +3726,7 @@ window.onload = () => {
     rtv.keys.ctrl = false;
   });
 
-  window.onkeydown = (evt) => {
+  window.addEventListener('keydown', (evt) => {
     const key = evt.key;
 
     if (key === 'Escape' && rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
@@ -3822,9 +3822,9 @@ window.onload = () => {
         rtv.tool = tools[key];
       }
     }
-  };
+  });
 
-  window.onkeyup = ({ key }) => {
+  window.addEventListener('keyup', ({ key }) => {
     if (key === 'Tab') {
       rtv.keys.tab = false;
     }
@@ -3842,9 +3842,9 @@ window.onload = () => {
     }
 
     save_state();
-  };
+  });
 
-  window.onmousedown = (evt) => {
+  ['mousedown', 'touchstart'].forEach((key) => window.addEventListener(key, (evt) => {
     if (evt.srcElement !== rtv.c) {
       return;
     }
@@ -3901,9 +3901,9 @@ window.onload = () => {
     if (rtv.tool === 'select' && obj_selected === false) {
       rtv.selecting = true;
     }
-  };
+  }));
 
-  window.onmousemove = (evt) => {
+  ['mousemove', 'touchmove'].forEach((key) => window.addEventListener(key, (evt) => {
     // update mouse
     rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
     rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
@@ -3945,9 +3945,9 @@ window.onload = () => {
 
     rtv.mouse.last = get_mouse_pos(rtv.c, evt);
     rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
-  };
+  }));
 
-  window.onmouseup = (evt) => {
+  ['mouseup', 'touchend'].forEach((key) => window.addEventListener(key, (evt) => {
     if (evt.srcElement !== rtv.c) {
       return;
     }
@@ -4078,11 +4078,7 @@ window.onload = () => {
     }
 
     save_state();
-  };
-
-  window.ontouchstart = window.onmousedown;
-  window.ontouchmove = window.onmousemove;
-  window.ontouchend = window.onmouseup;
+  }));
 
   save_state();
 
@@ -4209,4 +4205,4 @@ window.onload = () => {
   }
 
   requestAnimationFrame(animate);
-};
+});
