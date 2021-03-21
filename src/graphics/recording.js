@@ -1,10 +1,10 @@
 import { saveAs } from 'file-saver';
 
-/**
- * Creates a new recording of `canvas`.
- * @param {HTMLCanvasElement} canvas The canvas to be captured.
- */
 export default class Recording extends MediaRecorder {
+  /**
+   * Creates a new recording of `canvas`.
+   * @param {HTMLCanvasElement} canvas The canvas to be captured.
+   */
   constructor(canvas) {
     const videoStream = canvas.captureStream();
     super(videoStream); // Pass 'videoStream' to 'MediaRecorder' constructor

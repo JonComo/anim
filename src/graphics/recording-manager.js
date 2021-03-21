@@ -1,17 +1,17 @@
 import Recording from './recording';
 import { rtv } from '../resources';
 
-/**
- * Starts, pauses, resumes and saves recordings of `canvas`.
- * Sets up `recordBtn` and `prBtn` (if specified) to control recording.
- * Attaches an event listener to `kbdEvents` to handle keyboard shortcuts.
- * @param {HTMLCanvasElement} canvas The canvas to be recorded.
- * @param {HTMLButtonElement?} recordBtn The button to start and stop recording.
- * @param {HTMLButtonElement?} prBtn The button to pause and resume recording.
- * @param {boolean} handleKeys Whether or not a shortcut handler should be attached
- * @param {EventTarget} kbdEvents Keyoard events target.
- */
 export default class RecordingManager extends EventTarget {
+  /**
+   * Starts, pauses, resumes and saves recordings of `canvas`.
+   * Sets up `recordBtn` and `prBtn` (if specified) to control recording.
+   * Attaches an event listener to `kbdEvents` to handle keyboard shortcuts.
+   * @param {HTMLCanvasElement} canvas The canvas to be recorded.
+   * @param {HTMLButtonElement?} recordBtn The button to start and stop recording.
+   * @param {HTMLButtonElement?} prBtn The button to pause and resume recording.
+   * @param {boolean} handleKeys Whether or not a shortcut handler should be attached
+   * @param {EventTarget} kbdEvents Keyoard events target.
+   */
   constructor(canvas, recordBtn, prBtn, handleKeys = true, kbdEvents = window) {
     super();
 
