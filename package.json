@@ -1,6 +1,6 @@
 {
   "name": "anim",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Quick JS program for creating animations.",
   "private": true,
   "scripts": {
@@ -40,7 +40,6 @@
   "dependencies": {
     "ccapture.js-npmfixed": "^1.1.0",
     "file-saver": "^2.0.5",
-    "jquery": "^3.5.1",
     "mathjs": "^9.2.0"
   }
 }

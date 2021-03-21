@@ -1,5 +1,4 @@
 import { saveAs } from 'file-saver';
-import $ from 'jquery';
 import Camera from './graphics/camera';
 import Circle from './tools/circle';
 import Frames, { configureCanvas } from './graphics/frames';
@@ -3722,7 +3721,7 @@ window.onload = () => {
   rtv.cam = new Camera();
   rtv.pen = new Pen();
 
-  $(window).focus(() => {
+  window.addEventListener('focus', () => {
     rtv.keys.meta = false;
     rtv.keys.ctrl = false;
   });
