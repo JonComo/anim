@@ -1,78 +1,72 @@
-<h2>HELP:</h2>
-<h3>KEYBOARD SHORTCUTS</h3>
-<ul>
-    <li><kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>z</kbd> to undo last change.</li>
-    <li><kbd>←</kbd> and <kbd>→</kbd> for previous and next frame.</li>
-    <li><kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>return</kbd> to enter presentation mode.</li>
-    <li><kbd>esc</kbd> to escape any tool or presentation mode.</li>
-    <li><kbd>t</kbd> for text tool.</li>
-    <li><kbd>p</kbd> for pen.</li>
-    <li><kbd>s</kbd> for shape tool.</li>
-    <li><kbd>c</kbd> for camera.</li>
-    <li><kbd>v</kbd> for vector tool.</li>
-    <li><kbd>ctrl</kbd> + <kbd>backspace</kbd> to delete any selected objects.</li>
-    <li><kbd>ctrl</kbd> + <kbd>i</kbd>, <kbd>l</kbd>, <kbd>k</kbd> or <kbd>j</kbd> to scale selected object.</li>
-    <li><kbd>ctrl</kbd> + <kbd>u</kbd> or <kbd>o</kbd> to rotate selected object.</li>
-    <li><kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>b</kbd>, <kbd>m</kbd>, <kbd>r</kbd> or <kbd>e</kbd> to start, pause, resume and save a recording, respectively.</li>
-</ul>
+## HELP:
 
-<h3>THINGS TO DO WITH TEXT BOXES</h3>
-<ul>
-    <li><code>x = 5</code> to assign a value to a variable</li>
-    <li><code>e:x = x + 0.1</code> to repeatedly update x every frame</li>
-    <li><code>f(x) = sin(x)</code> to define a function</li>
-    <li><code>e:expression</code> to run expression each frame</li>
-    <li><code>slide:var_name</code> then present, and you can slide the box to change the variable value</li>
-    <li><code>e:graph(function_name)</code> to graph function_name(x)</li>
-</ul>
+### KEYBOARD SHORTCUTS
 
-<h3>ANIMATION BASICS</h3>
-<ol>
-    <li>Create a text, circle or drawing.</li>
-    <li>Change frames with the <kbd>←</kbd> and <kbd>→</kbd> arrow keys.</li>
-    <li>Change the text or object's properties on the new frame.</li>
-    <li>Enter presentation mode by hitting <kbd>ctrl</kbd> / <kbd>cmd</kbd> + <kbd>return</kbd>.</li>
-    <li><kbd>←</kbd> and <kbd>→</kbd> arrow keys will show animated transition.</li>
-    <li>Exit presentation mode by pressing <kbd>esc</kbd>.</li>
-</ol>
+- cmd / ctrl + z to undo last change.
+- ← and → for previous and next frame.
+- cmd / ctrl + return to enter presentation mode.
+- esc to escape any tool or presentation mode.
+- t for text tool.
+- p for pen.
+- s for shape tool.
+- c for camera.
+- v for vector tool.
+- ctrl + backspace to delete any selected objects.
+- ctrl + i, l, k or j to scale selected object.
+- ctrl + u or o to rotate selected object.
+- cmd / ctrl + b, m, r or e to start, pause, resume and save a recording, respectively.
 
-<h3>CONTROL CAMERA</h3>
-<ul>
-    <li>Tap camera or hit <kbd>c</kbd> to edit camera.</li>
-    <li>Click and drag to pan.</li>
-    <li><kbd>cmd</kbd> / <kbd>ctrl</kbd> click and drag to rotate.</li>
-    <li>The camera will transition smoothly frame to frame.</li>
-</ul>
+### THINGS TO DO WITH TEXT BOXES
 
-<h3>RECORDING (MP4)</h3>
-<ul>
-    <li>To start recording, click on <kbd>Start recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>b</kbd>.</li>
-    <li>To pause, click on <kbd>Pause recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>m</kbd>.</li>
-    <li>To resume, click on <kbd>Resume recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>r</kbd>.</li>
-    <li>To stop recording and save, click on <kbd>Stop recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>e</kbd>.</li>
-</ul>
+- `x = 5` to assign a value to a variable
+- `e:x = x + 0.1` to repeatedly update x every frame
+- `f(x) = sin(x)` to define a function
+- `e:expression` to run expression each frame
+- `slide:var_name` then present, and you can slide the box to change the variable value
+- `e:graph(function_name)` to graph function\_name(x)
 
-<h3>FILES</h3>
-<ul>
-    <li>Tapping save local will overwrite a local file in browser's cache.</li>
-    <li>Tapping load local clears your work and load the cached file.</li>
-    <li>To save: enter a file name and hit save file.</li>
-    <li>To load: hit load file and select your saved file.</li>
-    <li>As you edit if you make a mistake you can undo by hitting <kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>z</kbd>.</li>
-</ul>
+### ANIMATION BASICS
 
-<h3>MORE FUNCTIONS</h3>
-<ul>
-    <li><code>L = range(a, b, c)</code> to create array of values from <code>a</code> to <code>b</code> incrementing by <code>c</code>.</li>
-    <li><code>e:view(L, [x, y, z])</code> print matrix elements at position [x,y,z].</li>
-    <li><code>e:surface(func)</code> to graph <code>y = func(x, z)</code> as a grid of points.</li>
-    <li><code>e:scatter(A)</code> <code>A</code> is n by 3 matrix of points to be scatter plotted.</li>
-    <li><code>A = randn([a, b, c, ...])</code> to create matrix of random normal values.</li>
-    <li><code>A[1, 2]</code> to index into matrix <code>A</code> with 1 based indexing, not zero! :-(.</li>
-</ul>
-<h3>SPECIAL VALUES</h3>
-<ul>
-    <li><code>_x</code> mouse x position, <code>_y</code> mouse y position.</li>
-    <li><code>_frame</code> current frame (counts up indefinitely).</li>
-    <li><code>_t</code> frame transition from 0 to 1, <code>_tt</code> eased transition.</li>
-</ul>
+1.  Create a text, circle or drawing.
+2.  Change frames with the ← and → arrow keys.
+3.  Change the text or object's properties on the new frame.
+4.  Enter presentation mode by hitting ctrl / cmd + return.
+5.  ← and → arrow keys will show animated transition.
+6.  Exit presentation mode by pressing esc.
+
+### CONTROL CAMERA
+
+- Tap camera or hit c to edit camera.
+- Click and drag to pan.
+- cmd / ctrl click and drag to rotate.
+- The camera will transition smoothly frame to frame.
+
+### RECORDING (MP4)
+
+- To start recording, click on Start recording or press ctrl + shift + b.
+- To pause, click on Pause recording or press ctrl + shift + m.
+- To resume, click on Resume recording or press ctrl + shift + r.
+- To stop recording and save, click on Stop recording or press ctrl + shift + e.
+
+### FILES
+
+- Tapping save local will overwrite a local file in browser's cache.
+- Tapping load local clears your work and load the cached file.
+- To save: enter a file name and hit save file.
+- To load: hit load file and select your saved file.
+- As you edit if you make a mistake you can undo by hitting cmd / ctrl + z.
+
+### MORE FUNCTIONS
+
+- `L = range(a, b, c)` to create array of values from `a` to `b` incrementing by `c`.
+- `e:view(L, [x, y, z])` print matrix elements at position \[x,y,z\].
+- `e:surface(func)` to graph `y = func(x, z)` as a grid of points.
+- `e:scatter(A)` `A` is n by 3 matrix of points to be scatter plotted.
+- `A = randn([a, b, c, ...])` to create matrix of random normal values.
+- `A[1, 2]` to index into matrix `A` with 1 based indexing, not zero! :-(.
+
+### SPECIAL VALUES
+
+- `_x` mouse x position, `_y` mouse y position.
+- `_frame` current frame (counts up indefinitely).
+- `_t` frame transition from 0 to 1, `_tt` eased transition.
