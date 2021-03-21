@@ -317,14 +317,6 @@ export default function Text(text, pos) {
     const { key } = evt;
     let { t } = this.properties[rtv.frame];
 
-    if (rtv.keys.ctrl) {
-      this.properties[rtv.frame] = transform_props(
-        key,
-        this.properties[rtv.frame],
-      );
-      return true;
-    }
-
     if (rtv.keys.meta || rtv.keys.ctrl) {
       if (this.is_selected()) {
         if (key === 'c') {
@@ -352,6 +344,11 @@ export default function Text(text, pos) {
           return true;
         }
       }
+
+      this.properties[rtv.frame] = transform_props(
+        key,
+        this.properties[rtv.frame],
+      );
 
       return true;
     }
