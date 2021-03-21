@@ -152,7 +152,9 @@ export default class RecordingManager extends EventTarget {
     this.kbdEvents.addEventListener('keydown', (e) => {
       if ((rtv.keys.meta || rtv.keys.ctrl) && e.key in SHORTCUTS) {
         e.preventDefault();
-        SHORTCUTS[e.key](); // Run shortcut action
+        /* Run shortcut action.
+           Since 'this' points to 'SHORTCUTS' by default, '.call' must be used to substitute it. */
+        SHORTCUTS[e.key].call(this);
       }
     });
   }
