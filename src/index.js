@@ -2362,24 +2362,24 @@ math.import({
     rtv.ctx.stroke();
   },
   factors(n) { // Returns positive factors of positive integer 'n'
-    const factors = []; // Initialize array to contain factors
+    const factors = [];
 
     for (let i = Math.floor(Math.sqrt(n)); i > 0; i--) { // Loop through smaller factors of closest to farthest factor pairs
       const c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
 
       if (Number.isInteger(c)) { // Check if 'n' is divisible by 'i'
-        factors.unshift(i); // Insert 'i' at start of 'factors'
+        factors.unshift(i);
         if (i !== c) { // Check that 'n' is not a perfect square
-          factors.push(c); // Append 'c' to the end of 'factors'
+          factors.push(c);
         }
       }
     }
 
-    return math.matrix(factors); // Create and return matrix from 'factors'
+    return math.matrix(factors);
   },
   primeFactors(n) { // Returns prime factors of positive integer 'n'
-    let dividend = n; // Do not assign to parameter 'n'
-    const primes = []; // Initialize array to contain prime factors
+    let dividend = n;
+    const primes = [];
 
     // Checks if 'dividend' is divisible by 'f'
     const isValid = (f) => dividend % f === 0;
@@ -2387,20 +2387,19 @@ math.import({
     // Checks if 'f' was previously registered as a prime factor
     const isUsed = (f) => primes[primes.length - 1] === f;
 
-    // Checks if 'f' is a prime number
     const isPrime = (f) => primes.every((p) => f % p !== 0);
 
     let i = 2; // Initialize 'i' at smallest prime number
-    while (dividend > 1) { // Loop until all factors are extracted (AKA until 'dividend' is equal to 1)
+    while (dividend > 1) { // Loop until all factors are extracted
       if (isValid(i) && (isUsed(i) || isPrime(i))) {
-        primes.push(i); // Append 'i' to the end of 'primes'
-        dividend /= i; // Divide 'dividend' by 'i' and assign for next iteration
+        primes.push(i);
+        dividend /= i;
       } else { // 'f' is not a prime factor of 'dividend' (anymore)
-        i++; // Increment 'i' by 1
+        i++;
       }
     }
 
-    return math.matrix(primes); // Create and return matrix from 'primes'
+    return math.matrix(primes);
   },
   laplace(f, _ti, _tf, _dt) {
     let ti = 0;
