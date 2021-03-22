@@ -2390,17 +2390,9 @@ math.import({
     let dividend = n;
     const primes = [];
 
-    // Checks if 'dividend' is divisible by 'f'
-    const isValid = (f) => dividend % f === 0;
-
-    // Checks if 'f' was the last registered prime factor
-    const wasUsed = (f) => primes[primes.length - 1] === f;
-
-    const isPrime = (f) => primes.every((p) => f % p !== 0);
-
     let i = 2; // Initialize 'i' at smallest prime number
     while (dividend > 1) { // Loop until all factors are extracted
-      if (isValid(i) && (wasUsed(i) || isPrime(i))) {
+      if (dividend % i === 0) {
         primes.push(i);
         dividend /= i;
       } else { // 'f' is not a prime factor of 'dividend' (anymore)
