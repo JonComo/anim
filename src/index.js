@@ -3635,6 +3635,8 @@ window.addEventListener('load', () => {
   rtv.objs = [];
 
   rtv.c = document.getElementById('viewport');
+  rtv.c.style.backgroundColor = CANVAS_BG;
+
   rtv.ctx = rtv.c.getContext('2d');
 
   configureCanvas();
@@ -4226,7 +4228,10 @@ window.addEventListener('load', () => {
 
     rtv.t += 1;
 
-    drawBackground(rtv.ctx, CANVAS_BG);
+    // Draw background only if recording to speed up 'animate'
+    if (rtv.recordingManager.recording !== undefined) {
+      drawBackground(rtv.ctx, CANVAS_BG);
+    }
 
     requestAnimationFrame(animate);
   }
