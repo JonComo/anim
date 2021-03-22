@@ -333,7 +333,7 @@ math.import({
 
     const da = 2 * math.PI / math.max(spots, 1);
     for (let i = 0; i < spots; i++) {
-      var a = da * i;
+      const a = da * i;
       rtv.ctx.beginPath();
       rtv.ctx.arc(x + math.cos(a) * (20 + spots * 2) + 30,
         y + math.sin(a) * (20 + spots * 2) + 30,
@@ -347,7 +347,7 @@ math.import({
       const n = 40;
       const da = 2 * math.PI / n;
       for (let i = 0; i < n; i++) {
-        var a = da * i;
+        const a = da * i;
 
         const sx = x + math.cos(a) * radius;
         const sy = y + math.sin(a) * radius;
@@ -1153,9 +1153,9 @@ math.import({
       for (let x = -10; x <= 10; x += d) {
         for (let y = -10; y <= 10; y += d) {
           for (let z = -10; z <= 10; z += d) {
-            var xp = x;
-            var yp = y;
-            var zp = z;
+            let xp = x;
+            let yp = y;
+            let zp = z;
 
             for (let j = 0; j <= pl; j++) {
               rtv.ctx.beginPath();
@@ -1200,9 +1200,9 @@ math.import({
       // calculate field at the provided location
       const loc = location._data;
 
-      var xp = loc[0];
-      var yp = loc[1];
-      var zp = loc[2];
+      const xp = loc[0];
+      const yp = loc[1];
+      const zp = loc[2];
 
       let xt = 0;
       let yt = 0;
