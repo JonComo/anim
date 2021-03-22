@@ -2382,8 +2382,7 @@ math.import({
       }
 
       i++;
-      c--; // Decrease 'c' to prevent 'n' from being mistaken as a perfect square
-    } while (i <= c);
+    } while (i < c);
 
     return math.matrix(factors);
   },
