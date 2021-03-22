@@ -961,12 +961,12 @@ math.import({
     rtv.ctx.restore();
   },
   integral(f, a, b, _n) {
-    let aL = a;
-    let bL = b;
-
-    if (aL === bL) {
+    if (a === b) {
       return 0;
     }
+
+    let aL = a;
+    let bL = b;
 
     let negate = false;
     if (aL > bL) {
