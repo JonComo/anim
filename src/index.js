@@ -238,9 +238,9 @@ math.import({
     return implies(p, q);
   },
   beval(statement) { // LOGIC: Boolean evaluation, "true^false||true"
-    statement = statement.toLowerCase();
-    statement = statement.replace('^', '&&');
-    return eval(statement);
+    return eval(statement
+      .toLowerCase()
+      .replace('^', '&&'));
   },
   tautology(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
     const O = [true, false];
@@ -282,9 +282,7 @@ math.import({
 
     return true;
   },
-  egg(f) {
-    f = f._data;
-
+  egg({ _data: f }) {
     const radius = 100;
 
     let col = 'white';
@@ -384,20 +382,13 @@ math.import({
     }
   },
   fifo(matrix, value) {
-    matrix = matrix._data;
-    const first = matrix[0];
-    const N = matrix.length;
-    for (let i = 0; i < N - 1; i++) {
-      matrix[i] = matrix[i + 1];
-    }
-    matrix[N - 1] = value;
-
-    return math.matrix(matrix);
+    return math.matrix(matrix
+      .toArray()
+      .slice(1)
+      .concat(value));
   },
   push(matrix, value) {
-    matrix = matrix._data;
-    matrix.push(value);
-    return math.matrix(matrix);
+    return math.concat(matrix, [value]);
   },
   dims(m) {
     return math.matrix(m.size());
@@ -530,11 +521,7 @@ math.import({
   rotation(rx, ry, rz) { // creates a 3x3 rotation matrix
     return math.matrix(rotation_matrix(rx, ry, rz));
   },
-  grid(rangex, rangey) { // returns matrix x*y by 2
-    if (!rangey) {
-      rangey = rangex;
-    }
-
+  grid(rangex, rangey = rangex) { // returns matrix x*y by 2
     const xd = rangex._data;
     const yd = rangey._data;
     const xN = xd.length; const yN = yd.length;
@@ -584,11 +571,9 @@ math.import({
       const indices = new Array(n);
       for (let i = 0; i < n; ++i) indices[i] = i;
 
-      indices.sort((a, b) => {
-        a = cam_data[a][2];
-        b = cam_data[b][2];
-        return a < b ? 1 : (a > b ? -1 : 1);
-      });
+      indices
+        .map((i) => cam_data[i][2])
+        .sort((a, b) => a < b ? 1 : (a > b ? -1 : 1));
 
       let col;
       for (let j = 0; j < n; j++) {
@@ -619,17 +604,13 @@ math.import({
       return;
     }
 
-    if (color) {
-      color = color._data;
-      color = [constrain(color[0]), constrain(color[1]), constrain(color[2])];
-    }
-
     const cam_data = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     if (color) {
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(color, 255));
+      const constrained = color.map(constrain);
+      rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
     }
     rtv.ctx.arc(cam_data[0], cam_data[1], psize, 0, PI2);
     rtv.ctx.fill();
@@ -656,13 +637,13 @@ math.import({
   },
   draw(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
     const N = points.size()[0];
-    points = rtv.cam.graph_to_screen_mat(points);
+    const graphed = rtv.cam.graph_to_screen_mat(points);
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     let p; let lastp;
     for (let i = 0; i < N; i++) {
-      p = points[i];
+      p = graphed[i];
       if (i === 0) {
         rtv.ctx.moveTo(p[0], p[1]);
       } else {
@@ -711,6 +692,14 @@ math.import({
       return;
     }
 
+    const aL = 're' in a && a.im
+      ? math.matrix([a.re, a.im])
+      : a;
+
+    const bL = b && b.re && b.im
+      ? math.matrix([b.re, b.im])
+      : b;
+
     let _x = 0;
     let _y = 0;
     let _z = 0;
@@ -719,34 +708,26 @@ math.import({
     let y = 0;
     let z = 0;
 
-    if ('re' in a && a.im) {
-      a = math.matrix([a.re, a.im]);
-    }
+    if (!bL) {
+      x = aL._data[0];
+      y = aL._data[1];
 
-    if (b && b.re && b.im) {
-      b = math.matrix([b.re, b.im]);
-    }
-
-    if (!b) {
-      x = a._data[0];
-      y = a._data[1];
-
-      if (a.size()[0] === 3) {
-        z = a._data[2];
+      if (aL.size()[0] === 3) {
+        z = aL._data[2];
       }
     } else {
-      _x = a._data[0];
-      _y = a._data[1];
+      _x = aL._data[0];
+      _y = aL._data[1];
 
-      if (a.size()[0] === 3) {
-        _z = a._data[2];
+      if (aL.size()[0] === 3) {
+        _z = aL._data[2];
       }
 
-      x = b._data[0];
-      y = b._data[1];
+      x = bL._data[0];
+      y = bL._data[1];
 
-      if (b.size()[0] === 3) {
-        z = b._data[2];
+      if (bL.size()[0] === 3) {
+        z = bL._data[2];
       }
     }
 
@@ -786,12 +767,10 @@ math.import({
 
     return m;
   },
-  view(x, p) { // matrix, position: [x, y, z]
+  view(x, { _data: p } = { _data: [0, 0] }) { // matrix, position: [x, y, z]
     let t = [];
     if (x._data) {
-      x = x.map(pretty_round);
-
-      const d = x._data;
+      const d = x.map(pretty_round)._data;
       if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
@@ -801,26 +780,20 @@ math.import({
       }
     }
 
-    if (p) {
-      p = p._data;
-    } else {
-      p = [0, 0];
-    }
-
-    p = rtv.cam.graph_to_screen(p[0], p[1], 0);
+    const graphed = rtv.cam.graph_to_screen(p[0], p[1], 0);
     for (let i = 0; i < t.length; i++) {
       rtv.ctx.textAlign = 'left';
-      rtv.ctx.fillText(t[i], p[0], p[1] + GRID_SIZE * i);
+      rtv.ctx.fillText(t[i], graphed[0], graphed[1] + GRID_SIZE * i);
     }
   },
   labels(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
-    points = rtv.cam.graph_to_screen_mat(points);
+    const graphed = rtv.cam.graph_to_screen_mat(points);
     const N = labels.size()[0];
     let p;
     rtv.ctx.save();
     rtv.ctx.textAlign = 'center';
     for (let i = 0; i < N; i++) {
-      p = points[i];
+      p = graphed[i];
       rtv.ctx.fillText(labels._data[i], p[0], p[1]);
     }
     rtv.ctx.restore();
@@ -992,11 +965,14 @@ math.import({
       return 0;
     }
 
+    let aL = a;
+    let bL = b;
+
     let negate = false;
-    if (a > b) {
-      rtv.t = b;
-      b = a;
-      a = rtv.t;
+    if (aL > bL) {
+      rtv.t = bL;
+      bL = aL;
+      aL = rtv.t;
       negate = true;
     }
 
@@ -1005,9 +981,9 @@ math.import({
       n = _n;
     }
 
-    const dx = (b - a) / n;
+    const dx = (bL - aL) / n;
     let sum = 0;
-    for (let x = a; x <= b; x += dx) {
+    for (let x = aL; x <= bL; x += dx) {
       sum += f(x) * dx;
     }
 
@@ -1027,9 +1003,7 @@ math.import({
       return (f(a + h) - f(a)) / h;
     };
   },
-  visnet(layers, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
-    layers = layers._data;
-
+  visnet({ _data: layers }, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
     const props = parser.evaluate('text_props');
     const pos = [props.p.x, props.p.y];
 
@@ -1166,9 +1140,7 @@ math.import({
   int(n) {
     return n | 0;
   },
-  elefield(charges, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
-    charges = charges._data;
-
+  elefield({ _data: charges }, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
     if (arguments.length === 1) {
       const n = 5;
       const d = 20 / n;
@@ -1257,9 +1229,7 @@ math.import({
       return [xt, yt, zt];
     }
   },
-  eleforce(charges, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
-    charges = charges._data;
-
+  eleforce({ _data: charges }, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
     const oc = charges[j * 4];
     const xp = charges[j * 4 + 1];
     const yp = charges[j * 4 + 2];
@@ -1428,13 +1398,11 @@ math.import({
 
     rtv.ctx.restore();
   },
-  magfield(path, current, at_point) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+  magfield(path, current, { _data: at_point }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
 
-    function b_at(x, y, z, path, current) {
-      path = path._data;
-
+    function b_at(x, y, z, { _data: path }, current) {
       let b = math.zeros(3);
       const c = current * math.magneticConstant.value / 4.0 / math.PI; // u0 I / 4 / pi
 
@@ -1457,7 +1425,6 @@ math.import({
     }
 
     if (arguments.length >= 3) {
-      at_point = at_point._data;
       const b = b_at(at_point[0], at_point[1], at_point[2], path, current);
 
       return b;
@@ -1494,12 +1461,10 @@ math.import({
     const ad = a._data;
     const bd = b._data;
 
-    divisions -= 1;
+    const L = cached([divisions, ad.length]);
 
-    const L = cached([divisions + 1, ad.length]);
-
-    for (let i = 0; i <= divisions; i++) {
-      const t = i / divisions;
+    for (let i = 0; i < divisions; i++) {
+      const t = i / (divisions - 1);
       for (let j = 0; j < ad.length; j++) {
         L._data[i][j] = ad[j] * (1 - t) + t * bd[j];
       }
@@ -2412,7 +2377,7 @@ math.import({
   laplace(f, _ti, _tf, _dt) {
     let ti = 0;
     let tf = 1000;
-    const dt = 0.01;
+    let dt = 0.01;
 
     if (arguments.length >= 2) {
       ti = _ti;
@@ -2423,7 +2388,7 @@ math.import({
     }
 
     if (arguments.length >= 4) {
-      _dt = dt;
+      dt = _dt;
     }
 
     return (s) => {
@@ -3113,21 +3078,23 @@ export function hexToRgb(hex) {
 }
 
 export function transform_props(key, props, step = 0.2) {
+  const propsL = { ...props };
+
   if (key === 'l') {
-    props.w += step;
+    propsL.w += step;
   } else if (key === 'j') {
-    props.w -= step;
+    propsL.w -= step;
   } else if (key === 'i') {
-    props.h += step;
+    propsL.h += step;
   } else if (key === 'k') {
-    props.h -= step;
+    propsL.h -= step;
   } else if (key === 'u') {
-    props.r -= Math.PI / 12;
+    propsL.r -= Math.PI / 12;
   } else if (key === 'o') {
-    props.r += Math.PI / 12;
+    propsL.r += Math.PI / 12;
   }
 
-  return props;
+  return propsL;
 }
 
 export function interpolate(a, b) {
