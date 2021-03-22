@@ -2372,7 +2372,8 @@ math.import({
     do {
       c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
 
-      if (Number.isInteger(c)) { // Check if 'n' is divisible by 'i'
+      // Check if 'n' is divisible by 'i'
+      if (c % 1 === 0) { // Faster than 'Number.isInteger(c)'
         const middle = factors.length / 2;
         insert(i, middle, factors);
         if (i !== c) { // Check that 'n' is not a perfect square
