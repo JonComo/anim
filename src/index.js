@@ -388,9 +388,7 @@ math.import({
       .concat(value));
   },
   push(matrix, value) {
-    const matrixL = matrix._data.slice();
-    matrixL.push(value);
-    return math.matrix(matrixL);
+    return math.concat(matrix, [value]);
   },
   dims(m) {
     return math.matrix(m.size());
