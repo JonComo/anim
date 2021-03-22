@@ -1,8 +1,8 @@
 import {
   copy,
-  insert_frame,
-  loop_frame,
-  transition_with_next,
+  insertFrame,
+  loopFrame,
+  transitionWithNext,
 } from '../index';
 import Button from '../ui/button';
 import {
@@ -100,7 +100,7 @@ export default function Frames(pos) {
         } if (i === this.buttons.length - 1) {
           // add frame
           // copy to next from frame
-          insert_frame();
+          insertFrame();
           return;
         }
         this.on_click(i + 1);
@@ -114,19 +114,19 @@ export default function Frames(pos) {
     if (key === 'ArrowRight') {
       if (!rtv.presenting && rtv.frame + 1 > rtv.num_frames) {
         // create a new one
-        insert_frame();
+        insertFrame();
       }
 
-      transition_with_next(loop_frame(rtv.frame + 1));
+      transitionWithNext(loopFrame(rtv.frame + 1));
       return true;
     } if (key === 'ArrowLeft') {
-      transition_with_next(loop_frame(rtv.frame - 1));
+      transitionWithNext(loopFrame(rtv.frame - 1));
       return true;
     }
 
     if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].indexOf(Number(key)) !== -1) {
       if (!rtv.transition.transitioning) {
-        transition_with_next(Number(key));
+        transitionWithNext(Number(key));
         return true;
       }
 

@@ -1,9 +1,9 @@
 import {
-  enter_select,
+  enterSelect,
   hexToRgb,
-  load_local,
+  loadLocal,
   present,
-  save_local,
+  saveLocal,
 } from '../index';
 import Button from './button';
 import {
@@ -18,7 +18,7 @@ export default function Menu(pos) {
   this.buttons = [];
 
   this.buttons.push(new Button('select', { x: 0, y: 0 }, (() => {
-    enter_select();
+    enterSelect();
   })));
 
   this.buttons.push(new Button('text', { x: 0, y: 0 }, (() => {
@@ -177,11 +177,11 @@ export default function Menu(pos) {
 
   this.buttons.push(new Button('save local', { x: 0, y: 0 }, (() => {
     // Put the object into storage
-    save_local();
+    saveLocal();
   })));
 
   this.buttons.push(new Button('load local', { x: 0, y: 0 }, (() => {
-    load_local();
+    loadLocal();
   })));
 
   this.buttons.push(new Button(`ver: ${VERSION}`, { x: 0, y: 0 }, (() => {

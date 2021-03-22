@@ -4,7 +4,7 @@ import {
   guid,
   interpolate,
   rgbToHex,
-  transform_props,
+  transformProps,
 } from '../index';
 import {
   math,
@@ -140,7 +140,7 @@ export default function Circle(color, pos) {
         p.a_e += step;
       }
     } else {
-      this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame]);
+      this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame]);
     }
 
     return false;
