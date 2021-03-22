@@ -692,8 +692,13 @@ math.import({
       return;
     }
 
-    let aL;
-    let bL;
+    const aL = 're' in a && a.im
+      ? math.matrix([a.re, a.im])
+      : a;
+
+    const bL = b && b.re && b.im
+      ? math.matrix([b.re, b.im])
+      : b;
 
     let _x = 0;
     let _y = 0;
@@ -702,14 +707,6 @@ math.import({
     let x = 0;
     let y = 0;
     let z = 0;
-
-    if ('re' in aL && aL.im) {
-      aL = math.matrix([a.re, a.im]);
-    }
-
-    if (b && b.re && b.im) {
-      bL = math.matrix([b.re, b.im]);
-    }
 
     if (!bL) {
       x = aL._data[0];
