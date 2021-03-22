@@ -2386,14 +2386,18 @@ math.import({
 
     return math.matrix(factors);
   },
-  primeFactors(n) { // Returns prime factors of positive integer 'n'
+  primeFactors(n, repeat = false) { // Returns prime factors of positive integer 'n'
     let dividend = n;
     const primes = [];
 
     let i = 2; // Initialize 'i' at smallest prime number
+    let last;
     while (dividend > 1) { // Loop until all factors are extracted
       if (dividend % i === 0) {
-        primes.push(i);
+        if (repeat || i !== last) {
+          primes.push(i);
+        }
+        last = i;
         dividend /= i;
       } else { // 'f' is not a prime factor of 'dividend' (anymore)
         i++;
