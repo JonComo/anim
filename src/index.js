@@ -571,11 +571,9 @@ math.import({
       const indices = new Array(n);
       for (let i = 0; i < n; ++i) indices[i] = i;
 
-      indices.sort((a, b) => {
-        const aC = cam_data[a][2];
-        const bC = cam_data[b][2];
-        return aC < bC ? 1 : (aC > bC ? -1 : 1);
-      });
+      indices
+        .map((i) => cam_data[i][2])
+        .sort((a, b) => a < b ? 1 : (a > b ? -1 : 1));
 
       let col;
       for (let j = 0; j < n; j++) {
