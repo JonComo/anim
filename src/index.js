@@ -384,20 +384,13 @@ math.import({
     }
   },
   fifo(matrix, value) {
-    const matrixL = matrix._data.slice();
-    const first = matrixL[0];
-    const N = matrixL.length;
-    for (let i = 0; i < N - 1; i++) {
-      matrixL[i] = matrixL[i + 1];
-    }
-    matrixL[N - 1] = value;
-
-    return math.matrix(matrixL);
+    return math.matrix(matrix
+      .toArray()
+      .slice(1)
+      .concat(value));
   },
   push(matrix, value) {
-    const matrixL = matrix._data.slice();
-    matrixL.push(value);
-    return math.matrix(matrixL);
+    return math.concat(matrix, [value]);
   },
   dims(m) {
     return math.matrix(m.size());
@@ -580,11 +573,9 @@ math.import({
       const indices = new Array(n);
       for (let i = 0; i < n; ++i) indices[i] = i;
 
-      indices.sort((a, b) => {
-        const aC = camData[a][2];
-        const bC = camData[b][2];
-        return aC < bC ? 1 : (aC > bC ? -1 : 1);
-      });
+      indices
+        .map((i) => camData[i][2])
+        .sort((a, b) => (a < b ? 1 : (a > b ? -1 : 1)));
 
       let col;
       for (let j = 0; j < n; j++) {
@@ -615,17 +606,13 @@ math.import({
       return;
     }
 
-    let colorL;
-    if (color) {
-      colorL = color._data.map(constrain);
-    }
-
     const camData = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     if (color) {
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(colorL, 255));
+      const constrained = color.map(constrain);
+      rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
     }
     rtv.ctx.arc(camData[0], camData[1], psize, 0, PI2);
     rtv.ctx.fill();
@@ -652,13 +639,13 @@ math.import({
   },
   draw(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
     const N = points.size()[0];
-    const pointsL = rtv.cam.graph_to_screen_mat(points);
+    const graphed = rtv.cam.graph_to_screen_mat(points);
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     let p; let lastp;
     for (let i = 0; i < N; i++) {
-      p = pointsL[i];
+      p = graphed[i];
       if (i === 0) {
         rtv.ctx.moveTo(p[0], p[1]);
       } else {
@@ -707,8 +694,13 @@ math.import({
       return;
     }
 
-    let aL;
-    let bL;
+    const aL = 're' in a && a.im
+      ? math.matrix([a.re, a.im])
+      : a;
+
+    const bL = b && b.re && b.im
+      ? math.matrix([b.re, b.im])
+      : b;
 
     let _x = 0;
     let _y = 0;
@@ -717,14 +709,6 @@ math.import({
     let x = 0;
     let y = 0;
     let z = 0;
-
-    if ('re' in aL && aL.im) {
-      aL = math.matrix([a.re, a.im]);
-    }
-
-    if (b && b.re && b.im) {
-      bL = math.matrix([b.re, b.im]);
-    }
 
     if (!bL) {
       x = aL._data[0];
@@ -979,12 +963,12 @@ math.import({
     rtv.ctx.restore();
   },
   integral(f, a, b, _n) {
-    let aL = a;
-    let bL = b;
-
-    if (aL === bL) {
+    if (a === b) {
       return 0;
     }
+
+    let aL = a;
+    let bL = b;
 
     let negate = false;
     if (aL > bL) {
@@ -2345,45 +2329,52 @@ math.import({
     rtv.ctx.stroke();
   },
   factors(n) { // Returns positive factors of positive integer 'n'
-    const factors = []; // Initialize array to contain factors
+    const factors = [];
 
-    for (let i = Math.floor(Math.sqrt(n)); i > 0; i--) { // Loop through smaller factors of closest to farthest factor pairs
-      const c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+    // Inserts element 'l' at index 'i' in array 'a'
+    const insert = (l, i, a) => a.splice(i, 0, l);
 
-      if (Number.isInteger(c)) { // Check if 'n' is divisible by 'i'
-        factors.unshift(i); // Insert 'i' at start of 'factors'
+    let i = 1;
+    let c;
+    let middle = 0;
+    do {
+      c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+
+      // Check if 'n' is divisible by 'i'
+      if (c % 1 === 0) { // Faster than 'Number.isInteger(c)'
+        insert(i, middle, factors);
         if (i !== c) { // Check that 'n' is not a perfect square
-          factors.push(c); // Append 'c' to the end of 'factors'
+          middle++; // Shift 'middle' one position to the right
+          insert(c, middle, factors); // Insert 'c' to the right of 'i'
         }
       }
-    }
 
-    return math.matrix(factors); // Create and return matrix from 'factors'
+      i++;
+    } while (i < c);
+
+    return math.matrix(factors);
   },
-  primeFactors(n) { // Returns prime factors of positive integer 'n'
-    let dividend = n; // Do not assign to parameter 'n'
-    const primes = []; // Initialize array to contain prime factors
-
-    // Checks if 'dividend' is divisible by 'f'
-    const isValid = (f) => dividend % f === 0;
-
-    // Checks if 'f' was previously registered as a prime factor
-    const isUsed = (f) => primes[primes.length - 1] === f;
-
-    // Checks if 'f' is a prime number
-    const isPrime = (f) => primes.every((p) => f % p !== 0);
+  primeFactors(n, repeat = false) { // Returns prime factors of positive integer 'n'
+    let dividend = n;
+    const primes = [];
 
     let i = 2; // Initialize 'i' at smallest prime number
-    while (dividend > 1) { // Loop until all factors are extracted (AKA until 'dividend' is equal to 1)
-      if (isValid(i) && (isUsed(i) || isPrime(i))) {
-        primes.push(i); // Append 'i' to the end of 'primes'
-        dividend /= i; // Divide 'dividend' by 'i' and assign for next iteration
+    let last; // Last prime factor
+    while (dividend > 1) { // Loop until all factors are extracted
+      const quotient = dividend / i;
+      if (quotient % 1 === 0) {
+        // Make sure factor is not already registered when 'repeat' is false
+        if (repeat || i !== last) {
+          primes.push(i);
+        }
+        last = i; // Register last prime factor
+        dividend = quotient;
       } else { // 'f' is not a prime factor of 'dividend' (anymore)
-        i++; // Increment 'i' by 1
+        i++;
       }
     }
 
-    return math.matrix(primes); // Create and return matrix from 'primes'
+    return math.matrix(primes);
   },
   laplace(f, _ti, _tf, _dt) {
     let ti = 0;
@@ -3644,6 +3635,8 @@ window.addEventListener('load', () => {
   rtv.objs = [];
 
   rtv.c = document.getElementById('viewport');
+  rtv.c.style.backgroundColor = CANVAS_BG;
+
   rtv.ctx = rtv.c.getContext('2d');
 
   configureCanvas();
@@ -4232,7 +4225,10 @@ window.addEventListener('load', () => {
 
     rtv.t += 1;
 
-    drawBackground(rtv.ctx, CANVAS_BG);
+    // Draw background only if recording to speed up 'animate'
+    if (rtv.recordingManager.recording !== undefined) {
+      drawBackground(rtv.ctx, CANVAS_BG);
+    }
 
     requestAnimationFrame(animate);
   }
