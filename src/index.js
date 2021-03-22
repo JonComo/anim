@@ -2361,17 +2361,31 @@ math.import({
     }
     rtv.ctx.stroke();
   },
-  factors(n) { // list positive factors of n
-    const f = [];
-    for (let i = 0; i <= n / 2; i++) {
-      if (n / i % 1 === 0) {
-        f.push(i);
+  factors(n) { // Returns positive factors of positive integer 'n'
+    const factors = [];
+
+    // Inserts element 'l' at index 'i' in array 'a'
+    const insert = (l, i, a) => a.splice(i, 0, l);
+
+    let i = 1;
+    let c;
+    let middle = 0;
+    do {
+      c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+
+      // Check if 'n' is divisible by 'i'
+      if (c % 1 === 0) { // Faster than 'Number.isInteger(c)'
+        insert(i, middle, factors);
+        if (i !== c) { // Check that 'n' is not a perfect square
+          middle++; // Shift 'middle' one position to the right
+          insert(c, middle, factors); // Insert 'c' to the right of 'i'
+        }
       }
-    }
 
-    f.push(n);
+      i++;
+    } while (i < c);
 
-    return math.matrix(f);
+    return math.matrix(factors);
   },
   primeFactors(n, repeat = false) { // Returns prime factors of positive integer 'n'
     let dividend = n;
