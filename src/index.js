@@ -2387,18 +2387,23 @@ math.import({
 
     return math.matrix(factors);
   },
-  primeFactors(n) { // list prime factors of n
-    const factors = math.factors(n);
-    const d = factors._data;
-
+  primeFactors(n, repeat = false) { // Returns prime factors of positive integer 'n'
+    let dividend = n;
     const primes = [];
-    // this gonna be real inefficient! fun times...
-    for (let i = 0; i < factors._size[0]; i++) {
-      const num = d[i];
-      const f = math.factors(num);
-      if (f._size[0] === 1 || f._size[0] === 2) {
-        // prime
-        primes.push(num);
+
+    let i = 2; // Initialize 'i' at smallest prime number
+    let last; // Last prime factor
+    while (dividend > 1) { // Loop until all factors are extracted
+      const quotient = dividend / i;
+      if (quotient % 1 === 0) {
+        // Make sure factor is not already registered when 'repeat' is false
+        if (repeat || i !== last) {
+          primes.push(i);
+        }
+        last = i; // Register last prime factor
+        dividend = quotient;
+      } else { // 'f' is not a prime factor of 'dividend' (anymore)
+        i++;
       }
     }
 
