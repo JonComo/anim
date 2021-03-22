@@ -5,7 +5,7 @@ import {
   guid,
   interpolate,
   rgbToHex,
-  transform_props,
+  transformProps,
 } from '../index';
 import {
   math,
@@ -150,7 +150,7 @@ export default function Shape(color, path) {
     const { key } = evt;
 
     if (this.selected_indices.length !== 0) {
-      this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame]);
+      this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame]);
     }
 
     return false;

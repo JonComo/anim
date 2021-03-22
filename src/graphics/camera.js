@@ -1,8 +1,8 @@
 import {
   copy,
   interpolate,
-  rotation_matrix,
-  transform_props,
+  rotationMatrix,
+  transformProps,
 } from '../index';
 import { math, rtv, GRID_SIZE } from '../resources';
 
@@ -139,7 +139,7 @@ export default function Camera() {
     }
 
     const { key } = evt;
-    this.properties[rtv.frame] = transform_props(key, this.properties[rtv.frame], 0.01);
+    this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame], 0.01);
   };
 
   this.update_props = () => {
@@ -172,7 +172,7 @@ export default function Camera() {
     const ry = this.props.rxyz[1];
     const rz = this.props.rxyz[2];
 
-    this.R = rotation_matrix(rx, ry, rz);
+    this.R = rotationMatrix(rx, ry, rz);
   };
 
   // takes array [x, y, z]

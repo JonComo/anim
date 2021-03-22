@@ -36,20 +36,20 @@ function sigp(x) {
 
 // http://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
 // Maxwell Collard
-function randn_bm() {
+function randNBm() {
   const u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
   const v = 1 - Math.random();
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }
 
 // cache
-const matrix_cache = {};
+const matrixCache = {};
 function cached(dims) {
   const s = dims.join('_');
-  let m = matrix_cache[s];
+  let m = matrixCache[s];
   if (!m) {
     m = math.matrix(math.zeros(dims));
-    matrix_cache[s] = m;
+    matrixCache[s] = m;
   }
 
   return m;
@@ -68,7 +68,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
 
   let i = 0;
   let x = -10;
-  let y_last = fn(x);
+  let yLast = fn(x);
   for (; x < 10; x += dx) {
     y = fn(x);
 
@@ -77,7 +77,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
     pd[i][d3] = 0;
 
     asyms[i] = 0;
-    if (math.abs(y - y_last) > 20) {
+    if (math.abs(y - yLast) > 20) {
       // vertical asymptote
       asyms[i] = 1;
 
@@ -85,7 +85,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
       pd[i][d2] = math.sign(y) * 1000;
     }
 
-    y_last = y;
+    yLast = y;
     i++;
   }
 
@@ -149,15 +149,15 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
   rtv.ctx.stroke();
 
   if (units) {
-    let num_dots = tmax - tmin;
-    num_dots = Math.floor(num_dots);
+    let numDots = tmax - tmin;
+    numDots = Math.floor(numDots);
 
-    if (num_dots > 0) {
-      let dots = cached([num_dots, 3]);
+    if (numDots > 0) {
+      let dots = cached([numDots, 3]);
 
       let i = 0;
 
-      for (i = 0; i < num_dots; i++) {
+      for (i = 0; i < numDots; i++) {
         data = r(i + 1)._data;
 
         data[0] = Math.max(Math.min(data[0], 1000), -1000);
@@ -172,7 +172,7 @@ function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin t
       dots = rtv.cam.graph_to_screen_mat(dots);
 
       rtv.ctx.save();
-      for (let i = 0; i < num_dots; i++) {
+      for (let i = 0; i < numDots; i++) {
         const p = dots[i];
 
         rtv.ctx.beginPath();
@@ -507,11 +507,11 @@ math.import({
     if (N === 1) {
       const shape = arguments[0];
       let m = cached(shape._data);
-      m = m.map(randn_bm);
+      m = m.map(randNBm);
 
       return m;
     }
-    return randn_bm();
+    return randNBm();
   },
   axes(x, y, z) { // replace default camera axis names
     rtv.cam.axes_names = [x, y, z];
@@ -519,7 +519,7 @@ math.import({
   block() { // exectutes each argument
   },
   rotation(rx, ry, rz) { // creates a 3x3 rotation matrix
-    return math.matrix(rotation_matrix(rx, ry, rz));
+    return math.matrix(rotationMatrix(rx, ry, rz));
   },
   grid(rangex, rangey = rangex) { // returns matrix x*y by 2
     const xd = rangex._data;
@@ -551,18 +551,18 @@ math.import({
   T(m) { // transpose m
     return math.transpose(m);
   },
-  scatter(points, point_size, color_fn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+  scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
-    const points_d = points._data;
+    const pointsD = points._data;
 
     let psize = 8;
     if (arguments.length >= 2) {
       psize = arguments[1];
     }
-    const psize_half = psize / 2;
+    const psizeHalf = psize / 2;
 
-    const cam_data = rtv.cam.graph_to_screen_mat(points);
+    const camData = rtv.cam.graph_to_screen_mat(points);
 
     rtv.ctx.save();
     if (arguments.length === 3) {
@@ -572,24 +572,24 @@ math.import({
       for (let i = 0; i < n; ++i) indices[i] = i;
 
       indices
-        .map((i) => cam_data[i][2])
+        .map((i) => camData[i][2])
         .sort((a, b) => (a < b ? 1 : (a > b ? -1 : 1)));
 
       let col;
       for (let j = 0; j < n; j++) {
         const i = indices[j];
 
-        const p = points_d[i];
+        const p = pointsD[i];
 
         // constrain
-        col = color_fn(p)._data;
+        col = colorFn(p)._data;
         col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
         rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
-        rtv.ctx.fillRect(cam_data[i][0] - psize_half, cam_data[i][1] - psize_half, psize, psize);
+        rtv.ctx.fillRect(camData[i][0] - psizeHalf, camData[i][1] - psizeHalf, psize, psize);
       }
     } else {
       for (let i = 0; i < n; i++) {
-        rtv.ctx.fillRect(cam_data[i][0] - psize_half, cam_data[i][1] - psize_half, psize, psize);
+        rtv.ctx.fillRect(camData[i][0] - psizeHalf, camData[i][1] - psizeHalf, psize, psize);
       }
     }
     rtv.ctx.restore();
@@ -604,7 +604,7 @@ math.import({
       return;
     }
 
-    const cam_data = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
+    const camData = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
@@ -612,7 +612,7 @@ math.import({
       const constrained = color.map(constrain);
       rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
     }
-    rtv.ctx.arc(cam_data[0], cam_data[1], psize, 0, PI2);
+    rtv.ctx.arc(camData[0], camData[1], psize, 0, PI2);
     rtv.ctx.fill();
 
     rtv.ctx.restore();
@@ -731,13 +731,13 @@ math.import({
       }
     }
 
-    draw_vect(_x, _y, _z, x, y, z);
+    drawVect(_x, _y, _z, x, y, z);
   },
-  if(fn_condition, fn_a, fn_b) { // if fn_condition() == true then fn_a() else fn_b()
-    if (fn_condition()) {
-      fn_a();
+  if(fnCondition, fnA, fnB) { // if fn_condition() == true then fn_a() else fn_b()
+    if (fnCondition()) {
+      fnA();
     } else {
-      fn_b();
+      fnB();
     }
   },
   list(fn, array) { // [fn(v) for v in array]
@@ -770,7 +770,7 @@ math.import({
   view(x, { _data: p } = { _data: [0, 0] }) { // matrix, position: [x, y, z]
     let t = [];
     if (x._data) {
-      const d = x.map(pretty_round)._data;
+      const d = x.map(prettyRound)._data;
       if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
@@ -841,7 +841,7 @@ math.import({
             v = [v[0] / n, v[1] / n, v[2] / n];
           }
 
-          draw_vect(x, y, z, x + v[0], y + v[1], z + v[2]);
+          drawVect(x, y, z, x + v[0], y + v[1], z + v[2]);
         }
       }
     }
@@ -953,7 +953,7 @@ math.import({
           const p = r(u, v)._data;
 
           const vect = f(p[0], p[1], p[2])._data;
-          draw_vect(p[0], p[1], p[2], p[0] + vect[0], p[1] + vect[1], p[2] + vect[2]);
+          drawVect(p[0], p[1], p[2], p[0] + vect[0], p[1] + vect[1], p[2] + vect[2]);
         }
       }
     }
@@ -1003,7 +1003,7 @@ math.import({
       return (f(a + h) - f(a)) / h;
     };
   },
-  visnet({ _data: layers }, ret_highlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
+  visnet({ _data: layers }, retHighlighted) { // Draws a neural net layers = [1, 2, 3, 2, 1]
     const props = parser.evaluate('text_props');
     const pos = [props.p.x, props.p.y];
 
@@ -1021,18 +1021,18 @@ math.import({
     rtv.ctx.save();
 
     // connections
-    let high_conn = [];
-    let high_neur = [];
+    let highConn = [];
+    let highNeur = [];
 
     for (let j = 0; j < layers.length - 1; j++) {
       const units = layers[j];
-      const units_next = layers[j + 1];
+      const unitsNext = layers[j + 1];
 
       for (let i = 0; i < units; i++) {
         const p = loc(i, j, units);
 
-        for (let k = 0; k < units_next; k++) {
-          const p2 = loc(k, j + 1, units_next);
+        for (let k = 0; k < unitsNext; k++) {
+          const p2 = loc(k, j + 1, unitsNext);
 
           /*
                     let vline = [p2[0] - p[0], p2[1] - p[1]];
@@ -1051,7 +1051,7 @@ math.import({
 
           rtv.ctx.strokeStyle = 'black';
 
-          if (high_conn.length === 0) {
+          if (highConn.length === 0) {
             const dx1 = p[0] - rtv.mouse.pos.x;
             const dy1 = p[1] - rtv.mouse.pos.y;
 
@@ -1066,8 +1066,8 @@ math.import({
 
             if (d1 + d2 < vlen + 1) {
               rtv.ctx.strokeStyle = COLORS[3];
-              high_conn = [i, k, j]; // unit i to unit k in layer j
-              high_neur = [[i, j], [k, j + 1]];
+              highConn = [i, k, j]; // unit i to unit k in layer j
+              highNeur = [[i, j], [k, j + 1]];
             }
           }
 
@@ -1091,17 +1091,17 @@ math.import({
         rtv.ctx.strokeStyle = 'black';
 
         // if we have a highlighted connection and we're in the right layer
-        if (high_conn.length !== 0) {
-          if (high_conn[2] === j) {
-            if (high_conn[0] === i) {
+        if (highConn.length !== 0) {
+          if (highConn[2] === j) {
+            if (highConn[0] === i) {
               if (j === 0) {
                 rtv.ctx.strokeStyle = COLORS[1];
               } else {
                 rtv.ctx.strokeStyle = COLORS[2];
               }
             }
-          } else if (high_conn[2] === j - 1) {
-            if (high_conn[1] === i) {
+          } else if (highConn[2] === j - 1) {
+            if (highConn[1] === i) {
               if (j === 0) {
                 rtv.ctx.strokeStyle = COLORS[1];
               } else {
@@ -1120,7 +1120,7 @@ math.import({
               rtv.ctx.strokeStyle = COLORS[2];
             }
 
-            high_neur = [[i, j]];
+            highNeur = [[i, j]];
           }
         }
 
@@ -1133,8 +1133,8 @@ math.import({
 
     rtv.ctx.restore();
 
-    if (arguments.length >= 2 && ret_highlighted) {
-      return [high_conn, high_neur];
+    if (arguments.length >= 2 && retHighlighted) {
+      return [highConn, highNeur];
     }
   },
   int(n) {
@@ -1271,21 +1271,21 @@ math.import({
 
     const result = math.multiply(W, x);
 
-    const xformat = format_matrix(x._data);
-    const rformat = format_matrix(result._data);
-    const Wformat = format_matrix(W._data);
+    const xformat = formatMatrix(x._data);
+    const rformat = formatMatrix(result._data);
+    const Wformat = formatMatrix(W._data);
 
-    const rsize = matrix_size(rformat);
-    const Wsize = matrix_size(format_matrix(W._data));
-    const xsize = matrix_size(xformat);
+    const rsize = matrixSize(rformat);
+    const Wsize = matrixSize(formatMatrix(W._data));
+    const xsize = matrixSize(xformat);
 
     // draw neural network
     const rows = W._size[0];
     const cols = W._size[1];
 
     const high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
-    const high_conn = high[0];
-    const high_neur = high[1];
+    const highConn = high[0];
+    const highNeur = high[1];
 
     // draw matrices
 
@@ -1295,10 +1295,10 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    draw_matrix(rformat, (i, j) => {
+    drawMatrix(rformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
-      for (let n = 0; n < high_neur.length; n++) {
-        const highn = high_neur[n];
+      for (let n = 0; n < highNeur.length; n++) {
+        const highn = highNeur[n];
         if (highn[1] === 1 && highn[0] === i) {
           rtv.ctx.fillStyle = COLORS[2];
         }
@@ -1310,9 +1310,9 @@ math.import({
 
     // draw W matrix
     rtv.ctx.translate(rsize[0] + pad * 3, 0);
-    draw_matrix(Wformat, (i, j) => {
+    drawMatrix(Wformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
-      if (high_conn.length && high_conn[0] === j && high_conn[1] === i) {
+      if (highConn.length && highConn[0] === j && highConn[1] === i) {
         rtv.ctx.fillStyle = COLORS[3];
       }
     });
@@ -1321,11 +1321,11 @@ math.import({
 
     // draw x matrix
     rtv.ctx.translate(Wsize[0] + pad * 3, rsize[1] / 2 - xsize[1] / 2);
-    draw_matrix(xformat, (i, j) => {
+    drawMatrix(xformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
 
-      for (let n = 0; n < high_neur.length; n++) {
-        const highn = high_neur[n];
+      for (let n = 0; n < highNeur.length; n++) {
+        const highn = highNeur[n];
         if (highn[1] === 0 && highn[0] === i) {
           rtv.ctx.fillStyle = COLORS[1];
         }
@@ -1342,16 +1342,16 @@ math.import({
 
     const result = math.multiply(W, x);
 
-    const rformat = format_matrix(result._data);
-    const rsize = matrix_size(rformat);
+    const rformat = formatMatrix(result._data);
+    const rsize = matrixSize(rformat);
 
     // draw neural network
     const rows = W._size[0];
     const cols = W._size[1];
 
     const high = math.visnet(math.matrix([x._size[0], W._size[0]]), true);
-    const high_conn = high[0];
-    const high_neur = high[1];
+    const highConn = high[0];
+    const highNeur = high[1];
 
     // draw matrices
 
@@ -1361,10 +1361,10 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    draw_matrix(rformat, (i, j) => {
+    drawMatrix(rformat, (i, j) => {
       rtv.ctx.fillStyle = 'black';
-      for (let n = 0; n < high_neur.length; n++) {
-        const highn = high_neur[n];
+      for (let n = 0; n < highNeur.length; n++) {
+        const highn = highNeur[n];
         if (highn[1] === 1 && highn[0] === i) {
           rtv.ctx.fillStyle = 'red';
         }
@@ -1378,9 +1378,9 @@ math.import({
     rtv.ctx.translate(rsize[0] + pad * 3, 0);
     const dp = [];
 
-    let round = pretty_round_one;
+    let round = prettyRoundOne;
     if (rtv.keys.ctrl) {
-      round = pretty_round;
+      round = prettyRound;
     }
 
     for (let i = 0; i < W._data.length; i++) {
@@ -1398,11 +1398,11 @@ math.import({
 
     rtv.ctx.restore();
   },
-  magfield(path, current, { _data: at_point }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+  magfield(path, current, { _data: atPoint }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
 
-    function b_at(x, y, z, { _data: path }, current) {
+    function bAt(x, y, z, { _data: path }, current) {
       let b = math.zeros(3);
       const c = current * math.magneticConstant.value / 4.0 / math.PI; // u0 I / 4 / pi
 
@@ -1425,18 +1425,18 @@ math.import({
     }
 
     if (arguments.length >= 3) {
-      const b = b_at(at_point[0], at_point[1], at_point[2], path, current);
+      const b = bAt(atPoint[0], atPoint[1], atPoint[2], path, current);
 
       return b;
     }
     for (let x = -10; x <= 10; x += d) {
       for (let y = -10; y <= 10; y += d) {
         for (let z = -10; z <= 10; z += d) {
-          let b = b_at(x, y, z, path, current);
+          let b = bAt(x, y, z, path, current);
 
           if (math.norm(b) > 0.1) {
             b = b._data;
-            draw_vect(x, y, z, x + b[0], y + b[1], z + b[2]);
+            drawVect(x, y, z, x + b[0], y + b[1], z + b[2]);
           }
         }
       }
@@ -2200,7 +2200,7 @@ math.import({
         let uv = [1, dydx];
         uv = math.matrix(uv);
         uv = math.multiply(uv, 1 / math.norm(uv));
-        draw_vect(x, y, 0, x + uv._data[0], y + uv._data[1], 0);
+        drawVect(x, y, 0, x + uv._data[0], y + uv._data[1], 0);
       }
     }
   },
@@ -2372,7 +2372,7 @@ math.import({
       }
     }
 
-    return math.matrix(primes);
+    return math.matrix(primes); // Create and return matrix from 'primes'
   },
   laplace(f, _ti, _tf, _dt) {
     let ti = 0;
@@ -2410,7 +2410,7 @@ math.import({
   },
 });
 
-function report_error(e) {
+function reportError(e) {
   console.log(e);
   rtv.error.timer = 100;
   rtv.error.text = e;
@@ -2444,15 +2444,15 @@ export function guid() {
     s4()}-${s4()}${s4()}${s4()}`;
 }
 
-export function pretty_round(num) {
+export function prettyRound(num) {
   return (Math.round(num * 100) / 100).toFixed(2);
 }
 
-function pretty_round_one(num) {
+function prettyRoundOne(num) {
   return (Math.round(num * 10) / 10).toFixed(1);
 }
 
-function draw_r(o, p, d) {
+function drawR(o, p, d) {
   // o tree object
   // p position
   // d should draw, false to just get the size
@@ -2478,7 +2478,7 @@ function draw_r(o, p, d) {
     if (text === '+' || text === '-' || text === '*') {
       if (argc === 1) {
         if (d) rtv.ctx.fillText(text, p.x, p.y);
-        const s1 = draw_r(args[0], { x: p.x + CHAR.SIZE, y: p.y }, d);
+        const s1 = drawR(args[0], { x: p.x + CHAR.SIZE, y: p.y }, d);
 
         size.w = s1.w + CHAR.SIZE;
         size.h = s1.h;
@@ -2491,8 +2491,8 @@ function draw_r(o, p, d) {
           pad2 = 0;
         }
 
-        let s1 = draw_r(args[0], { x: 0, y: 0 }, false);
-        let s2 = draw_r(args[1], { x: 0, y: 0 }, false);
+        let s1 = drawR(args[0], { x: 0, y: 0 }, false);
+        let s2 = drawR(args[1], { x: 0, y: 0 }, false);
 
         size.w = s1.w + text.length * CHAR.SIZE + 2 * pad2 + s2.w;
         size.h = Math.max(s1.h, s2.h);
@@ -2500,14 +2500,14 @@ function draw_r(o, p, d) {
         if (d) {
           let opp = { x: 0, y: 0 };
           if (center) {
-            s1 = draw_r(args[0], { x: p.x, y: p.y + size.h / 2 - s1.h / 2 }, d);
+            s1 = drawR(args[0], { x: p.x, y: p.y + size.h / 2 - s1.h / 2 }, d);
             opp = { x: p.x + s1.w + pad2, y: p.y + size.h / 2 - CHAR.SIZE };
-            s2 = draw_r(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h / 2 - s2.h / 2 }, d);
+            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h / 2 - s2.h / 2 }, d);
           } else {
             // bottom align
-            s1 = draw_r(args[0], { x: p.x, y: p.y + size.h - s1.h }, d);
+            s1 = drawR(args[0], { x: p.x, y: p.y + size.h - s1.h }, d);
             opp = { x: p.x + s1.w + pad2, y: p.y + size.h - CHAR.SIZE * 2 };
-            s2 = draw_r(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
+            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
           }
 
           if (text === '*') {
@@ -2529,15 +2529,15 @@ function draw_r(o, p, d) {
           b = b.content;
         }
 
-        const s1 = draw_r(a, { x: 0, y: 0 }, false);
-        const s2 = draw_r(b, { x: 0, y: 0 }, false);
+        const s1 = drawR(a, { x: 0, y: 0 }, false);
+        const s2 = drawR(b, { x: 0, y: 0 }, false);
 
         size.w = s1.w + s2.w;
         size.h = s1.h + s2.h - CHAR.SIZE;
 
         if (d) {
-          draw_r(a, { x: p.x, y: p.y + size.h - s1.h }, d);
-          draw_r(b, { x: p.x + s1.w, y: p.y }, d);
+          drawR(a, { x: p.x, y: p.y + size.h - s1.h }, d);
+          drawR(b, { x: p.x + s1.w, y: p.y }, d);
         }
       }
     } else if (text === '/') {
@@ -2554,15 +2554,15 @@ function draw_r(o, p, d) {
           b = b.content;
         }
 
-        const s1 = draw_r(a, { x: 0, y: 0 }, false);
-        const s2 = draw_r(b, { x: 0, y: 0 }, false);
+        const s1 = drawR(a, { x: 0, y: 0 }, false);
+        const s2 = drawR(b, { x: 0, y: 0 }, false);
 
         size.w = Math.max(s1.w, s2.w) + CHAR.PAD * 2;
         size.h = Math.max(s1.h, s2.h) * 2 + CHAR.PAD * 4;
 
         if (d) {
-          draw_r(a, { x: p.x + size.w / 2 - s1.w / 2, y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2 }, d);
-          draw_r(b, { x: p.x + size.w / 2 - s2.w / 2, y: p.y + size.h / 2 + CHAR.PAD * 2 }, d);
+          drawR(a, { x: p.x + size.w / 2 - s1.w / 2, y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2 }, d);
+          drawR(b, { x: p.x + size.w / 2 - s2.w / 2, y: p.y + size.h / 2 + CHAR.PAD * 2 }, d);
 
           rtv.ctx.beginPath();
           rtv.ctx.moveTo(p.x, p.y + size.h / 2);
@@ -2571,7 +2571,7 @@ function draw_r(o, p, d) {
         }
       }
     } else if (text === '!') {
-      const s1 = draw_r(args[0], { x: p.x, y: p.y }, d);
+      const s1 = drawR(args[0], { x: p.x, y: p.y }, d);
       if (d) rtv.ctx.fillText(text, p.x + s1.w, p.y);
 
       size.w = s1.w + CHAR.SIZE;
@@ -2584,7 +2584,7 @@ function draw_r(o, p, d) {
       const N = args.length;
       const hs = [];
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(args[i], { x: 0, y: 0 }, false);
+        const s1 = drawR(args[i], { x: 0, y: 0 }, false);
         hs.push(s1);
 
         h = Math.max(h, s1.h);
@@ -2605,7 +2605,7 @@ function draw_r(o, p, d) {
       let xo = text.length * CHAR.SIZE;
 
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(args[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
+        const s1 = drawR(args[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
         if (i === N - 1) {
@@ -2630,32 +2630,32 @@ function draw_r(o, p, d) {
 
     if (o.content) {
       // parens
-      let s1 = draw_r(o.content, { x: 0, y: 0 }, false);
+      let s1 = drawR(o.content, { x: 0, y: 0 }, false);
       // ctx.save();
       // ctx.scale(1, s1.h/(char_size*2));
       if (d) rtv.ctx.fillText('(', p.x, p.y + s1.h / 2 - CHAR.SIZE);
       if (d) rtv.ctx.fillText(')', p.x + s1.w + CHAR.SIZE, p.y + s1.h / 2 - CHAR.SIZE);
       // ctx.restore();
 
-      s1 = draw_r(o.content, { x: p.x + CHAR.SIZE, y: p.y }, d);
+      s1 = drawR(o.content, { x: p.x + CHAR.SIZE, y: p.y }, d);
 
       size.w = s1.w + CHAR.SIZE * 2;
       size.h = s1.h;
     } else if (o.node) {
-      size = draw_r(o.node, { x: p.x, y: p.y }, d);
+      size = drawR(o.node, { x: p.x, y: p.y }, d);
     } else if (o.object && o.value) {
       // assignment
 
-      const s1 = draw_r(o.value, { x: 0, y: 0 }, false);
+      const s1 = drawR(o.value, { x: 0, y: 0 }, false);
       const text = `${o.object.name} = `;
 
       if (d) {
         rtv.ctx.save();
         rtv.ctx.translate(p.x, p.y + s1.h / 2 - CHAR.SIZE);
-        draw_simple(text);
+        drawSimple(text);
         rtv.ctx.restore();
 
-        draw_r(o.value, { x: p.x + text.length * CHAR.SIZE, y: p.y }, d);
+        drawR(o.value, { x: p.x + text.length * CHAR.SIZE, y: p.y }, d);
       }
 
       size.w = s1.w + text.length * CHAR.SIZE;
@@ -2670,7 +2670,7 @@ function draw_r(o, p, d) {
       const N = items.length;
       const hs = [];
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: 0, y: 0 }, false);
+        const s1 = drawR(items[i], { x: 0, y: 0 }, false);
         hs.push(s1);
 
         h = Math.max(h, s1.h);
@@ -2683,7 +2683,7 @@ function draw_r(o, p, d) {
       let xo = 0;
 
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
+        const s1 = drawR(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
         if (i !== N - 1) {
@@ -2705,7 +2705,7 @@ function draw_r(o, p, d) {
       const N = items.length;
       const hs = [];
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: 0, y: 0 }, false);
+        const s1 = drawR(items[i], { x: 0, y: 0 }, false);
         hs.push(s1);
 
         h = Math.max(h, s1.h);
@@ -2718,7 +2718,7 @@ function draw_r(o, p, d) {
       let xo = CHAR.SIZE; // first open bracket
 
       for (let i = 0; i < N; i++) {
-        const s1 = draw_r(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
+        const s1 = drawR(items[i], { x: p.x + xo, y: p.y + size.h / 2 - hs[i].h / 2 }, d);
         xo += s1.w;
 
         if (i !== N - 1) {
@@ -2736,7 +2736,7 @@ function draw_r(o, p, d) {
       size.w = xo;
     } else if (o.expr) {
       // function definition
-      const s1 = draw_r(o.expr, { x: 0, y: 0 }, false);
+      const s1 = drawR(o.expr, { x: 0, y: 0 }, false);
 
       text = o.name;
       text += `(${o.params.join(',')}) = `;
@@ -2744,13 +2744,13 @@ function draw_r(o, p, d) {
       if (d) {
         rtv.ctx.save();
         rtv.ctx.translate(p.x, p.y + s1.h - CHAR.SIZE * 2);
-        draw_simple(text);
+        drawSimple(text);
         rtv.ctx.restore();
       }
 
       const xo = text.length * CHAR.SIZE;
 
-      draw_r(o.expr, { x: p.x + xo, y: p.y }, d);
+      drawR(o.expr, { x: p.x + xo, y: p.y }, d);
 
       size.w = xo + s1.w;
       size.h = s1.h;
@@ -2772,7 +2772,7 @@ function draw_r(o, p, d) {
   return size;
 }
 
-function draw_vect(_x, _y, _z, x, y, z) {
+function drawVect(_x, _y, _z, x, y, z) {
   let a = rtv.cam.graph_to_screen(_x, _y, _z);
   let b = rtv.cam.graph_to_screen(x, y, z);
 
@@ -2795,7 +2795,7 @@ function draw_vect(_x, _y, _z, x, y, z) {
   rtv.ctx.stroke();
 }
 
-export function draw_brackets(sx, sy, width, height) {
+export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
   rtv.ctx.lineTo(sx, sy);
@@ -2811,7 +2811,7 @@ export function draw_brackets(sx, sy, width, height) {
   rtv.ctx.stroke();
 }
 
-export function draw_simple(text) {
+export function drawSimple(text) {
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '*') {
       rtv.ctx.beginPath();
@@ -2824,7 +2824,7 @@ export function draw_simple(text) {
   return text.length * CHAR.SIZE;
 }
 
-export function draw_network(layers, pos) {
+export function drawNetwork(layers, pos) {
   const pad = 120;
   const radius = 20;
 
@@ -2838,13 +2838,13 @@ export function draw_network(layers, pos) {
   // connections
   for (let j = 0; j < layers.length - 1; j++) {
     const units = layers[j];
-    const units_next = layers[j + 1];
+    const unitsNext = layers[j + 1];
 
     for (let i = 0; i < units; i++) {
       const p = loc(i, j, units);
 
-      for (let k = 0; k < units_next; k++) {
-        const p2 = loc(k, j + 1, units_next);
+      for (let k = 0; k < unitsNext; k++) {
+        const p2 = loc(k, j + 1, unitsNext);
 
         const l = new Shape([0, 0, 0, 1], [{ x: p[0], y: p[1] }, { x: p2[0], y: p2[1] }]);
         rtv.objs.push(l);
@@ -2865,12 +2865,12 @@ export function draw_network(layers, pos) {
   }
 }
 
-const cache_fn = {};
-export function draw_fn(fn) {
+const cacheFn = {};
+export function drawFn(fn) {
   let tree;
 
-  if (cache_fn[fn]) {
-    tree = cache_fn[fn];
+  if (cacheFn[fn]) {
+    tree = cacheFn[fn];
   } else {
     try {
       tree = math.parse(fn);
@@ -2879,7 +2879,7 @@ export function draw_fn(fn) {
     }
 
     if (tree) {
-      cache_fn[fn] = tree;
+      cacheFn[fn] = tree;
     }
   }
 
@@ -2890,14 +2890,14 @@ export function draw_fn(fn) {
   rtv.ctx.save();
   rtv.ctx.textAlign = 'left';
   rtv.ctx.textBaseline = 'top';
-  const size = draw_r(tree, { x: 0, y: 0 }, false);
-  draw_r(tree, { x: 0, y: -size.h / 2 }, true);
+  const size = drawR(tree, { x: 0, y: 0 }, false);
+  drawR(tree, { x: 0, y: -size.h / 2 }, true);
   rtv.ctx.restore();
 
   return size;
 }
 
-export function matrix_size(matrix) {
+export function matrixSize(matrix) {
   if (matrix && matrix.length === 0) {
     return;
   }
@@ -2907,7 +2907,7 @@ export function matrix_size(matrix) {
   return [matrix[0].length * (MAT_NUM_WIDTH + pad), matrix.length * GRID_SIZE];
 }
 
-export function draw_matrix(matrix, color_ij) {
+export function drawMatrix(matrix, colorIJ) {
   rtv.ctx.save();
   rtv.ctx.textAlign = 'right';
 
@@ -2918,34 +2918,34 @@ export function draw_matrix(matrix, color_ij) {
     shift = 24;
   }
 
-  const max_width = MAT_NUM_WIDTH - 10;
+  const maxWidth = MAT_NUM_WIDTH - 10;
 
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[i].length; j++) {
-      if (color_ij) {
-        color_ij(i, j);
+      if (colorIJ) {
+        colorIJ(i, j);
       }
-      rtv.ctx.fillText(matrix[i][j], j * (MAT_NUM_WIDTH + pad) + 124 + shift, i * GRID_SIZE + 20, max_width);
+      rtv.ctx.fillText(matrix[i][j], j * (MAT_NUM_WIDTH + pad) + 124 + shift, i * GRID_SIZE + 20, maxWidth);
     }
   }
 
-  const size = matrix_size(matrix);
-  draw_brackets(0, 0, size[0], size[1]);
+  const size = matrixSize(matrix);
+  drawBrackets(0, 0, size[0], size[1]);
 
   rtv.ctx.restore();
 }
 
-export function format_matrix(matrix) {
+export function formatMatrix(matrix) {
   if (matrix.length === 0) {
     return null;
   }
 
   // format for display
   const formatted = [];
-  let round = pretty_round_one;
+  let round = prettyRoundOne;
 
   if (rtv.keys.ctrl) {
-    round = pretty_round;
+    round = prettyRound;
   }
 
   if (typeof matrix[0] === 'number') {
@@ -2968,7 +2968,7 @@ export function format_matrix(matrix) {
   return formatted;
 }
 
-function get_mouse_pos(canvas, evt) {
+function getMousePos(canvas, evt) {
   const rect = canvas.getBoundingClientRect();
   let x; let
     y;
@@ -2990,7 +2990,7 @@ function get_mouse_pos(canvas, evt) {
   };
 }
 
-function constrain_to_grid(p) {
+function constrainToGrid(p) {
   const gs = GRID_SIZE / 4;
   return { x: Math.floor((p.x + gs / 2) / gs) * gs, y: Math.floor((p.y + gs / 2) / gs) * gs };
 }
@@ -3005,7 +3005,7 @@ export function between(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-function grad_2(c, x, y) {
+function grad2(c, x, y) {
   // c is compiled obj
   // depends on x and y
   const h = 0.0001;
@@ -3023,7 +3023,7 @@ function grad_2(c, x, y) {
   return [(fxh - fx) / h, (fyh - fy) / h];
 }
 
-export function rotation_matrix(rx, ry, rz) {
+export function rotationMatrix(rx, ry, rz) {
   const Rx = [[1, 0, 0],
     [0, Math.cos(rx), -Math.sin(rx)],
     [0, Math.sin(rx), Math.cos(rx)]];
@@ -3043,7 +3043,7 @@ export function sigmoid(x, num, offset, width) {
   return num / (1.0 + Math.exp(-(x + offset) * width));
 }
 
-export function ease_in_out(x) {
+export function easeInOut(x) {
   return 1.0 / (1.0 + Math.exp(-(x - 0.5) * 10));
 }
 
@@ -3051,7 +3051,7 @@ export function copy(d) {
   return JSON.parse(JSON.stringify(d));
 }
 
-function change_frames() {
+function changeFrames() {
   for (let i = 0; i < rtv.objs.length; i++) {
     const obj = rtv.objs[i];
     if (obj.properties[rtv.frame] && obj.properties[rtv.next_frame] == null) {
@@ -3077,7 +3077,7 @@ export function hexToRgb(hex) {
   ] : null;
 }
 
-export function transform_props(key, props, step = 0.2) {
+export function transformProps(key, props, step = 0.2) {
   const propsL = { ...props };
 
   if (key === 'l') {
@@ -3129,7 +3129,7 @@ export function interpolate(a, b) {
       // interpolate colors
       const ac = a[key];
       const bc = b[key];
-      interp[key] = interpolate_colors(ac, bc, constrain(rtv.t_ease));
+      interp[key] = interpolateColors(ac, bc, constrain(rtv.t_ease));
     } else if (key === 'path') {
       // interpolate paths
       const ap = a[key];
@@ -3159,7 +3159,7 @@ export function interpolate(a, b) {
   return interp;
 }
 
-function interpolate_colors(ac, bc, interp) {
+function interpolateColors(ac, bc, interp) {
   let same = true;
   const N = ac.length;
   for (let i = 0; i < N; i++) {
@@ -3181,9 +3181,9 @@ function interpolate_colors(ac, bc, interp) {
   return ic;
 }
 
-export function save_state() {
+export function saveState() {
   // save state
-  const str = state_to_string();
+  const str = stateToString();
   if (states.length > 0) {
     const last = states[states.length - 1];
     if (str !== last) {
@@ -3197,7 +3197,7 @@ export function save_state() {
 function undo() {
   if (states.length > 1) {
     states = states.splice(0, states.length - 1);
-    str_to_state(states[states.length - 1]);
+    strToState(states[states.length - 1]);
   }
 }
 
@@ -3213,13 +3213,13 @@ export function guidIndex(objs, obj) {
   return -1;
 }
 
-function state_to_string() {
+function stateToString() {
   return JSON.stringify({
     num_frames: rtv.num_frames, frame: rtv.frame, objs: rtv.objs, cam: rtv.cam, pen: rtv.pen,
   });
 }
 
-function str_to_state(str) {
+function strToState(str) {
   const dict = JSON.parse(str);
   const arr = dict.objs;
 
@@ -3243,11 +3243,11 @@ function str_to_state(str) {
     rtv.cam.update_props();
   }
 
-  rtv.objs = text_array_to_objs(arr, true);
+  rtv.objs = textArrayToObjs(arr, true);
 }
 
 function save(objs) {
-  const str = state_to_string();
+  const str = stateToString();
   const blob = new Blob([str], { type: 'text/plain;charset=utf-8' });
   const name = document.getElementById('name').value;
   saveAs(blob, name);
@@ -3259,54 +3259,54 @@ function load(evt) {
 
   const reader = new FileReader();
 
-  reader.addEventListener('load', ({ target: { result: string } }) => str_to_state(string));
+  reader.addEventListener('load', ({ target: { result: string } }) => strToState(string));
 
   reader.readAsText(f);
 }
 
-export function save_local() {
-  localStorage.setItem('page', state_to_string());
+export function saveLocal() {
+  localStorage.setItem('page', stateToString());
 }
 
-export function load_local() {
+export function loadLocal() {
   // Grab the objects from storage
   const page = localStorage.getItem('page');
   if (page && page.length) {
-    str_to_state(page);
+    strToState(page);
   }
 }
 
-function text_array_to_objs(arr, keep_animation) {
-  const new_objs = [];
+function textArrayToObjs(arr, keepAnimation) {
+  const newObjs = [];
   for (let i = 0; i < arr.length; i++) {
     const o = arr[i];
-    let new_obj = null;
+    let newObj = null;
 
     if (o.type === 'Shape') {
-      new_obj = new Shape();
+      newObj = new Shape();
     } else if (o.type === 'Circle') {
-      new_obj = new Circle();
+      newObj = new Circle();
     } else if (o.type === 'Text') {
-      new_obj = new Text();
+      newObj = new Text();
     }
 
-    if (keep_animation) {
-      new_obj.properties = o.properties;
+    if (keepAnimation) {
+      newObj.properties = o.properties;
     } else {
-      new_obj.properties = {};
-      new_obj.properties[rtv.frame] = o.properties[1];
-      new_obj.select();
+      newObj.properties = {};
+      newObj.properties[rtv.frame] = o.properties[1];
+      newObj.select();
     }
 
-    new_obj.guid = o.guid;
+    newObj.guid = o.guid;
 
-    new_objs.push(new_obj);
+    newObjs.push(newObj);
   }
 
-  return new_objs;
+  return newObjs;
 }
 
-export function insert_frame() {
+export function insertFrame() {
   rtv.num_frames += 1;
   for (let f = rtv.num_frames; f >= rtv.frame; f--) {
     for (let i = 0; i < rtv.objs.length; i++) {
@@ -3334,7 +3334,7 @@ export function present() {
      * Sets page up for presentation mode.
      */
   function setUpPresentationMode() {
-    enter_select(); // Enter select mode
+    enterSelect(); // Enter select mode
     document.body.style.cursor = 'none'; // Hide cursor
     document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
     rtv.presenting = true; // Declare presentation mode entered
@@ -3361,7 +3361,7 @@ export function present() {
   }
 }
 
-function constrain_frame(f) {
+function constrainFrame(f) {
   return Math.max(1, Math.min(rtv.num_frames, f));
 }
 
@@ -3369,7 +3369,7 @@ export function constrain(v) {
   return Math.min(1, Math.max(0, v));
 }
 
-export function loop_frame(f) {
+export function loopFrame(f) {
   if (f >= rtv.num_frames + 1) {
     return 1;
   } if (f < 1) {
@@ -3379,26 +3379,26 @@ export function loop_frame(f) {
   return f;
 }
 
-function draw_axes(ctx) {
+function drawAxes(ctx) {
   if (!rtv.cam.R) {
     return;
   }
 
   ctx.save();
 
-  let csys_style = rtv.cam.style();
+  let csysStyle = rtv.cam.style();
   let props = rtv.cam.properties[rtv.frame];
 
   // do a fade in and out
   if (rtv.transition.transitioning) {
-    const csys_next_style = rtv.cam.properties[rtv.next_frame].style;
+    const csysNextStyle = rtv.cam.properties[rtv.next_frame].style;
 
-    if (csys_next_style != null && csys_next_style !== csys_style) {
+    if (csysNextStyle != null && csysNextStyle !== csysStyle) {
       // changing text
       const constrained = constrain(rtv.t_ease);
       ctx.globalAlpha = Math.cos(constrained * 2 * Math.PI) / 2 + 0.5;
       if (constrained >= 0.5) {
-        csys_style = csys_next_style;
+        csysStyle = csysNextStyle;
         if (rtv.cam.properties[rtv.next_frame]) {
           props = rtv.cam.properties[rtv.next_frame];
         }
@@ -3406,11 +3406,11 @@ function draw_axes(ctx) {
     }
   }
 
-  if (csys_style === '3d' || csys_style === 'flat') {
+  if (csysStyle === '3d' || csysStyle === 'flat') {
     // draw gridlines
     ctx.strokeStyle = '#DDDDDD';
 
-    if (csys_style === '3d') {
+    if (csysStyle === '3d') {
       let axis = rtv.cam.ticks[0];
       axis = math.matrix(axis);
       axis = rtv.cam.graph_to_screen_mat(axis);
@@ -3509,7 +3509,7 @@ function draw_axes(ctx) {
   ctx.restore();
 }
 
-export function transition_with_next(next) {
+export function transitionWithNext(next) {
   if (rtv.transition.transitioning) {
     return;
   }
@@ -3519,7 +3519,7 @@ export function transition_with_next(next) {
   }
 
   if (rtv.tool === 'copy frame') {
-    enter_select();
+    enterSelect();
     // copy properties
     for (let i = 0; i < rtv.objs.length; i++) {
       const obj = rtv.objs[i];
@@ -3533,7 +3533,7 @@ export function transition_with_next(next) {
 
   rtv.new_line = null;
   rtv.next_frame = next;
-  change_frames();
+  changeFrames();
   let steps = T_STEPS;
   if (!rtv.presenting || rtv.keys.meta || rtv.keys.ctrl) {
     // make it instant when menu open
@@ -3556,12 +3556,12 @@ export function transition_with_next(next) {
   });
 }
 
-export function enter_select() {
+export function enterSelect() {
   rtv.tool = 'select';
   rtv.new_line = null;
 }
 
-function draw_cursor() {
+function drawCursor() {
   if (rtv.presenting && rtv.tool === 'pen') {
     const pad = 20;
 
@@ -3637,14 +3637,14 @@ window.addEventListener('load', () => {
   });
 
   document.getElementById('file').addEventListener('change', (evt) => {
-    enter_select();
+    enterSelect();
     load(evt);
   });
 
   document.getElementById('load_to_frame').addEventListener('click', () => {
     const text = document.getElementById('selected_objects_text').value;
     const arr = JSON.parse(text);
-    rtv.objs = rtv.objs.concat(text_array_to_objs(arr, false));
+    rtv.objs = rtv.objs.concat(textArrayToObjs(arr, false));
   });
 
   rtv.formula_text = document.getElementById('formula_text');
@@ -3702,7 +3702,7 @@ window.addEventListener('load', () => {
     rtv.num_frames = script.length;
     rtv.frames.create_buttons();
 
-    save_state();
+    saveState();
   });
 
   document.addEventListener('paste', (event) => {
@@ -3727,7 +3727,7 @@ window.addEventListener('load', () => {
     x: rtv.c.width - GRID_SIZE * 2,
     y: GRID_SIZE / 4,
   }));
-  rtv.frames.on_click = transition_with_next;
+  rtv.frames.on_click = transitionWithNext;
 
   rtv.menu = new Menu({ x: GRID_SIZE / 4, y: GRID_SIZE / 2 });
   rtv.cam = new Camera();
@@ -3749,7 +3749,7 @@ window.addEventListener('load', () => {
     }
 
     if (key === 'Escape') {
-      enter_select();
+      enterSelect();
     }
 
     if (key === 'Tab') {
@@ -3853,12 +3853,12 @@ window.addEventListener('load', () => {
       rtv.keys.ctrl = false;
     }
 
-    save_state();
+    saveState();
   });
 
   ['mousedown', 'touchstart'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
     rtv.mouse.down = true;
-    rtv.mouse.start = get_mouse_pos(rtv.c, evt);
+    rtv.mouse.start = getMousePos(rtv.c, evt);
 
     try {
       math.compile('click()').evaluate(parser.scope);
@@ -3898,23 +3898,23 @@ window.addEventListener('load', () => {
     }
 
     // didn't touch an obj, if tool is move start a rect
-    let obj_selected = false;
+    let objSelected = false;
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
       if (rtv.objs[i].is_selected()) {
-        obj_selected = true;
+        objSelected = true;
       }
     }
 
-    if (rtv.tool === 'select' && obj_selected === false) {
+    if (rtv.tool === 'select' && objSelected === false) {
       rtv.selecting = true;
     }
   }));
 
   ['mousemove', 'touchmove'].forEach((key) => window.addEventListener(key, (evt) => {
     // update mouse
-    rtv.mouse.pos = get_mouse_pos(rtv.c, evt);
-    rtv.mouse.grid = constrain_to_grid(rtv.mouse.pos);
+    rtv.mouse.pos = getMousePos(rtv.c, evt);
+    rtv.mouse.grid = constrainToGrid(rtv.mouse.pos);
     rtv.mouse.graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
 
     parser.set('_y', rtv.mouse.graph.x);
@@ -3951,8 +3951,8 @@ window.addEventListener('load', () => {
       rtv.mouse.time = MOUSE_DURATION;
     }
 
-    rtv.mouse.last = get_mouse_pos(rtv.c, evt);
-    rtv.mouse.gridLast = constrain_to_grid(rtv.mouse.pos);
+    rtv.mouse.last = getMousePos(rtv.c, evt);
+    rtv.mouse.gridLast = constrainToGrid(rtv.mouse.pos);
   }));
 
   ['mouseup', 'touchend'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
@@ -3980,12 +3980,12 @@ window.addEventListener('load', () => {
       rtv.new_line = null;
       rtv.selecting = false;
 
-      save_state();
+      saveState();
       return;
     }
 
     if (rtv.pen.mouse_up(evt)) {
-      save_state();
+      saveState();
       return;
     }
 
@@ -4032,8 +4032,8 @@ window.addEventListener('load', () => {
 
       return;
     } else if (rtv.tool === 'circle') {
-      const new_circle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
-      rtv.objs.push(new_circle);
+      const newCircle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
+      rtv.objs.push(newCircle);
     } else if (rtv.tool === 'network') {
       const n = new Network(rtv.mouse.grid);
       rtv.objs.push(n);
@@ -4077,26 +4077,26 @@ window.addEventListener('load', () => {
         document.getElementById('selected_objects_text').value = string;
       }
 
-      save_state();
+      saveState();
       return false;
     }
 
-    save_state();
+    saveState();
   }));
 
-  save_state();
+  saveState();
 
   rtv.millis = Date.now();
-  let targ_millis = rtv.millis + 1; // set below
+  let targMillis = rtv.millis + 1; // set below
 
   function animate() {
     rtv.millis = Date.now();
-    if (rtv.millis < targ_millis) {
-      setTimeout(animate, targ_millis - rtv.millis);
+    if (rtv.millis < targMillis) {
+      setTimeout(animate, targMillis - rtv.millis);
       return;
     }
 
-    targ_millis = rtv.millis + 1000 / rtv.fps;
+    targMillis = rtv.millis + 1000 / rtv.fps;
 
     if (rtv.presenting) {
       rtv.fps = 60;
@@ -4124,7 +4124,7 @@ window.addEventListener('load', () => {
 
     rtv.cam.update_props();
 
-    draw_axes(rtv.ctx);
+    drawAxes(rtv.ctx);
 
     rtv.ctx.font = FONT.ANIM;
 
@@ -4171,7 +4171,7 @@ window.addEventListener('load', () => {
 
     rtv.pen.render();
 
-    draw_cursor();
+    drawCursor();
 
     if (rtv.view_frame) {
       rtv.ctx.save();
