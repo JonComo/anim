@@ -637,13 +637,13 @@ math.import({
   },
   draw(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
     const N = points.size()[0];
-    const pointsL = rtv.cam.graph_to_screen_mat(points);
+    const graphed = rtv.cam.graph_to_screen_mat(points);
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     let p; let lastp;
     for (let i = 0; i < N; i++) {
-      p = pointsL[i];
+      p = graphed[i];
       if (i === 0) {
         rtv.ctx.moveTo(p[0], p[1]);
       } else {
