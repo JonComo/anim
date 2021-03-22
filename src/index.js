@@ -2369,15 +2369,16 @@ math.import({
 
     let i = 1;
     let c;
+    let middle = 0;
     do {
       c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
 
       // Check if 'n' is divisible by 'i'
       if (c % 1 === 0) { // Faster than 'Number.isInteger(c)'
-        const middle = factors.length / 2;
         insert(i, middle, factors);
         if (i !== c) { // Check that 'n' is not a perfect square
-          insert(c, middle + 1, factors); // Insert 'c' to the right of 'i'
+          middle++; // Shift 'middle' one position to the right
+          insert(c, middle, factors); // Insert 'c' to the right of 'i'
         }
       }
 
