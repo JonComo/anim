@@ -2393,13 +2393,14 @@ math.import({
     let i = 2; // Initialize 'i' at smallest prime number
     let last; // Last prime factor
     while (dividend > 1) { // Loop until all factors are extracted
-      if (dividend % i === 0) {
+      const quotient = dividend / i;
+      if (quotient % 1 === 0) {
         // Make sure factor is not already registered when 'repeat' is false
         if (repeat || i !== last) {
           primes.push(i);
         }
         last = i; // Register last prime factor
-        dividend /= i;
+        dividend = quotient;
       } else { // 'f' is not a prime factor of 'dividend' (anymore)
         i++;
       }
