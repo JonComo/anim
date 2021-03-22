@@ -2343,41 +2343,48 @@ math.import({
     rtv.ctx.stroke();
   },
   factors(n) { // Returns positive factors of positive integer 'n'
-    const factors = []; // Initialize array to contain factors
+    const factors = [];
 
-    for (let i = Math.floor(Math.sqrt(n)); i > 0; i--) { // Loop through smaller factors of closest to farthest factor pairs
-      const c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+    // Inserts element 'l' at index 'i' in array 'a'
+    const insert = (l, i, a) => a.splice(i, 0, l);
 
-      if (Number.isInteger(c)) { // Check if 'n' is divisible by 'i'
-        factors.unshift(i); // Insert 'i' at start of 'factors'
+    let i = 1;
+    let c;
+    let middle = 0;
+    do {
+      c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+
+      // Check if 'n' is divisible by 'i'
+      if (c % 1 === 0) { // Faster than 'Number.isInteger(c)'
+        insert(i, middle, factors);
         if (i !== c) { // Check that 'n' is not a perfect square
-          factors.push(c); // Append 'c' to the end of 'factors'
+          middle++; // Shift 'middle' one position to the right
+          insert(c, middle, factors); // Insert 'c' to the right of 'i'
         }
       }
-    }
 
-    return math.matrix(factors); // Create and return matrix from 'factors'
+      i++;
+    } while (i < c);
+
+    return math.matrix(factors);
   },
-  primeFactors(n) { // Returns prime factors of positive integer 'n'
-    let dividend = n; // Do not assign to parameter 'n'
-    const primes = []; // Initialize array to contain prime factors
-
-    // Checks if 'dividend' is divisible by 'f'
-    const isValid = (f) => dividend % f === 0;
-
-    // Checks if 'f' was previously registered as a prime factor
-    const isUsed = (f) => primes[primes.length - 1] === f;
-
-    // Checks if 'f' is a prime number
-    const isPrime = (f) => primes.every((p) => f % p !== 0);
+  primeFactors(n, repeat = false) { // Returns prime factors of positive integer 'n'
+    let dividend = n;
+    const primes = [];
 
     let i = 2; // Initialize 'i' at smallest prime number
-    while (dividend > 1) { // Loop until all factors are extracted (AKA until 'dividend' is equal to 1)
-      if (isValid(i) && (isUsed(i) || isPrime(i))) {
-        primes.push(i); // Append 'i' to the end of 'primes'
-        dividend /= i; // Divide 'dividend' by 'i' and assign for next iteration
+    let last; // Last prime factor
+    while (dividend > 1) { // Loop until all factors are extracted
+      const quotient = dividend / i;
+      if (quotient % 1 === 0) {
+        // Make sure factor is not already registered when 'repeat' is false
+        if (repeat || i !== last) {
+          primes.push(i);
+        }
+        last = i; // Register last prime factor
+        dividend = quotient;
       } else { // 'f' is not a prime factor of 'dividend' (anymore)
-        i++; // Increment 'i' by 1
+        i++;
       }
     }
 
