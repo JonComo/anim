@@ -2372,7 +2372,7 @@ math.import({
       }
     }
 
-    return math.matrix(primes); // Create and return matrix from 'primes'
+    return math.matrix(primes);
   },
   laplace(f, _ti, _tf, _dt) {
     let ti = 0;
