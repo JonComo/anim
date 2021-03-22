@@ -604,17 +604,13 @@ math.import({
       return;
     }
 
-    let colorL;
-    if (color) {
-      colorL = color._data.map(constrain);
-    }
-
     const cam_data = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     if (color) {
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(colorL, 255));
+      const constrained = color.map(constrain);
+      rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
     }
     rtv.ctx.arc(cam_data[0], cam_data[1], psize, 0, PI2);
     rtv.ctx.fill();
