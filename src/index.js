@@ -2364,16 +2364,25 @@ math.import({
   factors(n) { // Returns positive factors of positive integer 'n'
     const factors = [];
 
-    for (let i = Math.floor(Math.sqrt(n)); i > 0; i--) { // Loop through smaller factors of closest to farthest factor pairs
-      const c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
+    // Inserts element 'l' at index 'i' in array 'a'
+    const insert = (l, i, a) => a.splice(i, 0, l);
+
+    let i = 1;
+    let c;
+    do {
+      c = n / i; // Corresponding factor (or fraction, if 'i' isn't a factor of 'n') to 'i'
 
       if (Number.isInteger(c)) { // Check if 'n' is divisible by 'i'
-        factors.unshift(i);
+        const middle = factors.length / 2;
+        insert(i, middle, factors);
         if (i !== c) { // Check that 'n' is not a perfect square
-          factors.push(c);
+          insert(c, middle + 1, factors); // Insert 'c' to the right of 'i'
         }
       }
-    }
+
+      i++;
+      c--; // Decrease 'c' to prevent 'n' from being mistaken as a perfect square
+    } while (i <= c);
 
     return math.matrix(factors);
   },
