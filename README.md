@@ -28,9 +28,9 @@ First things first, you must download `anim`'s code. Here are some options:
 
   If you're going to submit code changes to this repository, then you should create a fork of it. To do so, navigate to this repository's URL (https://github.com/JonComo/anim) and press the <kbd>Fork</kbd> button in the top-right corner of the GitHub UI. Then, clone it using `git clone https://github.com/<your username here>/anim` or whatever software you please!
 
-  - Fork with GitHub CLI
+  - Fork with the GitHub CLI
 
-    To fork this repo and then clone the fork with the [GitHub CLI](https://cli.github.com/), run `gh repo fork --clone JonComo/`.
+    To fork this repo and then clone the fork with the [GitHub CLI](https://cli.github.com/), run `gh repo fork --clone JonComo/anim`.
 
 - Download https://github.com/JonComo/anim/archive/master.zip and unzip it.
 
