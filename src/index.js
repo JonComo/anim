@@ -111,7 +111,14 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
   rtv.ctx.stroke();
 }
 
-function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax, units shows markers every 1 increment in t
+/**
+ * graphs x=f(t) y=g(t) z=h(t) from tmin to tmax, units shows markers every 1 increment in t
+ * @param {*} r
+ * @param {*} tmin
+ * @param {*} tmax
+ * @param {*} units
+ */
+function para(r, tmin, tmax, units) {
   const N = 300;
   let points = cached([N + 1, 3]);
   const pd = points._data;
