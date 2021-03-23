@@ -626,6 +626,35 @@ function drawVect(_x, _y, _z, x, y, z) {
   rtv.ctx.stroke();
 }
 
+function drawPath(points, canvas = rtv.ctx) {
+  if (points.length < 1) return; // Do not continue if no points exist to be drawn
+
+  canvas.beginPath();
+  canvas.moveTo(...points[0]); // Start path at first point
+
+  points
+    .slice(1) // Exclude first point
+    .forEach((p) => canvas.lineTo(...p));
+
+  canvas.stroke();
+}
+
+export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
+  drawPath([
+    [x + fingerLength, y],
+    [x, y],
+    [x, y + height],
+    [x + fingerLength, y + height],
+  ]);
+
+  drawPath([
+    [x + width - fingerLength, y],
+    [x + width, y],
+    [x + width, y + height],
+    [x + width - fingerLength, y + height],
+  ]);
+}
+
 export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
@@ -4189,6 +4218,8 @@ window.addEventListener('load', () => {
     drawAxes(rtv.ctx);
 
     rtv.ctx.font = FONT.ANIM;
+
+    drawBracketsNew(20, 20, 100, 100);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
