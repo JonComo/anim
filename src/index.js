@@ -212,13 +212,6 @@ function rgb1ToHex(a) {
   return rgbToHex(c);
 }
 
-// http://www.javascriptkit.com/javatutors/requestanimationframe.shtml
-window.requestAnimationFrame
-    ??= window.mozRequestAnimationFrame
-    ?? window.webkitRequestAnimationFrame
-    ?? window.msRequestAnimationFrame
-    ?? ((f) => setTimeout(f, 1000 / rtv.fps)); // simulate calling code 60
-
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export function guid() {
   function s4() {
@@ -1441,6 +1434,13 @@ function drawCursor() {
     rtv.ctx.restore();
   }
 }
+
+// http://www.javascriptkit.com/javatutors/requestanimationframe.shtml
+window.requestAnimationFrame
+    ??= window.mozRequestAnimationFrame
+    ?? window.webkitRequestAnimationFrame
+    ?? window.msRequestAnimationFrame
+    ?? ((f) => setTimeout(f, 1000 / rtv.fps)); // simulate calling code 60
 
 math.import({
   logicTable() {
