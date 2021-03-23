@@ -242,6 +242,7 @@ math.import({
       .toLowerCase()
       .replace('^', '&&'));
   },
+  // eslint-disable-next-line max-len
   tautology(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
     const O = [true, false];
 
@@ -262,6 +263,7 @@ math.import({
 
     return true;
   },
+  // eslint-disable-next-line max-len
   contradiction(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always false
     const O = [true, false];
 
@@ -551,6 +553,7 @@ math.import({
   T(m) { // transpose m
     return math.transpose(m);
   },
+  // eslint-disable-next-line max-len
   scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
@@ -620,6 +623,7 @@ math.import({
   graph(fn) { // graphs y=f(x)
     graph(fn, 0, 1, 2);
   },
+  // eslint-disable-next-line max-len
   paral(r, tmin, tmax, units) { // parametric line, graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
     para(r, tmin, tmax, units);
   },
@@ -814,6 +818,7 @@ math.import({
 
     return sigp(x);
   },
+  // eslint-disable-next-line max-len
   field(f, _n, _uv) { // plots a vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
     let n = 10;
     let uv = false;
@@ -846,6 +851,7 @@ math.import({
       }
     }
   },
+  // eslint-disable-next-line max-len
   fielda(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
     let n = 10;
     let uv = false;
@@ -1140,6 +1146,7 @@ math.import({
   int(n) {
     return n | 0;
   },
+  // eslint-disable-next-line max-len
   elefield({ _data: charges }, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
     if (arguments.length === 1) {
       const n = 5;
@@ -1229,6 +1236,7 @@ math.import({
       return [xt, yt, zt];
     }
   },
+  // eslint-disable-next-line max-len
   eleforce({ _data: charges }, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
     const oc = charges[j * 4];
     const xp = charges[j * 4 + 1];
@@ -1398,6 +1406,7 @@ math.import({
 
     rtv.ctx.restore();
   },
+  // eslint-disable-next-line max-len
   magfield(path, current, { _data: atPoint }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
@@ -2204,6 +2213,7 @@ math.import({
       }
     }
   },
+  // eslint-disable-next-line max-len
   eulerMeth(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
     const n = _n > 0 ? _n : 10;
     const h = _h > 0 ? _h : 0.1;
@@ -2234,6 +2244,7 @@ math.import({
     rtv.ctx.stroke();
     return math.matrix([x, y]);
   },
+  // eslint-disable-next-line max-len
   diffEq(a, b, c, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = 0 numerically plotted for _n steps and _dt accuracy
     let n = 1000;
     let dt = 0.001;
@@ -2264,6 +2275,7 @@ math.import({
     }
     rtv.ctx.stroke();
   },
+  // eslint-disable-next-line max-len
   diffEqF(a, b, c, f, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = f(x) numerically plotted for _n steps and _dt accuracy
     let n = 1000;
     let dt = 0.001;
@@ -2294,6 +2306,7 @@ math.import({
     }
     rtv.ctx.stroke();
   },
+  // eslint-disable-next-line max-len
   diffEqTri(a, b, c, d, x0, y0, yp0, ypp0, _n, _dt) { // ay''' + by'' + cy' + dy = 0 numerically plotted for _n steps and _dt accuracy
     let n = 1000;
     let dt = 0.001;
