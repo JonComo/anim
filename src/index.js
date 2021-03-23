@@ -111,7 +111,14 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
   rtv.ctx.stroke();
 }
 
-function para(r, tmin, tmax, units) { // graphs x=f(t) y=g(t) z=h(t) from tmin to tmax, units shows markers every 1 increment in t
+/**
+ * graphs x=f(t) y=g(t) z=h(t) from tmin to tmax, units shows markers every 1 increment in t
+ * @param {*} r
+ * @param {*} tmin
+ * @param {*} tmax
+ * @param {*} units
+ */
+function para(r, tmin, tmax, units) {
   const N = 300;
   let points = cached([N + 1, 3]);
   const pd = points._data;
@@ -242,6 +249,7 @@ math.import({
       .toLowerCase()
       .replace('^', '&&'));
   },
+  // eslint-disable-next-line max-len
   tautology(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always true
     const O = [true, false];
 
@@ -262,6 +270,7 @@ math.import({
 
     return true;
   },
+  // eslint-disable-next-line max-len
   contradiction(statement) { // LOGIC: "P&&Q||false" tries all combinations of true and false for p and q, returns true if f is always false
     const O = [true, false];
 
@@ -551,6 +560,7 @@ math.import({
   T(m) { // transpose m
     return math.transpose(m);
   },
+  // eslint-disable-next-line max-len
   scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
@@ -620,6 +630,7 @@ math.import({
   graph(fn) { // graphs y=f(x)
     graph(fn, 0, 1, 2);
   },
+  // eslint-disable-next-line max-len
   paral(r, tmin, tmax, units) { // parametric line, graphs r(t)=[f(t), g(t), h(t)] from t=tmin to tmax
     para(r, tmin, tmax, units);
   },
@@ -814,6 +825,7 @@ math.import({
 
     return sigp(x);
   },
+  // eslint-disable-next-line max-len
   field(f, _n, _uv) { // plots a vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
     let n = 10;
     let uv = false;
@@ -846,6 +858,7 @@ math.import({
       }
     }
   },
+  // eslint-disable-next-line max-len
   fielda(f, _n, _uv) { // plots an animated vector field f(x,y,z) using a grid, _n # vectors, _uv force unit length
     let n = 10;
     let uv = false;
@@ -1140,6 +1153,7 @@ math.import({
   int(n) {
     return n | 0;
   },
+  // eslint-disable-next-line max-len
   elefield({ _data: charges }, location) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.], provide location for field there
     if (arguments.length === 1) {
       const n = 5;
@@ -1188,7 +1202,11 @@ math.import({
 
               if (dead === false) {
                 p = rtv.cam.graph_to_screen(xp, yp, zp);
-                rtv.ctx.strokeStyle = rgbToHex([math.round((pl - j) / pl * 255), 0, math.round(j / pl * 255)]);
+                rtv.ctx.strokeStyle = rgbToHex([
+                  math.round((pl - j) / pl * 255),
+                  0,
+                  math.round(j / pl * 255),
+                ]);
                 rtv.ctx.lineTo(p[0], p[1]);
                 rtv.ctx.stroke();
               }
@@ -1229,6 +1247,7 @@ math.import({
       return [xt, yt, zt];
     }
   },
+  // eslint-disable-next-line max-len
   eleforce({ _data: charges }, j) { // charges = [q1, x1, y1, z1, q2, x2, y2, z2, etc.] force on jth charge
     const oc = charges[j * 4];
     const xp = charges[j * 4 + 1];
@@ -1398,6 +1417,7 @@ math.import({
 
     rtv.ctx.restore();
   },
+  // eslint-disable-next-line max-len
   magfield(path, current, { _data: atPoint }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
@@ -2204,6 +2224,7 @@ math.import({
       }
     }
   },
+  // eslint-disable-next-line max-len
   eulerMeth(f, x0, y0, _n, _h) { // approximate solution to diff eq from initial condition y(x0)=y0, n steps
     const n = _n > 0 ? _n : 10;
     const h = _h > 0 ? _h : 0.1;
@@ -2234,6 +2255,7 @@ math.import({
     rtv.ctx.stroke();
     return math.matrix([x, y]);
   },
+  // eslint-disable-next-line max-len
   diffEq(a, b, c, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = 0 numerically plotted for _n steps and _dt accuracy
     let n = 1000;
     let dt = 0.001;
@@ -2264,6 +2286,7 @@ math.import({
     }
     rtv.ctx.stroke();
   },
+  // eslint-disable-next-line max-len
   diffEqF(a, b, c, f, x0, y0, yp0, _n, _dt) { // ay'' + by' + cy = f(x) numerically plotted for _n steps and _dt accuracy
     let n = 1000;
     let dt = 0.001;
@@ -2294,6 +2317,7 @@ math.import({
     }
     rtv.ctx.stroke();
   },
+  // eslint-disable-next-line max-len
   diffEqTri(a, b, c, d, x0, y0, yp0, ypp0, _n, _dt) { // ay''' + by'' + cy' + dy = 0 numerically plotted for _n steps and _dt accuracy
     let n = 1000;
     let dt = 0.001;
@@ -2500,14 +2524,36 @@ function drawR(o, p, d) {
         if (d) {
           let opp = { x: 0, y: 0 };
           if (center) {
-            s1 = drawR(args[0], { x: p.x, y: p.y + size.h / 2 - s1.h / 2 }, d);
-            opp = { x: p.x + s1.w + pad2, y: p.y + size.h / 2 - CHAR.SIZE };
-            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h / 2 - s2.h / 2 }, d);
+            s1 = drawR(args[0], {
+              x: p.x,
+              y: p.y + size.h / 2 - s1.h / 2,
+            }, d);
+
+            opp = {
+              x: p.x + s1.w + pad2,
+              y: p.y + size.h / 2 - CHAR.SIZE,
+            };
+
+            s2 = drawR(args[1], {
+              x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2,
+              y: p.y + size.h / 2 - s2.h / 2,
+            }, d);
           } else {
             // bottom align
-            s1 = drawR(args[0], { x: p.x, y: p.y + size.h - s1.h }, d);
-            opp = { x: p.x + s1.w + pad2, y: p.y + size.h - CHAR.SIZE * 2 };
-            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
+            s1 = drawR(args[0], {
+              x: p.x,
+              y: p.y + size.h - s1.h,
+            }, d);
+
+            opp = {
+              x: p.x + s1.w + pad2,
+              y: p.y + size.h - CHAR.SIZE * 2,
+            };
+
+            s2 = drawR(args[1], {
+              x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2,
+              y: p.y + size.h - s2.h,
+            }, d);
           }
 
           if (text === '*') {
@@ -2561,8 +2607,15 @@ function drawR(o, p, d) {
         size.h = Math.max(s1.h, s2.h) * 2 + CHAR.PAD * 4;
 
         if (d) {
-          drawR(a, { x: p.x + size.w / 2 - s1.w / 2, y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2 }, d);
-          drawR(b, { x: p.x + size.w / 2 - s2.w / 2, y: p.y + size.h / 2 + CHAR.PAD * 2 }, d);
+          drawR(a, {
+            x: p.x + size.w / 2 - s1.w / 2,
+            y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2,
+          }, d);
+
+          drawR(b, {
+            x: p.x + size.w / 2 - s2.w / 2,
+            y: p.y + size.h / 2 + CHAR.PAD * 2,
+          }, d);
 
           rtv.ctx.beginPath();
           rtv.ctx.moveTo(p.x, p.y + size.h / 2);
@@ -2789,9 +2842,15 @@ function drawVect(_x, _y, _z, x, y, z) {
 
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(b.x, b.y);
-  rtv.ctx.lineTo(b.x + Math.cos(theta - Math.PI * 3 / 4) * 15, b.y + Math.sin(theta - Math.PI * 3 / 4) * 15);
+  rtv.ctx.lineTo(
+    b.x + Math.cos(theta - Math.PI * 3 / 4) * 15,
+    b.y + Math.sin(theta - Math.PI * 3 / 4) * 15,
+  );
   rtv.ctx.moveTo(b.x, b.y);
-  rtv.ctx.lineTo(b.x + Math.cos(theta + Math.PI * 3 / 4) * 15, b.y + Math.sin(theta + Math.PI * 3 / 4) * 15);
+  rtv.ctx.lineTo(
+    b.x + Math.cos(theta + Math.PI * 3 / 4) * 15,
+    b.y + Math.sin(theta + Math.PI * 3 / 4) * 15,
+  );
   rtv.ctx.stroke();
 }
 
@@ -2925,7 +2984,12 @@ export function drawMatrix(matrix, colorIJ) {
       if (colorIJ) {
         colorIJ(i, j);
       }
-      rtv.ctx.fillText(matrix[i][j], j * (MAT_NUM_WIDTH + pad) + 124 + shift, i * GRID_SIZE + 20, maxWidth);
+      rtv.ctx.fillText(
+        matrix[i][j],
+        j * (MAT_NUM_WIDTH + pad) + 124 + shift,
+        i * GRID_SIZE + 20,
+        maxWidth,
+      );
     }
   }
 
@@ -4151,7 +4215,12 @@ window.addEventListener('load', () => {
     if (rtv.selecting) {
       // draw a rect
       rtv.ctx.strokeStyle = DARK;
-      rtv.ctx.strokeRect(rtv.mouse.start.x, rtv.mouse.start.y, rtv.mouse.pos.x - rtv.mouse.start.x, rtv.mouse.pos.y - rtv.mouse.start.y);
+      rtv.ctx.strokeRect(
+        rtv.mouse.start.x,
+        rtv.mouse.start.y,
+        rtv.mouse.pos.x - rtv.mouse.start.x,
+        rtv.mouse.pos.y - rtv.mouse.start.y,
+      );
     }
 
     rtv.ctx.font = FONT.MENU;
