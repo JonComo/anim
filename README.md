@@ -20,7 +20,7 @@ First things first, you must download `anim`'s code. Here are some options:
 
   If you're planning to play around with `anim`'s code, but aren't really interested in contributing, go with this option. First, clone this repository using the command `git clone https://github.com/JonComo/anim`. Using this option will also let you update your local version of this repository whenever you feel like it. Just run `git pull` in the repository directory!
 
-  - Use GitHub CLI!
+  - Use the GitHub CLI!
 
     If you have the [GitHub CLI](https://cli.github.com/) installed, then you can just clone this repository by executing `gh repo clone JonComo/anim`.
 
