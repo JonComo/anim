@@ -347,10 +347,7 @@ export default function Text(text, pos) {
         }
       }
 
-      this.properties[rtv.frame] = transformProps(
-        key,
-        this.properties[rtv.frame],
-      );
+      this.properties[rtv.frame] = transformProps(evt, this.properties[rtv.frame]);
 
       return true;
     }
