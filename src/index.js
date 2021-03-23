@@ -205,6 +205,10 @@ function reportError(e) {
 // undo
 let states = [];
 
+export function rgbToHex(c) {
+  return `#${((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1)}`;
+}
+
 function rgb1ToHex(a) {
   const c = [Math.round(a[0] * 255),
     Math.round(a[1] * 255),
@@ -229,6 +233,19 @@ export function prettyRound(num) {
 
 function prettyRoundOne(num) {
   return (Math.round(num * 10) / 10).toFixed(1);
+}
+
+export function drawSimple(text) {
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '*') {
+      rtv.ctx.beginPath();
+      rtv.ctx.arc(i * CHAR.SIZE + CHAR.SIZE / 2, 0, 3, 0, PI2);
+      rtv.ctx.fill();
+    } else {
+      rtv.ctx.fillText(text[i], i * CHAR.SIZE, 0);
+    }
+  }
+  return text.length * CHAR.SIZE;
 }
 
 function drawR(o, p, d) {
@@ -625,19 +642,6 @@ export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.stroke();
 }
 
-export function drawSimple(text) {
-  for (let i = 0; i < text.length; i++) {
-    if (text[i] === '*') {
-      rtv.ctx.beginPath();
-      rtv.ctx.arc(i * CHAR.SIZE + CHAR.SIZE / 2, 0, 3, 0, PI2);
-      rtv.ctx.fill();
-    } else {
-      rtv.ctx.fillText(text[i], i * CHAR.SIZE, 0);
-    }
-  }
-  return text.length * CHAR.SIZE;
-}
-
 export function drawNetwork(layers, pos) {
   const pad = 120;
   const radius = 20;
@@ -883,10 +887,6 @@ function changeFrames() {
   }
 }
 
-export function rgbToHex(c) {
-  return `#${((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1)}`;
-}
-
 export function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? [
@@ -914,6 +914,32 @@ export function transformProps(key, props, step = 0.2) {
   }
 
   return propsL;
+}
+
+export function constrain(v) {
+  return Math.min(1, Math.max(0, v));
+}
+
+function interpolateColors(ac, bc, interp) {
+  let same = true;
+  const N = ac.length;
+  for (let i = 0; i < N; i++) {
+    if (ac[i] !== bc[i]) {
+      same = false;
+    }
+  }
+
+  if (same) {
+    return ac;
+  }
+
+  const ic = new Array(N);
+
+  for (let i = 0; i < N; i++) {
+    ic[i] = (1 - interp) * ac[i] + interp * bc[i];
+  }
+
+  return ic;
 }
 
 export function interpolate(a, b) {
@@ -978,48 +1004,6 @@ export function interpolate(a, b) {
   return interp;
 }
 
-function interpolateColors(ac, bc, interp) {
-  let same = true;
-  const N = ac.length;
-  for (let i = 0; i < N; i++) {
-    if (ac[i] !== bc[i]) {
-      same = false;
-    }
-  }
-
-  if (same) {
-    return ac;
-  }
-
-  const ic = new Array(N);
-
-  for (let i = 0; i < N; i++) {
-    ic[i] = (1 - interp) * ac[i] + interp * bc[i];
-  }
-
-  return ic;
-}
-
-export function saveState() {
-  // save state
-  const str = stateToString();
-  if (states.length > 0) {
-    const last = states[states.length - 1];
-    if (str !== last) {
-      states.push(str);
-    }
-  } else {
-    states = [str];
-  }
-}
-
-function undo() {
-  if (states.length > 1) {
-    states = states.splice(0, states.length - 1);
-    strToState(states[states.length - 1]);
-  }
-}
-
 export function guidIndex(objs, obj) {
   const N = objs.length;
   for (let i = 0; i < N; i++) {
@@ -1030,6 +1014,36 @@ export function guidIndex(objs, obj) {
   }
 
   return -1;
+}
+
+function textArrayToObjs(arr, keepAnimation) {
+  const newObjs = [];
+  for (let i = 0; i < arr.length; i++) {
+    const o = arr[i];
+    let newObj = null;
+
+    if (o.type === 'Shape') {
+      newObj = new Shape();
+    } else if (o.type === 'Circle') {
+      newObj = new Circle();
+    } else if (o.type === 'Text') {
+      newObj = new Text();
+    }
+
+    if (keepAnimation) {
+      newObj.properties = o.properties;
+    } else {
+      newObj.properties = {};
+      newObj.properties[rtv.frame] = o.properties[1];
+      newObj.select();
+    }
+
+    newObj.guid = o.guid;
+
+    newObjs.push(newObj);
+  }
+
+  return newObjs;
 }
 
 function stateToString() {
@@ -1065,6 +1079,26 @@ function strToState(str) {
   rtv.objs = textArrayToObjs(arr, true);
 }
 
+export function saveState() {
+  // save state
+  const str = stateToString();
+  if (states.length > 0) {
+    const last = states[states.length - 1];
+    if (str !== last) {
+      states.push(str);
+    }
+  } else {
+    states = [str];
+  }
+}
+
+function undo() {
+  if (states.length > 1) {
+    states = states.splice(0, states.length - 1);
+    strToState(states[states.length - 1]);
+  }
+}
+
 function save(objs) {
   const str = stateToString();
   const blob = new Blob([str], { type: 'text/plain;charset=utf-8' });
@@ -1095,36 +1129,6 @@ export function loadLocal() {
   }
 }
 
-function textArrayToObjs(arr, keepAnimation) {
-  const newObjs = [];
-  for (let i = 0; i < arr.length; i++) {
-    const o = arr[i];
-    let newObj = null;
-
-    if (o.type === 'Shape') {
-      newObj = new Shape();
-    } else if (o.type === 'Circle') {
-      newObj = new Circle();
-    } else if (o.type === 'Text') {
-      newObj = new Text();
-    }
-
-    if (keepAnimation) {
-      newObj.properties = o.properties;
-    } else {
-      newObj.properties = {};
-      newObj.properties[rtv.frame] = o.properties[1];
-      newObj.select();
-    }
-
-    newObj.guid = o.guid;
-
-    newObjs.push(newObj);
-  }
-
-  return newObjs;
-}
-
 export function insertFrame() {
   rtv.num_frames += 1;
   for (let f = rtv.num_frames; f >= rtv.frame; f--) {
@@ -1143,6 +1147,11 @@ export function insertFrame() {
     }
   }
   rtv.frames.create_buttons();
+}
+
+export function enterSelect() {
+  rtv.tool = 'select';
+  rtv.new_line = null;
 }
 
 /**
@@ -1182,10 +1191,6 @@ export function present() {
 
 function constrainFrame(f) {
   return Math.max(1, Math.min(rtv.num_frames, f));
-}
-
-export function constrain(v) {
-  return Math.min(1, Math.max(0, v));
 }
 
 export function loopFrame(f) {
@@ -1373,11 +1378,6 @@ export function transitionWithNext(next) {
       }
     });
   });
-}
-
-export function enterSelect() {
-  rtv.tool = 'select';
-  rtv.new_line = null;
 }
 
 function drawCursor() {
