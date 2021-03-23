@@ -30,7 +30,7 @@ First things first, you must download `anim`'s code. Here are some options:
 
   - Fork with the GitHub CLI
 
-    To fork this repo and then clone the fork with the [GitHub CLI](https://cli.github.com/), run `gh repo fork --clone JonComo/`.
+    To fork this repo and then clone the fork with the [GitHub CLI](https://cli.github.com/), run `gh repo fork --clone JonComo/anim`.
 
 - Download https://github.com/JonComo/anim/archive/master.zip and unzip it.
 
