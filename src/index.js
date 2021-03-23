@@ -1202,7 +1202,11 @@ math.import({
 
               if (dead === false) {
                 p = rtv.cam.graph_to_screen(xp, yp, zp);
-                rtv.ctx.strokeStyle = rgbToHex([math.round((pl - j) / pl * 255), 0, math.round(j / pl * 255)]);
+                rtv.ctx.strokeStyle = rgbToHex([
+                  math.round((pl - j) / pl * 255),
+                  0,
+                  math.round(j / pl * 255),
+                ]);
                 rtv.ctx.lineTo(p[0], p[1]);
                 rtv.ctx.stroke();
               }
@@ -2520,14 +2524,36 @@ function drawR(o, p, d) {
         if (d) {
           let opp = { x: 0, y: 0 };
           if (center) {
-            s1 = drawR(args[0], { x: p.x, y: p.y + size.h / 2 - s1.h / 2 }, d);
-            opp = { x: p.x + s1.w + pad2, y: p.y + size.h / 2 - CHAR.SIZE };
-            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h / 2 - s2.h / 2 }, d);
+            s1 = drawR(args[0], {
+              x: p.x,
+              y: p.y + size.h / 2 - s1.h / 2,
+            }, d);
+
+            opp = {
+              x: p.x + s1.w + pad2,
+              y: p.y + size.h / 2 - CHAR.SIZE,
+            };
+
+            s2 = drawR(args[1], {
+              x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2,
+              y: p.y + size.h / 2 - s2.h / 2,
+            }, d);
           } else {
             // bottom align
-            s1 = drawR(args[0], { x: p.x, y: p.y + size.h - s1.h }, d);
-            opp = { x: p.x + s1.w + pad2, y: p.y + size.h - CHAR.SIZE * 2 };
-            s2 = drawR(args[1], { x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2, y: p.y + size.h - s2.h }, d);
+            s1 = drawR(args[0], {
+              x: p.x,
+              y: p.y + size.h - s1.h,
+            }, d);
+
+            opp = {
+              x: p.x + s1.w + pad2,
+              y: p.y + size.h - CHAR.SIZE * 2,
+            };
+
+            s2 = drawR(args[1], {
+              x: p.x + s1.w + pad2 + text.length * CHAR.SIZE + pad2,
+              y: p.y + size.h - s2.h,
+            }, d);
           }
 
           if (text === '*') {
@@ -2581,8 +2607,15 @@ function drawR(o, p, d) {
         size.h = Math.max(s1.h, s2.h) * 2 + CHAR.PAD * 4;
 
         if (d) {
-          drawR(a, { x: p.x + size.w / 2 - s1.w / 2, y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2 }, d);
-          drawR(b, { x: p.x + size.w / 2 - s2.w / 2, y: p.y + size.h / 2 + CHAR.PAD * 2 }, d);
+          drawR(a, {
+            x: p.x + size.w / 2 - s1.w / 2,
+            y: p.y + size.h / 2 - s1.h - CHAR.PAD * 2,
+          }, d);
+
+          drawR(b, {
+            x: p.x + size.w / 2 - s2.w / 2,
+            y: p.y + size.h / 2 + CHAR.PAD * 2,
+          }, d);
 
           rtv.ctx.beginPath();
           rtv.ctx.moveTo(p.x, p.y + size.h / 2);
@@ -2809,9 +2842,15 @@ function drawVect(_x, _y, _z, x, y, z) {
 
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(b.x, b.y);
-  rtv.ctx.lineTo(b.x + Math.cos(theta - Math.PI * 3 / 4) * 15, b.y + Math.sin(theta - Math.PI * 3 / 4) * 15);
+  rtv.ctx.lineTo(
+    b.x + Math.cos(theta - Math.PI * 3 / 4) * 15,
+    b.y + Math.sin(theta - Math.PI * 3 / 4) * 15,
+  );
   rtv.ctx.moveTo(b.x, b.y);
-  rtv.ctx.lineTo(b.x + Math.cos(theta + Math.PI * 3 / 4) * 15, b.y + Math.sin(theta + Math.PI * 3 / 4) * 15);
+  rtv.ctx.lineTo(
+    b.x + Math.cos(theta + Math.PI * 3 / 4) * 15,
+    b.y + Math.sin(theta + Math.PI * 3 / 4) * 15,
+  );
   rtv.ctx.stroke();
 }
 
@@ -2945,7 +2984,12 @@ export function drawMatrix(matrix, colorIJ) {
       if (colorIJ) {
         colorIJ(i, j);
       }
-      rtv.ctx.fillText(matrix[i][j], j * (MAT_NUM_WIDTH + pad) + 124 + shift, i * GRID_SIZE + 20, maxWidth);
+      rtv.ctx.fillText(
+        matrix[i][j],
+        j * (MAT_NUM_WIDTH + pad) + 124 + shift,
+        i * GRID_SIZE + 20,
+        maxWidth,
+      );
     }
   }
 
@@ -4171,7 +4215,12 @@ window.addEventListener('load', () => {
     if (rtv.selecting) {
       // draw a rect
       rtv.ctx.strokeStyle = DARK;
-      rtv.ctx.strokeRect(rtv.mouse.start.x, rtv.mouse.start.y, rtv.mouse.pos.x - rtv.mouse.start.x, rtv.mouse.pos.y - rtv.mouse.start.y);
+      rtv.ctx.strokeRect(
+        rtv.mouse.start.x,
+        rtv.mouse.start.y,
+        rtv.mouse.pos.x - rtv.mouse.start.x,
+        rtv.mouse.pos.y - rtv.mouse.start.y,
+      );
     }
 
     rtv.ctx.font = FONT.MENU;
