@@ -898,17 +898,17 @@ export function hexToRgb(hex) {
 
 export function transformProps(e, props, step = 0.2) {
   const transformations = {
-    l: (p) => ({ ...p, w: p.w + 1 }),
-    j: (p) => ({ ...p, w: p.w - 1 }),
-    i: (p) => ({ ...p, h: p.h + 1 }),
-    k: (p) => ({ ...p, h: p.h - 1 }),
-    u: (p) => ({ ...p, r: p.r - Math.PI / 12 }),
-    o: (p) => ({ ...p, r: p.r + Math.PI / 12 }),
+    l: (p) => ({ w: p.w + 1 }),
+    j: (p) => ({ w: p.w - 1 }),
+    i: (p) => ({ h: p.h + 1 }),
+    k: (p) => ({ h: p.h - 1 }),
+    u: (p) => ({ r: p.r - Math.PI / 12 }),
+    o: (p) => ({ r: p.r + Math.PI / 12 }),
   };
 
   if (e.key in transformations) {
     e.preventDefault();
-    return transformations[e.key](props);
+    return { ...props, ...transformations[e.key](props) };
   }
 
   return props;
