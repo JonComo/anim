@@ -1,4 +1,4 @@
-import { drawPath } from '../index';
+import { drawPath, prettyRound, prettyRoundOne } from '../index';
 import { rtv } from '../resources';
 
 export function drawBrackets(x, y, width, height, fingerLength = 8) {
@@ -15,6 +15,12 @@ export function drawBrackets(x, y, width, height, fingerLength = 8) {
     [x + width, y + height],
     [x + width - fingerLength, y + height],
   ]);
+}
+
+export function roundToString(n) {
+  if (n % 1 === 0) return n.toString();
+  if (rtv.keys.ctrl) return prettyRound(n);
+  return prettyRoundOne(n);
 }
 
 export function getTextWidth(text, ctx = rtv.ctx) {
@@ -80,7 +86,7 @@ export default class MatrixOutput {
         }, x - this.padding);
       }
 
-      const str = row.toString();
+      const str = roundToString(row);
 
       const rowWidth = getTextWidth(str);
       MatrixOutput.updateLayout(this.columnWidths, 0, rowWidth);
@@ -108,7 +114,7 @@ export default class MatrixOutput {
         ({ width, height } = childMatrix);
         draw = childMatrix.draw.bind(childMatrix);
       } else {
-        const str = element.toString();
+        const str = roundToString(element);
 
         width = getTextWidth(str);
         height = getFontHeight();

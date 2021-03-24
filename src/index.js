@@ -232,7 +232,7 @@ export function prettyRound(num) {
   return (Math.round(num * 100) / 100).toFixed(2);
 }
 
-function prettyRoundOne(num) {
+export function prettyRoundOne(num) {
   return (Math.round(num * 10) / 10).toFixed(1);
 }
 
@@ -4216,7 +4216,7 @@ window.addEventListener('load', () => {
           [400, 50, 6], // I know that it's not possible, but `MatrixOutput` might be used to show arrays
         ],
         [
-          [1, 20, 3],
+          [1, 20.3632, 3],
           [400, 50, 6],
         ],
       ],
