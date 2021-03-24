@@ -141,7 +141,7 @@ export default class MatrixOutput {
    * @param {number} x Top-left `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
    */
-  draw(x, y) {
+  draw(x, y, width = this.width) {
     this.ctx.save();
 
     this.ctx.textAlign = 'right';
@@ -149,7 +149,7 @@ export default class MatrixOutput {
 
     this.drawInterior(x, y);
 
-    drawBrackets(x, y, this.width, this.height);
+    drawBrackets(x, y, width, this.height);
 
     this.ctx.restore();
   }

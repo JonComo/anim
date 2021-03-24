@@ -4208,11 +4208,12 @@ window.addEventListener('load', () => {
       [
         [
           [1, 20, 3],
-          [400, 50, 6],
+          [400, 50, 60000],
         ],
         [
           [1, 20, 3],
           [400, 50, 6],
+          [400, 50, 6], // I know that it's not possible, but `MatrixOutput` might be used to show arrays
         ],
         [
           [1, 20, 3],
