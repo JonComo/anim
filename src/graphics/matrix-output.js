@@ -74,7 +74,7 @@ export default class MatrixOutput {
         const elementDrawFunctions = this.generateElementDrawFunctions(row, rowIndex);
 
         return (x, y) => this.columnWidths.reduce((pointerX, cw, columnIndex) => {
-          elementDrawFunctions[columnIndex](pointerX, y, cw);
+          elementDrawFunctions[columnIndex](pointerX, y, cw, this.rowHeights[rowIndex]);
 
           return pointerX + cw + this.padding;
         }, x + this.padding);
@@ -141,7 +141,7 @@ export default class MatrixOutput {
    * @param {number} x Top-left `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
    */
-  draw(x, y, width = this.width) {
+  draw(x, y, width = this.width, height = this.height) {
     this.ctx.save();
 
     this.ctx.textAlign = 'right';
@@ -149,7 +149,7 @@ export default class MatrixOutput {
 
     this.drawInterior(x, y);
 
-    drawBrackets(x, y, width, this.height);
+    drawBrackets(x, y, width, height);
 
     this.ctx.restore();
   }
