@@ -21,6 +21,10 @@ export function getTextWidth(text) {
   return rtv.ctx.measureText(text).width;
 }
 
+export function getFontHeight() {
+  return parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+}
+
 export default class MatrixOutput {
   constructor(matrix, padding = 16) {
     this.matrix = matrix;
@@ -60,7 +64,7 @@ export default class MatrixOutput {
       const rowWidth = getTextWidth(str);
       MatrixOutput.updateLayout(this.columnWidths, 0, rowWidth);
 
-      this.rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+      this.rowHeights[rowIndex] = getFontHeight();
 
       return (x, y) => rtv.ctx.fillText(str, x + this.padding + this.columnWidths[0], y);
     });
@@ -80,7 +84,7 @@ export default class MatrixOutput {
         const str = element.toString();
 
         width = getTextWidth(str);
-        height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+        height = getFontHeight();
 
         draw = (x, y) => rtv.ctx.fillText(str, x + this.columnWidths[columnIndex], y);
       }
