@@ -19,10 +19,6 @@ export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
 
 export default class MatrixOutput {
   constructor(matrix, padding = 16) {
-    this.generateMatrix(matrix, padding);
-  }
-
-  generateMatrix(matrix, padding = 16) {
     const columnWidths = [];
     const rowHeights = [];
 
