@@ -125,7 +125,7 @@ export default class MatrixOutput {
 
   /**
    * Draws matrix contents onto canvas.
-   * @param {number} x Top-left `x` coordinate.
+   * @param {number} x Top-right `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
    * @param {number} width The width of the matrix.
    */
@@ -139,7 +139,7 @@ export default class MatrixOutput {
 
   /**
    * Draws matrix onto canvas.
-   * @param {number} x Top-left `x` coordinate.
+   * @param {number} x Top-right `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
    * @param {number} width Optional onscreen matrix width.
    * @param {number} height Optional onscreen matrix height.
