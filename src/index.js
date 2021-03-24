@@ -4262,9 +4262,9 @@ window.addEventListener('load', () => {
           [400, 50, 6],
         ],
       ],
-    ]).draw(900, 300);
+    ]).drawLeft(300, 300);
 
-    new MatrixOutput([30, 2000, 1]).draw(300, 1200);
+    new MatrixOutput([30, 2000, 1]).drawLeft(300, 1200);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
