@@ -23,36 +23,14 @@ export function getTextWidth(text) {
 
 export default class MatrixOutput {
   constructor(matrix, padding = 16) {
-    const columnWidths = [];
-    const rowHeights = [];
+    this.columnWidths = [];
+    this.rowHeights = [];
 
     const drawRows = matrix.map((row, rowIndex) => {
       if (row instanceof Array) {
-        const drawElements = row.map((element, columnIndex) => {
-          let width;
-          let height;
-          let draw;
+        const drawElements = this.generateElementDrawFunctions(row, rowIndex);
 
-          if (element instanceof Array) {
-            const childMatrix = new MatrixOutput(element);
-            ({ width, height } = childMatrix);
-            draw = childMatrix.draw.bind(childMatrix);
-          } else {
-            const str = element.toString();
-
-            width = getTextWidth(str);
-            height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
-
-            draw = (x, y) => rtv.ctx.fillText(str, x + columnWidths[columnIndex], y);
-          }
-
-          MatrixOutput.updateLayout(columnWidths, columnIndex, width);
-          MatrixOutput.updateLayout(rowHeights, rowIndex, height);
-
-          return draw;
-        });
-
-        return (x, y) => columnWidths.reduce((pointerX, cw, columnIndex) => {
+        return (x, y) => this.columnWidths.reduce((pointerX, cw, columnIndex) => {
           drawElements[columnIndex](pointerX, y, cw);
 
           return pointerX + cw + padding;
@@ -62,14 +40,14 @@ export default class MatrixOutput {
       const str = row.toString();
 
       const rowWidth = getTextWidth(str);
-      MatrixOutput.updateLayout(columnWidths, 0, rowWidth);
+      MatrixOutput.updateLayout(this.columnWidths, 0, rowWidth);
 
-      rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+      this.rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
-      return (x, y) => rtv.ctx.fillText(str, x + padding + columnWidths[0], y);
+      return (x, y) => rtv.ctx.fillText(str, x + padding + this.columnWidths[0], y);
     });
 
-    const drawMatrix = (x, y) => rowHeights.reduce((pointerY, rh, rowIndex) => {
+    const drawMatrix = (x, y) => this.rowHeights.reduce((pointerY, rh, rowIndex) => {
       drawRows[rowIndex](x, pointerY);
 
       return pointerY + rh + padding;
@@ -77,8 +55,8 @@ export default class MatrixOutput {
 
     this.drawMatrix = drawMatrix;
 
-    this.width = columnWidths.reduce((a, b) => a + b + padding, padding);
-    this.height = rowHeights.reduce((a, b) => a + b + padding, padding);
+    this.width = this.columnWidths.reduce((a, b) => a + b + padding, padding);
+    this.height = this.rowHeights.reduce((a, b) => a + b + padding, padding);
   }
 
   static updateLayout(sizes, index, newVal) {
@@ -87,6 +65,32 @@ export default class MatrixOutput {
     if (oldVal === undefined || oldVal < newVal) {
       sizes[index] = newVal;
     }
+  }
+
+  generateElementDrawFunctions(row, rowIndex) {
+    return row.map((element, columnIndex) => {
+      let width;
+      let height;
+      let draw;
+
+      if (element instanceof Array) {
+        const childMatrix = new MatrixOutput(element);
+        ({ width, height } = childMatrix);
+        draw = childMatrix.draw.bind(childMatrix);
+      } else {
+        const str = element.toString();
+
+        width = getTextWidth(str);
+        height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+
+        draw = (x, y) => rtv.ctx.fillText(str, x + this.columnWidths[columnIndex], y);
+      }
+
+      MatrixOutput.updateLayout(this.columnWidths, columnIndex, width);
+      MatrixOutput.updateLayout(this.rowHeights, rowIndex, height);
+
+      return draw;
+    });
   }
 
   draw(x, y, cw = this.width) {
