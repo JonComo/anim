@@ -688,11 +688,11 @@ function generateMatrix(matrix) {
         return draw;
       });
 
-      return (x, y) => columnWidths.reduce((offsetX, cw, columnIndex) => {
-        drawElements[columnIndex](x + offsetX, y);
+      return (x, y) => columnWidths.reduce((pointerX, cw, columnIndex) => {
+        drawElements[columnIndex](pointerX, y);
 
-        return offsetX + cw;
-      }, 0);
+        return pointerX + cw;
+      }, x);
     }
 
     const str = row.toString();
@@ -707,11 +707,11 @@ function generateMatrix(matrix) {
     return (x, y) => rtv.ctx.fillText(str, x, y);
   });
 
-  const drawMatrix = (x, y) => rowHeights.reduce((offsetY, rh, rowIndex) => {
-    drawRows[rowIndex](x, y + offsetY);
+  const drawMatrix = (x, y) => rowHeights.reduce((pointerY, rh, rowIndex) => {
+    drawRows[rowIndex](x, pointerY);
 
-    return offsetY + rh;
-  }, 0);
+    return pointerY + rh;
+  }, y);
 
   const width = columnWidths.reduce((a, b) => a + b);
   const height = rowHeights.reduce((a, b) => a + b);
