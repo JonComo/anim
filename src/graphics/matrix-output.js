@@ -1,5 +1,5 @@
 import { drawPath } from '../index';
-import { math, rtv } from '../resources';
+import { rtv } from '../resources';
 
 export function drawBrackets(x, y, width, height, fingerLength = 8) {
   drawPath([
@@ -36,7 +36,7 @@ export default class MatrixOutput {
    * @param {number} padding Space in pixels between elements and brackets.
    * @param {CanvasRenderingContext2D} ctx Optionally specify a context instead of `rtv.ctx`.
    */
-  constructor(matrix, padding = 16, ctx = rtv.ctx) {
+  constructor(matrix, padding = 16, orientation = -1, ctx = rtv.ctx) {
     // Store arguments for later use
     this.matrix = matrix;
     this.padding = padding;
@@ -73,11 +73,11 @@ export default class MatrixOutput {
       if (row instanceof Array) {
         const elementDrawFunctions = this.generateElementDrawFunctions(row, rowIndex);
 
-        return (x, y) => this.columnWidths.reduce((pointerX, cw, columnIndex) => {
+        return (x, y) => this.columnWidths.reduceRight((pointerX, cw, columnIndex) => {
           elementDrawFunctions[columnIndex](pointerX, y, cw, this.rowHeights[rowIndex]);
 
-          return pointerX + cw + this.padding;
-        }, x + this.padding);
+          return pointerX - cw - this.padding;
+        }, x - this.padding);
       }
 
       const str = row.toString();
@@ -87,7 +87,7 @@ export default class MatrixOutput {
 
       this.rowHeights[rowIndex] = getFontHeight();
 
-      return (x, y) => this.ctx.fillText(str, x + this.padding, y);
+      return (x, y) => this.ctx.fillText(str, x - this.padding, y);
     });
   }
 
@@ -147,12 +147,12 @@ export default class MatrixOutput {
   draw(x, y, width = this.width, height = this.height) {
     this.ctx.save();
 
-    // this.ctx.textAlign = 'right';
+    this.ctx.textAlign = 'right';
     this.ctx.textBaseline = 'top';
 
     this.drawInterior(x, y);
 
-    drawBrackets(x, y, width, height);
+    drawBrackets(x - width, y, width, height);
 
     this.ctx.restore();
   }

@@ -4262,7 +4262,7 @@ window.addEventListener('load', () => {
           [400, 50, 6],
         ],
       ],
-    ]).draw(300, 300);
+    ]).draw(900, 300);
 
     new MatrixOutput([30, 2000, 1]).draw(300, 1200);
 
