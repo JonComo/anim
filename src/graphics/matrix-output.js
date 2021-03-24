@@ -42,7 +42,7 @@ export default class MatrixOutput {
    * @param {number} padding Space in pixels between elements and brackets.
    * @param {CanvasRenderingContext2D} ctx Optionally specify a context instead of `rtv.ctx`.
    */
-  constructor(matrix, padding = 16, orientation = -1, ctx = rtv.ctx) {
+  constructor(matrix, padding = 16, ctx = rtv.ctx) {
     // Store arguments for later use
     this.matrix = matrix;
     this.padding = padding;
