@@ -25,8 +25,19 @@ export function getFontHeight(ctx = rtv.ctx) {
   return parseInt(ctx.font.match(/(\d+)px/)[1], 10);
 }
 
+/**
+ * @property {number} width The width of the matrix onscreen.
+ * @property {number} height The height of the matrix onscreen.
+ */
 export default class MatrixOutput {
+  /**
+   * Lays out a matrix on `ctx` and prepares it to be drawn.
+   * @param {Array} matrix The matrix to be layed out.
+   * @param {number} padding Space in pixels between elements and brackets.
+   * @param {CanvasRenderingContext2D} ctx Optionally specify a context instead of `rtv.ctx`.
+   */
   constructor(matrix, padding = 16, ctx = rtv.ctx) {
+    // Store arguments for later use
     this.matrix = matrix;
     this.padding = padding;
     this.ctx = ctx;
@@ -40,6 +51,12 @@ export default class MatrixOutput {
     this.height = this.rowHeights.reduce((a, b) => a + b + this.padding, this.padding);
   }
 
+  /**
+   * Updates `sizes[index]` to `newVal` if it is undefined or is smaller than `newVal`.
+   * @param {number[]} sizes Array of sizes (widths or heights).
+   * @param {number} index Index of element to be replaced.
+   * @param {number} newVal Value to replace `sizes[index]` with.
+   */
   static updateLayout(sizes, index, newVal) {
     const oldVal = sizes[index];
 
@@ -48,6 +65,9 @@ export default class MatrixOutput {
     }
   }
 
+  /**
+   * Generates and stores an array of draw functions for each row of matrix.
+   */
   generateRowDrawFunctions() {
     this.rowDrawFunctions = this.matrix.map((row, rowIndex) => {
       if (row instanceof Array) {
@@ -71,6 +91,12 @@ export default class MatrixOutput {
     });
   }
 
+  /**
+   * Generates and returns an array of draw functions for each element in `row`.
+   * @param {Array} row
+   * @param {number} rowIndex
+   * @returns {(x: number, y: number) => void} Array of draw functions.
+   */
   generateElementDrawFunctions(row, rowIndex) {
     return row.map((element, columnIndex) => {
       let width;
@@ -97,6 +123,11 @@ export default class MatrixOutput {
     });
   }
 
+  /**
+   * Draws matrix contents onto canvas.
+   * @param {number} x Top-left `x` coordinate.
+   * @param {number} y Top-left `y` coordinate.
+   */
   drawInterior(x, y) {
     this.rowHeights.reduce((pointerY, rh, rowIndex) => {
       this.rowDrawFunctions[rowIndex](x, pointerY);
@@ -105,7 +136,12 @@ export default class MatrixOutput {
     }, y + this.padding);
   }
 
-  draw(x, y, cw = this.width) {
+  /**
+   * Draws matrix onto canvas.
+   * @param {number} x Top-left `x` coordinate.
+   * @param {number} y Top-left `y` coordinate.
+   */
+  draw(x, y) {
     this.ctx.save();
 
     this.ctx.textAlign = 'right';
@@ -113,7 +149,7 @@ export default class MatrixOutput {
 
     this.drawInterior(x, y);
 
-    drawBrackets(x, y, cw, this.height);
+    drawBrackets(x, y, this.width, this.height);
 
     this.ctx.restore();
   }
