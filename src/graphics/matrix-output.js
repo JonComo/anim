@@ -1,7 +1,7 @@
 import { drawPath } from '../index';
 import { rtv } from '../resources';
 
-export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
+export function drawBrackets(x, y, width, height, fingerLength = 8) {
   drawPath([
     [x + fingerLength, y],
     [x, y],
@@ -108,7 +108,7 @@ export default class MatrixOutput {
 
     this.drawInterior(x, y);
 
-    drawBracketsNew(x, y, cw, this.height);
+    drawBrackets(x, y, cw, this.height);
 
     rtv.ctx.restore();
   }
