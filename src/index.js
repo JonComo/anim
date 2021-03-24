@@ -4,6 +4,7 @@ import Circle from './tools/circle';
 import Frames, { configureCanvas } from './graphics/frames';
 import Menu from './ui/menu';
 import Network from './tools/network';
+import MatrixOutput from './graphics/matrix-output';
 import Pen from './tools/pen';
 import Shape from './tools/shape';
 import Text from './tools/text';
@@ -626,7 +627,7 @@ function drawVect(_x, _y, _z, x, y, z) {
   rtv.ctx.stroke();
 }
 
-function drawPath(points, canvas = rtv.ctx) {
+export function drawPath(points, canvas = rtv.ctx) {
   if (points.length < 1) return; // Do not continue if no points exist to be drawn
 
   canvas.beginPath();
@@ -637,101 +638,6 @@ function drawPath(points, canvas = rtv.ctx) {
     .forEach((p) => canvas.lineTo(...p));
 
   canvas.stroke();
-}
-
-export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
-  drawPath([
-    [x + fingerLength, y],
-    [x, y],
-    [x, y + height],
-    [x + fingerLength, y + height],
-  ]);
-
-  drawPath([
-    [x + width - fingerLength, y],
-    [x + width, y],
-    [x + width, y + height],
-    [x + width - fingerLength, y + height],
-  ]);
-}
-
-function generateMatrix(matrix, padding = 16) {
-  const columnWidths = [];
-  const rowHeights = [];
-
-  const drawRows = matrix.map((row, rowIndex) => {
-    if (row instanceof Array) {
-      const drawElements = row.map((element, columnIndex) => {
-        let width;
-        let height;
-        let draw;
-
-        if (element instanceof Array) {
-          ({ width, height, draw } = generateMatrix(element));
-        } else {
-          const str = element.toString();
-
-          width = rtv.ctx.measureText(str).width;
-          height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
-
-          draw = (x, y) => rtv.ctx.fillText(str, x + columnWidths[columnIndex], y);
-        }
-
-        if (columnWidths[columnIndex] === undefined || columnWidths[columnIndex] < width) {
-          columnWidths[columnIndex] = width;
-        }
-
-        if (rowHeights[rowIndex] === undefined || rowHeights[rowIndex] < height) {
-          rowHeights[rowIndex] = height;
-        }
-
-        return draw;
-      });
-
-      return (x, y) => columnWidths.reduce((pointerX, cw, columnIndex) => {
-        drawElements[columnIndex](pointerX, y, cw);
-
-        return pointerX + cw + padding;
-      }, x + padding);
-    }
-
-    const str = row.toString();
-
-    const rowWidth = rtv.ctx.measureText(str).width;
-    if (columnWidths[0] === undefined || columnWidths[0] < rowWidth) {
-      columnWidths[0] = rowWidth;
-    }
-
-    rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
-
-    return (x, y) => rtv.ctx.fillText(str, x + padding + columnWidths[0], y);
-  });
-
-  const drawMatrix = (x, y) => rowHeights.reduce((pointerY, rh, rowIndex) => {
-    drawRows[rowIndex](x, pointerY);
-
-    return pointerY + rh + padding;
-  }, y + padding);
-
-  const width = columnWidths.reduce((a, b) => a + b + padding, padding);
-  const height = rowHeights.reduce((a, b) => a + b + padding, padding);
-
-  return {
-    width,
-    height,
-    draw: (x, y, cw = width) => {
-      rtv.ctx.save();
-
-      rtv.ctx.textAlign = 'right';
-      rtv.ctx.textBaseline = 'top';
-
-      drawMatrix(x, y);
-
-      drawBracketsNew(x, y, cw, height);
-
-      rtv.ctx.restore();
-    },
-  };
 }
 
 export function drawBrackets(sx, sy, width, height) {
@@ -4298,7 +4204,7 @@ window.addEventListener('load', () => {
 
     rtv.ctx.font = FONT.ANIM;
 
-    generateMatrix([
+    new MatrixOutput([
       [
         [
           [1, 20, 3],
@@ -4357,7 +4263,7 @@ window.addEventListener('load', () => {
       ],
     ]).draw(300, 300);
 
-    generateMatrix([30, 2000, 1]).draw(300, 1200);
+    new MatrixOutput([30, 2000, 1]).draw(300, 1200);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
