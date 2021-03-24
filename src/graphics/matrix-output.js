@@ -42,13 +42,8 @@ export default class MatrixOutput {
             draw = (x, y) => rtv.ctx.fillText(str, x + columnWidths[columnIndex], y);
           }
 
-          if (columnWidths[columnIndex] === undefined || columnWidths[columnIndex] < width) {
-            columnWidths[columnIndex] = width;
-          }
-
-          if (rowHeights[rowIndex] === undefined || rowHeights[rowIndex] < height) {
-            rowHeights[rowIndex] = height;
-          }
+          MatrixOutput.updateLayout(columnWidths, columnIndex, width);
+          MatrixOutput.updateLayout(rowHeights, rowIndex, height);
 
           return draw;
         });
@@ -63,9 +58,7 @@ export default class MatrixOutput {
       const str = row.toString();
 
       const rowWidth = rtv.ctx.measureText(str).width;
-      if (columnWidths[0] === undefined || columnWidths[0] < rowWidth) {
-        columnWidths[0] = rowWidth;
-      }
+      MatrixOutput.updateLayout(columnWidths, 0, rowWidth);
 
       rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
@@ -82,6 +75,14 @@ export default class MatrixOutput {
 
     this.width = columnWidths.reduce((a, b) => a + b + padding, padding);
     this.height = rowHeights.reduce((a, b) => a + b + padding, padding);
+  }
+
+  static updateLayout(sizes, index, newVal) {
+    const oldVal = sizes[index];
+
+    if (oldVal === undefined || oldVal < newVal) {
+      sizes[index] = newVal;
+    }
   }
 
   draw(x, y, cw = this.width) {
