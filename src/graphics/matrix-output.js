@@ -140,6 +140,8 @@ export default class MatrixOutput {
    * Draws matrix onto canvas.
    * @param {number} x Top-left `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
+   * @param {number} width Optional onscreen matrix width.
+   * @param {number} height Optional onscreen matrix height.
    */
   draw(x, y, width = this.width, height = this.height) {
     this.ctx.save();
