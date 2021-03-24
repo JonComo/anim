@@ -719,17 +719,17 @@ function generateMatrix(matrix) {
   return {
     width,
     height,
-    draw: drawMatrix,
-  };
+    draw: (x, y) => {
+      rtv.ctx.save();
 
-  return () => {
-    rtv.ctx.save();
+      rtv.ctx.textBaseline = 'top';
 
-    rtv.ctx.textBaseline = 'top';
+      drawMatrix(x, y);
 
-    drawBracketsNew(x, y, width, height);
+      drawBracketsNew(x, y, width, height);
 
-    rtv.ctx.restore();
+      rtv.ctx.restore();
+    },
   };
 }
 
