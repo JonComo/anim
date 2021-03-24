@@ -1,5 +1,5 @@
 import { drawPath } from '../index';
-import { rtv } from '../resources';
+import { math, rtv } from '../resources';
 
 export function drawBrackets(x, y, width, height, fingerLength = 8) {
   drawPath([
@@ -87,7 +87,7 @@ export default class MatrixOutput {
 
       this.rowHeights[rowIndex] = getFontHeight();
 
-      return (x, y) => this.ctx.fillText(str, x + this.padding + this.columnWidths[0], y);
+      return (x, y) => this.ctx.fillText(str, x + this.padding, y);
     });
   }
 
@@ -113,7 +113,7 @@ export default class MatrixOutput {
         width = getTextWidth(str);
         height = getFontHeight();
 
-        draw = (x, y) => this.ctx.fillText(str, x + this.columnWidths[columnIndex], y);
+        draw = (x, y) => this.ctx.fillText(str, x, y);
       }
 
       MatrixOutput.updateLayout(this.columnWidths, columnIndex, width);
@@ -127,6 +127,7 @@ export default class MatrixOutput {
    * Draws matrix contents onto canvas.
    * @param {number} x Top-left `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
+   * @param {number} width The width of the matrix.
    */
   drawInterior(x, y) {
     this.rowHeights.reduce((pointerY, rh, rowIndex) => {
@@ -146,7 +147,7 @@ export default class MatrixOutput {
   draw(x, y, width = this.width, height = this.height) {
     this.ctx.save();
 
-    this.ctx.textAlign = 'right';
+    // this.ctx.textAlign = 'right';
     this.ctx.textBaseline = 'top';
 
     this.drawInterior(x, y);
