@@ -2,7 +2,6 @@ import {
   constrain,
   copy,
   distance,
-  drawBrackets,
   drawFn,
   drawMatrix,
   drawNetwork,
@@ -18,6 +17,7 @@ import {
   saveState,
   transformProps,
 } from '../index';
+import { drawBrackets } from '../graphics/matrix-output';
 import {
   math,
   parser,
