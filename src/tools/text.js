@@ -3,7 +3,6 @@ import {
   copy,
   distance,
   drawFn,
-  drawMatrix,
   drawNetwork,
   drawSimple,
   enterSelect,
@@ -17,7 +16,7 @@ import {
   saveState,
   transformProps,
 } from '../index';
-import { drawBrackets } from '../graphics/matrix-output';
+import MatrixOutput, { drawBrackets } from '../graphics/matrix-output';
 import {
   math,
   parser,
@@ -812,8 +811,7 @@ export default function Text(text, pos) {
       ctx.translate(135, 0);
 
       ctx.translate(-100, -20);
-      const formatted = formatMatrix(this.matrix_vals);
-      drawMatrix(formatted);
+      new MatrixOutput(this.matrix_vals).draw(0, 0);
 
       ctx.restore();
     } else if (!this.selected && this.text_val && this.text_val.length) {
