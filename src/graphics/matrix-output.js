@@ -17,18 +17,19 @@ export function drawBrackets(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
-export function getTextWidth(text) {
-  return rtv.ctx.measureText(text).width;
+export function getTextWidth(text, ctx = rtv.ctx) {
+  return ctx.measureText(text).width;
 }
 
-export function getFontHeight() {
-  return parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+export function getFontHeight(ctx = rtv.ctx) {
+  return parseInt(ctx.font.match(/(\d+)px/)[1], 10);
 }
 
 export default class MatrixOutput {
-  constructor(matrix, padding = 16) {
+  constructor(matrix, padding = 16, ctx = rtv.ctx) {
     this.matrix = matrix;
     this.padding = padding;
+    this.ctx = ctx;
 
     this.columnWidths = [];
     this.rowHeights = [];
@@ -66,7 +67,7 @@ export default class MatrixOutput {
 
       this.rowHeights[rowIndex] = getFontHeight();
 
-      return (x, y) => rtv.ctx.fillText(str, x + this.padding + this.columnWidths[0], y);
+      return (x, y) => this.ctx.fillText(str, x + this.padding + this.columnWidths[0], y);
     });
   }
 
@@ -86,7 +87,7 @@ export default class MatrixOutput {
         width = getTextWidth(str);
         height = getFontHeight();
 
-        draw = (x, y) => rtv.ctx.fillText(str, x + this.columnWidths[columnIndex], y);
+        draw = (x, y) => this.ctx.fillText(str, x + this.columnWidths[columnIndex], y);
       }
 
       MatrixOutput.updateLayout(this.columnWidths, columnIndex, width);
@@ -105,15 +106,15 @@ export default class MatrixOutput {
   }
 
   draw(x, y, cw = this.width) {
-    rtv.ctx.save();
+    this.ctx.save();
 
-    rtv.ctx.textAlign = 'right';
-    rtv.ctx.textBaseline = 'top';
+    this.ctx.textAlign = 'right';
+    this.ctx.textBaseline = 'top';
 
     this.drawInterior(x, y);
 
     drawBrackets(x, y, cw, this.height);
 
-    rtv.ctx.restore();
+    this.ctx.restore();
   }
 }
