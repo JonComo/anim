@@ -655,76 +655,75 @@ export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
-function generateMatrixFunction(matrix, x, y) {
+function generateMatrix(matrix) {
   const columnWidths = [];
   const rowHeights = [];
 
-  matrix.forEach((row, rowIndex) => {
-    // let rowWidth = 0;
-    // let rowHeight = 0;
-
+  const drawRows = matrix.map((row, rowIndex) => {
     if (row instanceof Array) {
-      row.forEach((element, columnIndex) => {
-        // let width;
-        // let height;
+      const drawElements = row.map((element, columnIndex) => {
+        let width;
+        let height;
+        let draw;
 
         if (element instanceof Array) {
-          // ({ width, height } = drawMatrixNew(element, x + rowWidth, y + matrixHeight));
+          ({ width, height, draw } = generateMatrix(element));
         } else {
           const str = element.toString();
-          const width = rtv.ctx.measureText(str).width;
-          if (columnWidths[columnIndex] === undefined || columnWidths[columnIndex] < width) {
-            columnWidths[columnIndex] = width;
-          }
 
-          const height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
-          if (rowHeights[rowIndex] === undefined || rowHeights[rowIndex] < height) {
-            rowHeights[rowIndex] = height;
-          }
+          width = rtv.ctx.measureText(str).width;
+          height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+
+          draw = (x, y) => rtv.ctx.fillText(str, x, y);
         }
 
-        // rowWidth += width;
+        if (columnWidths[columnIndex] === undefined || columnWidths[columnIndex] < width) {
+          columnWidths[columnIndex] = width;
+        }
 
-        // const cw = columnWidths[elementIndex];
-        // if (cw === undefined || cw < width) columnWidths[elementIndex] = width;
+        if (rowHeights[rowIndex] === undefined || rowHeights[rowIndex] < height) {
+          rowHeights[rowIndex] = height;
+        }
+
+        return draw;
       });
-    } else {
-      const str = row.toString();
-      columnWidths[0] = rtv.ctx.measureText(str).width;
-      rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+
+      return (x, y) => columnWidths.reduce((offsetX, cw, columnIndex) => {
+        drawElements[columnIndex](x + offsetX, y);
+
+        return offsetX + cw;
+      }, 0);
     }
 
-    // if (matrixWidth < rowWidth) matrixWidth = rowWidth;
-    // matrixHeight += rowHeight;
+    const str = row.toString();
+
+    columnWidths[0] = rtv.ctx.measureText(str).width;
+    rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+
+    return (x, y) => rtv.ctx.fillText(str, x, y);
   });
 
-  const pointer = { x, y };
+  const drawMatrix = (x, y) => rowHeights.reduce((offsetY, rh, rowIndex) => {
+    drawRows[rowIndex](x, y + offsetY);
+
+    return offsetY + rh;
+  }, 0);
+
+  const width = columnWidths.reduce((a, b) => a + b);
+  const height = rowHeights.reduce((a, b) => a + b);
+
+  return {
+    width,
+    height,
+    draw: drawMatrix,
+  };
+
   return () => {
     rtv.ctx.save();
 
     rtv.ctx.textBaseline = 'top';
 
-    matrix.forEach((row, rowIndex) => {
-      pointer.x = x;
-
-      if (row instanceof Array) {
-        row.forEach((element, columnIndex) => {
-          if (element instanceof Array) {
-            // Do stuff
-          } else {
-            rtv.ctx.fillText(element.toString(), pointer.x, pointer.y);
-          }
-
-          pointer.x += columnWidths[columnIndex];
-        });
-      } else {
-        rtv.ctx.fillText(row.toString(), pointer.x, pointer.y);
-      }
-
-      pointer.y += rowHeights[rowIndex];
-    });
-
-    drawBracketsNew(x, y, columnWidths.reduce((a, b) => a + b), pointer.y - y);
+    drawBracketsNew(x, y, width, height);
 
     rtv.ctx.restore();
   };
@@ -4345,7 +4344,7 @@ window.addEventListener('load', () => {
 
     rtv.ctx.font = FONT.ANIM;
 
-    generateMatrixFunction([[1, 20, 3], [4, 5, 6], [70, 8, 9]], 300, 300)();
+    generateMatrix([[1, 20, 3], [4, 5, 6], [70, 8, 9]]).draw(300, 300);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
