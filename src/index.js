@@ -655,6 +655,81 @@ export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
+function generateMatrixFunction(matrix, x, y) {
+  const columnWidths = [];
+  const rowHeights = [];
+
+  matrix.forEach((row, rowIndex) => {
+    // let rowWidth = 0;
+    // let rowHeight = 0;
+
+    if (row instanceof Array) {
+      row.forEach((element, columnIndex) => {
+        // let width;
+        // let height;
+
+        if (element instanceof Array) {
+          // ({ width, height } = drawMatrixNew(element, x + rowWidth, y + matrixHeight));
+        } else {
+          const str = element.toString();
+          const width = rtv.ctx.measureText(str).width;
+          if (columnWidths[columnIndex] === undefined || columnWidths[columnIndex] < width) {
+            columnWidths[columnIndex] = width;
+          }
+
+          const height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+          if (rowHeights[rowIndex] === undefined || rowHeights[rowIndex] < height) {
+            rowHeights[rowIndex] = height;
+          }
+        }
+
+        // rowWidth += width;
+
+        // const cw = columnWidths[elementIndex];
+        // if (cw === undefined || cw < width) columnWidths[elementIndex] = width;
+      });
+    } else {
+      const str = row.toString();
+      columnWidths[0] = rtv.ctx.measureText(str).width;
+      rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+    }
+
+    // if (matrixWidth < rowWidth) matrixWidth = rowWidth;
+    // matrixHeight += rowHeight;
+  });
+
+  const pointer = { x, y };
+  return () => {
+    rtv.ctx.save();
+
+    rtv.ctx.textBaseline = 'top';
+
+    matrix.forEach((row, rowIndex) => {
+      pointer.x = x;
+
+      if (row instanceof Array) {
+        row.forEach((element, columnIndex) => {
+          if (element instanceof Array) {
+            // Do stuff
+          } else {
+            rtv.ctx.fillText(element.toString(), pointer.x, pointer.y);
+          }
+
+          pointer.x += columnWidths[columnIndex];
+        });
+      } else {
+        rtv.ctx.fillText(row.toString(), pointer.x, pointer.y);
+      }
+
+      pointer.y += rowHeights[rowIndex];
+    });
+
+    drawBracketsNew(x, y, columnWidths.reduce((a, b) => a + b), pointer.y - y);
+
+    rtv.ctx.restore();
+  };
+}
+
 function drawMatrixNew(matrix, x, y) {
   rtv.ctx.save();
 
@@ -662,13 +737,14 @@ function drawMatrixNew(matrix, x, y) {
 
   let matrixWidth = 0;
   let matrixHeight = 0;
+  const columnWidths = [];
 
   matrix.forEach((row) => {
     let rowWidth = 0;
     let rowHeight = 0;
 
     if (row instanceof Array) {
-      row.forEach((element) => {
+      row.forEach((element, elementIndex) => {
         let width;
         let height;
 
@@ -683,6 +759,9 @@ function drawMatrixNew(matrix, x, y) {
 
         rowWidth += width;
         if (rowHeight < height) rowHeight = height;
+
+        const cw = columnWidths[elementIndex];
+        if (cw === undefined || cw < width) columnWidths[elementIndex] = width;
       });
     } else {
       const str = row.toString();
@@ -4266,8 +4345,7 @@ window.addEventListener('load', () => {
 
     rtv.ctx.font = FONT.ANIM;
 
-    drawMatrixNew([10, 200, 3], 300, 100);
-    drawMatrixNew([[10, [50, 70]], [200, 7], [3, 8]], 300, 300);
+    generateMatrixFunction([[1, 20, 3], [4, 5, 6], [70, 8, 9]], 300, 300)();
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
