@@ -689,7 +689,7 @@ function generateMatrix(matrix, padding = 16) {
       });
 
       return (x, y) => columnWidths.reduce((pointerX, cw, columnIndex) => {
-        drawElements[columnIndex](pointerX, y);
+        drawElements[columnIndex](pointerX, y, cw);
 
         return pointerX + cw + padding;
       }, x + padding);
@@ -719,14 +719,14 @@ function generateMatrix(matrix, padding = 16) {
   return {
     width,
     height,
-    draw: (x, y) => {
+    draw: (x, y, cw = width) => {
       rtv.ctx.save();
 
       rtv.ctx.textBaseline = 'top';
 
       drawMatrix(x, y);
 
-      drawBracketsNew(x, y, width, height);
+      drawBracketsNew(x, y, cw, height);
 
       rtv.ctx.restore();
     },
