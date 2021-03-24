@@ -34,7 +34,9 @@ export default class MatrixOutput {
           let draw;
 
           if (element instanceof Array) {
-            ({ width, height, draw } = new MatrixOutput(element));
+            const childMatrix = new MatrixOutput(element);
+            ({ width, height } = childMatrix);
+            draw = childMatrix.draw.bind(childMatrix);
           } else {
             const str = element.toString();
 
@@ -80,20 +82,22 @@ export default class MatrixOutput {
       return pointerY + rh + padding;
     }, y + padding);
 
+    this.drawMatrix = drawMatrix;
+
     this.width = columnWidths.reduce((a, b) => a + b + padding, padding);
     this.height = rowHeights.reduce((a, b) => a + b + padding, padding);
+  }
 
-    this.draw = (x, y, cw = this.width) => {
-      rtv.ctx.save();
+  draw(x, y, cw = this.width) {
+    rtv.ctx.save();
 
-      rtv.ctx.textAlign = 'right';
-      rtv.ctx.textBaseline = 'top';
+    rtv.ctx.textAlign = 'right';
+    rtv.ctx.textBaseline = 'top';
 
-      drawMatrix(x, y);
+    this.drawMatrix(x, y);
 
-      drawBracketsNew(x, y, cw, this.height);
+    drawBracketsNew(x, y, cw, this.height);
 
-      rtv.ctx.restore();
-    };
+    rtv.ctx.restore();
   }
 }
