@@ -74,7 +74,7 @@ export default class MatrixOutput {
         const elementDrawFunctions = this.generateElementDrawFunctions(row, rowIndex);
 
         return (x, y) => this.columnWidths.reduceRight((pointerX, cw, columnIndex) => {
-          elementDrawFunctions[columnIndex](pointerX, y, cw, this.rowHeights[rowIndex]);
+          elementDrawFunctions[columnIndex](pointerX, y, cw, this.rowHeights[rowIndex], true);
 
           return pointerX - cw - this.padding;
         }, x - this.padding);
@@ -139,32 +139,22 @@ export default class MatrixOutput {
 
   /**
    * Draws matrix onto canvas.
-   * @param {number} x Top-right `x` coordinate.
+   * @param {number} x Top-left (or right; see below) `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
    * @param {number} width Optional onscreen matrix width.
    * @param {number} height Optional onscreen matrix height.
+   * @param {boolean} right If true, `x` will be considered the top-right coordinate.
    */
-  draw(x, y, width = this.width, height = this.height) {
+  draw(x, y, width = this.width, height = this.height, right = false) {
     this.ctx.save();
 
     this.ctx.textAlign = 'right';
     this.ctx.textBaseline = 'top';
 
-    this.drawInterior(x, y);
+    this.drawInterior(right ? x : x + width, y);
 
-    drawBrackets(x - width, y, width, height);
+    drawBrackets(right ? x - width : x, y, width, height);
 
     this.ctx.restore();
-  }
-
-  /**
-   * Draws matrix onto canvas.
-   * @param {number} x Top-left `x` coordinate.
-   * @param {number} y Top-left `y` coordinate.
-   * @param {number} width Optional onscreen matrix width.
-   * @param {number} height Optional onscreen matrix height.
-   */
-  drawLeft(x, y, width = this.width, height = this.height) {
-    this.draw(x + width, y, width, height);
   }
 }
