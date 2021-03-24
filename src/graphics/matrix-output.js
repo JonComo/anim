@@ -29,7 +29,7 @@ export default class MatrixOutput {
     this.columnWidths = [];
     this.rowHeights = [];
 
-    this.rowDrawFunctions = this.generateRowDrawFunctions();
+    this.generateRowDrawFunctions();
 
     this.width = this.columnWidths.reduce((a, b) => a + b + this.padding, this.padding);
     this.height = this.rowHeights.reduce((a, b) => a + b + this.padding, this.padding);
@@ -44,7 +44,7 @@ export default class MatrixOutput {
   }
 
   generateRowDrawFunctions() {
-    return this.matrix.map((row, rowIndex) => {
+    this.rowDrawFunctions = this.matrix.map((row, rowIndex) => {
       if (row instanceof Array) {
         const elementDrawFunctions = this.generateElementDrawFunctions(row, rowIndex);
 
