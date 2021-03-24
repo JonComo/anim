@@ -17,6 +17,10 @@ export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
+export function getTextWidth(text) {
+  return rtv.ctx.measureText(text).width;
+}
+
 export default class MatrixOutput {
   constructor(matrix, padding = 16) {
     const columnWidths = [];
@@ -36,7 +40,7 @@ export default class MatrixOutput {
           } else {
             const str = element.toString();
 
-            width = rtv.ctx.measureText(str).width;
+            width = getTextWidth(str);
             height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
             draw = (x, y) => rtv.ctx.fillText(str, x + columnWidths[columnIndex], y);
@@ -57,7 +61,7 @@ export default class MatrixOutput {
 
       const str = row.toString();
 
-      const rowWidth = rtv.ctx.measureText(str).width;
+      const rowWidth = getTextWidth(str);
       MatrixOutput.updateLayout(columnWidths, 0, rowWidth);
 
       rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
