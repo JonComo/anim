@@ -23,18 +23,44 @@ export function getTextWidth(text) {
 
 export default class MatrixOutput {
   constructor(matrix, padding = 16) {
+    this.matrix = matrix;
+    this.padding = padding;
+
     this.columnWidths = [];
     this.rowHeights = [];
 
-    const drawRows = matrix.map((row, rowIndex) => {
+    const drawRows = this.generateRowDrawFunctions();
+
+    const drawMatrix = (x, y) => this.rowHeights.reduce((pointerY, rh, rowIndex) => {
+      drawRows[rowIndex](x, pointerY);
+
+      return pointerY + rh + this.padding;
+    }, y + this.padding);
+
+    this.drawMatrix = drawMatrix;
+
+    this.width = this.columnWidths.reduce((a, b) => a + b + this.padding, this.padding);
+    this.height = this.rowHeights.reduce((a, b) => a + b + this.padding, this.padding);
+  }
+
+  static updateLayout(sizes, index, newVal) {
+    const oldVal = sizes[index];
+
+    if (oldVal === undefined || oldVal < newVal) {
+      sizes[index] = newVal;
+    }
+  }
+
+  generateRowDrawFunctions() {
+    return this.matrix.map((row, rowIndex) => {
       if (row instanceof Array) {
         const drawElements = this.generateElementDrawFunctions(row, rowIndex);
 
         return (x, y) => this.columnWidths.reduce((pointerX, cw, columnIndex) => {
           drawElements[columnIndex](pointerX, y, cw);
 
-          return pointerX + cw + padding;
-        }, x + padding);
+          return pointerX + cw + this.padding;
+        }, x + this.padding);
       }
 
       const str = row.toString();
@@ -44,27 +70,8 @@ export default class MatrixOutput {
 
       this.rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
-      return (x, y) => rtv.ctx.fillText(str, x + padding + this.columnWidths[0], y);
+      return (x, y) => rtv.ctx.fillText(str, x + this.padding + this.columnWidths[0], y);
     });
-
-    const drawMatrix = (x, y) => this.rowHeights.reduce((pointerY, rh, rowIndex) => {
-      drawRows[rowIndex](x, pointerY);
-
-      return pointerY + rh + padding;
-    }, y + padding);
-
-    this.drawMatrix = drawMatrix;
-
-    this.width = this.columnWidths.reduce((a, b) => a + b + padding, padding);
-    this.height = this.rowHeights.reduce((a, b) => a + b + padding, padding);
-  }
-
-  static updateLayout(sizes, index, newVal) {
-    const oldVal = sizes[index];
-
-    if (oldVal === undefined || oldVal < newVal) {
-      sizes[index] = newVal;
-    }
   }
 
   generateElementDrawFunctions(row, rowIndex) {
