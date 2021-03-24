@@ -697,7 +697,11 @@ function generateMatrix(matrix) {
 
     const str = row.toString();
 
-    columnWidths[0] = rtv.ctx.measureText(str).width;
+    const rowWidth = rtv.ctx.measureText(str).width;
+    if (columnWidths[0] === undefined || columnWidths[0] < rowWidth) {
+      columnWidths[0] = rowWidth;
+    };
+
     rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
     return (x, y) => rtv.ctx.fillText(str, x, y);
@@ -4344,7 +4348,25 @@ window.addEventListener('load', () => {
 
     rtv.ctx.font = FONT.ANIM;
 
-    generateMatrix([[1, 20, 3], [4, 5, 6], [70, 8, 9]]).draw(300, 300);
+    generateMatrix([
+      [
+        [1, 20, 3],
+        [1, 20, 3],
+        [1, 20, 3],
+      ],
+      [
+        [4, 5, 6],
+        [4, 5, 6],
+        [4, 5, 6],
+      ],
+      [
+        [70, 8, 9],
+        [70, 8, 9],
+        [70, 8, 9],
+      ],
+    ]).draw(300, 300);
+
+    // generateMatrix([[1, 20, 3], [5, 5, 5]]).draw(300, 300);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
