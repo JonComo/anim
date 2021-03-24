@@ -734,57 +734,6 @@ function generateMatrix(matrix, padding = 16) {
   };
 }
 
-function drawMatrixNew(matrix, x, y) {
-  rtv.ctx.save();
-
-  rtv.ctx.textBaseline = 'top';
-
-  let matrixWidth = 0;
-  let matrixHeight = 0;
-  const columnWidths = [];
-
-  matrix.forEach((row) => {
-    let rowWidth = 0;
-    let rowHeight = 0;
-
-    if (row instanceof Array) {
-      row.forEach((element, elementIndex) => {
-        let width;
-        let height;
-
-        if (element instanceof Array) {
-          ({ width, height } = drawMatrixNew(element, x + rowWidth, y + matrixHeight));
-        } else {
-          const str = element.toString();
-          rtv.ctx.fillText(str, x + rowWidth, y + matrixHeight);
-          width = rtv.ctx.measureText(str).width;
-          height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
-        }
-
-        rowWidth += width;
-        if (rowHeight < height) rowHeight = height;
-
-        const cw = columnWidths[elementIndex];
-        if (cw === undefined || cw < width) columnWidths[elementIndex] = width;
-      });
-    } else {
-      const str = row.toString();
-      rtv.ctx.fillText(str, x, y + matrixHeight);
-      rowWidth = rtv.ctx.measureText(str).width;
-      rowHeight = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
-    }
-
-    if (matrixWidth < rowWidth) matrixWidth = rowWidth;
-    matrixHeight += rowHeight;
-  });
-
-  drawBracketsNew(x, y, matrixWidth, matrixHeight);
-
-  rtv.ctx.restore();
-
-  return { width: matrixWidth, height: matrixHeight };
-}
-
 export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
