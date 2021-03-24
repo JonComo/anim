@@ -655,7 +655,7 @@ export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
-function generateMatrix(matrix) {
+function generateMatrix(matrix, padding = 16) {
   const columnWidths = [];
   const rowHeights = [];
 
@@ -691,8 +691,8 @@ function generateMatrix(matrix) {
       return (x, y) => columnWidths.reduce((pointerX, cw, columnIndex) => {
         drawElements[columnIndex](pointerX, y);
 
-        return pointerX + cw;
-      }, x);
+        return pointerX + cw + padding;
+      }, x + padding);
     }
 
     const str = row.toString();
@@ -700,21 +700,21 @@ function generateMatrix(matrix) {
     const rowWidth = rtv.ctx.measureText(str).width;
     if (columnWidths[0] === undefined || columnWidths[0] < rowWidth) {
       columnWidths[0] = rowWidth;
-    };
+    }
 
     rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
-    return (x, y) => rtv.ctx.fillText(str, x, y);
+    return (x, y) => rtv.ctx.fillText(str, x + padding, y);
   });
 
   const drawMatrix = (x, y) => rowHeights.reduce((pointerY, rh, rowIndex) => {
     drawRows[rowIndex](x, pointerY);
 
-    return pointerY + rh;
-  }, y);
+    return pointerY + rh + padding;
+  }, y + padding);
 
-  const width = columnWidths.reduce((a, b) => a + b);
-  const height = rowHeights.reduce((a, b) => a + b);
+  const width = columnWidths.reduce((a, b) => a + b + padding, padding);
+  const height = rowHeights.reduce((a, b) => a + b + padding, padding);
 
   return {
     width,
