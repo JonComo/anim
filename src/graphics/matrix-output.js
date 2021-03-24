@@ -31,13 +31,11 @@ export default class MatrixOutput {
 
     const drawRows = this.generateRowDrawFunctions();
 
-    const drawInterior = (x, y) => this.rowHeights.reduce((pointerY, rh, rowIndex) => {
+    this.drawInterior = (x, y) => this.rowHeights.reduce((pointerY, rh, rowIndex) => {
       drawRows[rowIndex](x, pointerY);
 
       return pointerY + rh + this.padding;
     }, y + this.padding);
-
-    this.drawInterior = drawInterior;
 
     this.width = this.columnWidths.reduce((a, b) => a + b + this.padding, this.padding);
     this.height = this.rowHeights.reduce((a, b) => a + b + this.padding, this.padding);
