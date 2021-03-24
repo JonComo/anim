@@ -674,7 +674,7 @@ function generateMatrix(matrix, padding = 16) {
           width = rtv.ctx.measureText(str).width;
           height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
-          draw = (x, y) => rtv.ctx.fillText(str, x, y);
+          draw = (x, y) => rtv.ctx.fillText(str, x + columnWidths[columnIndex], y);
         }
 
         if (columnWidths[columnIndex] === undefined || columnWidths[columnIndex] < width) {
@@ -704,7 +704,7 @@ function generateMatrix(matrix, padding = 16) {
 
     rowHeights[rowIndex] = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
 
-    return (x, y) => rtv.ctx.fillText(str, x + padding, y);
+    return (x, y) => rtv.ctx.fillText(str, x + padding + columnWidths[0], y);
   });
 
   const drawMatrix = (x, y) => rowHeights.reduce((pointerY, rh, rowIndex) => {
@@ -722,6 +722,7 @@ function generateMatrix(matrix, padding = 16) {
     draw: (x, y, cw = width) => {
       rtv.ctx.save();
 
+      rtv.ctx.textAlign = 'right';
       rtv.ctx.textBaseline = 'top';
 
       drawMatrix(x, y);
@@ -4350,23 +4351,64 @@ window.addEventListener('load', () => {
 
     generateMatrix([
       [
-        [1, 20, 3],
-        [1, 20, 3],
-        [1, 20, 3],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
       ],
       [
-        [4, 5, 6],
-        [4, 5, 6],
-        [4, 5, 6],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
       ],
       [
-        [70, 8, 9],
-        [70, 8, 9],
-        [70, 8, 9],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+      ],
+      [
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
+        [
+          [1, 20, 3],
+          [400, 50, 6],
+        ],
       ],
     ]).draw(300, 300);
 
-    // generateMatrix([[1, 20, 3], [5, 5, 5]]).draw(300, 300);
+    generateMatrix([30, 2000, 1]).draw(300, 1200);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
