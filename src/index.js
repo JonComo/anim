@@ -655,6 +655,53 @@ export function drawBracketsNew(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
+function drawMatrixNew(matrix, x, y) {
+  rtv.ctx.save();
+
+  rtv.ctx.textBaseline = 'top';
+
+  let matrixWidth = 0;
+  let matrixHeight = 0;
+
+  matrix.forEach((row) => {
+    let rowWidth = 0;
+    let rowHeight = 0;
+
+    if (row instanceof Array) {
+      row.forEach((element) => {
+        let width;
+        let height;
+
+        if (element instanceof Array) {
+          ({ width, height } = drawMatrixNew(element, x + rowWidth, y + matrixHeight));
+        } else {
+          const str = element.toString();
+          rtv.ctx.fillText(str, x + rowWidth, y + matrixHeight);
+          width = rtv.ctx.measureText(str).width;
+          height = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+        }
+
+        rowWidth += width;
+        if (rowHeight < height) rowHeight = height;
+      });
+    } else {
+      const str = row.toString();
+      rtv.ctx.fillText(str, x, y + matrixHeight);
+      rowWidth = rtv.ctx.measureText(str).width;
+      rowHeight = parseInt(rtv.ctx.font.match(/(\d+)px/)[1], 10);
+    }
+
+    if (matrixWidth < rowWidth) matrixWidth = rowWidth;
+    matrixHeight += rowHeight;
+  });
+
+  drawBracketsNew(x, y, matrixWidth, matrixHeight);
+
+  rtv.ctx.restore();
+
+  return { width: matrixWidth, height: matrixHeight };
+}
+
 export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
@@ -4219,7 +4266,8 @@ window.addEventListener('load', () => {
 
     rtv.ctx.font = FONT.ANIM;
 
-    drawBracketsNew(20, 20, 100, 100);
+    drawMatrixNew([10, 200, 3], 300, 100);
+    drawMatrixNew([[10, [50, 70]], [200, 7], [3, 8]], 300, 300);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
