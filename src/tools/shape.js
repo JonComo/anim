@@ -147,10 +147,8 @@ export default function Shape(color, path) {
   };
 
   this.onkeydown = (evt) => {
-    const { key } = evt;
-
     if (this.selected_indices.length !== 0) {
-      this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame]);
+      this.properties[rtv.frame] = transformProps(evt, this.properties[rtv.frame]);
     }
 
     return false;
