@@ -640,6 +640,36 @@ export function drawPath(points, canvas = rtv.ctx) {
   canvas.stroke();
 }
 
+/**
+ * If `n` is not an integer, rounds `n` to one (or two, if `ctrl` is pressed) decimal place(s) and then returns `n` converted to a string.
+ * @param {number} n
+ * @returns {string} Rounded `n` as a string.
+ */
+export function roundToString(n) {
+  if (n % 1 === 0) return n.toString();
+  if (rtv.keys.ctrl) return prettyRound(n);
+  return prettyRoundOne(n);
+}
+
+/**
+ * Returns the actual width of `text` on the canvas.
+ * @param {string} text
+ * @param {CanvasRenderingContext2D} ctx Optionally specifies a substitute context 2D.
+ * @returns {number} Length in pixels.
+ */
+export function getTextWidth(text, ctx = rtv.ctx) {
+  return ctx.measureText(text).width;
+}
+
+/**
+ * Returns current font size of canvas.
+ * @param {CanvasRenderingContext2D} ctx Optionally specifies a substitute context 2D.
+ * @returns {number} Font size.
+ */
+export function getFontHeight(ctx = rtv.ctx) {
+  return parseInt(ctx.font.match(/(\d+)px/)[1], 10);
+}
+
 export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
