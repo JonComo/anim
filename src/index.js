@@ -645,9 +645,7 @@ export function drawPath(points, canvas = rtv.ctx) {
  * @returns {string} Rounded `n` as a string.
  */
 export function roundToString(n) {
-  if (n % 1 === 0) return n.toString();
-  if (rtv.keys.ctrl) return prettyRound(n);
-  return prettyRoundOne(n);
+  return math.round(n, rtv.keys.ctrl ? 2 : 1).toString();
 }
 
 /**
