@@ -31,6 +31,18 @@ import {
   PI2,
 } from '../resources';
 
+function getSortedTexts() {
+  const texts = rtv.objs.filter((o) => o.type === 'Text');
+
+  texts.sort((a, b) => {
+    const ap = a.properties[rtv.frame].p;
+    const bp = b.properties[rtv.frame].p;
+    return ap.y > bp.y;
+  });
+
+  return texts;
+}
+
 export default function Text(text, pos) {
   this.type = 'Text';
   this.guid = guid();
@@ -416,13 +428,7 @@ export default function Text(text, pos) {
 
     if (key === 'ArrowUp') {
       // find text above
-      const texts = rtv.objs.filter((o) => o.type === 'Text');
-
-      texts.sort((a, b) => {
-        const ap = a.properties[rtv.frame].p;
-        const bp = b.properties[rtv.frame].p;
-        return ap.y > bp.y;
-      });
+      const texts = getSortedTexts();
 
       const i = guidIndex(texts, this);
       if (i === 0) {
@@ -436,13 +442,7 @@ export default function Text(text, pos) {
     }
     if (key === 'ArrowDown') {
       // find text below
-      const texts = rtv.objs.filter((o) => o.type === 'Text');
-
-      texts.sort((a, b) => {
-        const ap = a.properties[rtv.frame].p;
-        const bp = b.properties[rtv.frame].p;
-        return ap.y > bp.y;
-      });
+      const texts = getSortedTexts();
 
       const i = guidIndex(texts, this);
       if (i === texts.length - 1) {
