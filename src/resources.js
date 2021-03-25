@@ -15,6 +15,7 @@ export const GRID_GUIDE = '#dddddd';
 export const GRAPH_GUIDE = '#aaaaaa';
 export const DARK = '#000000';
 export const LIGHT = '#ffffff';
+export const CANVAS_BG = 'white';
 
 export const COLORS = ['#000000', '#E74C3C', '#2980B9', '#FFA400', '#66E07A', '#cccccc'];
 
@@ -76,6 +77,9 @@ export const rtv = {
   debug: false,
   view_frame: false,
   fps: 30,
+
+  // Recording
+  recordingManager: undefined,
 
   // Volume meter
   meter: undefined,

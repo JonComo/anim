@@ -22,6 +22,9 @@
             <textarea rows="4" cols="50" id="generic"></textarea>
             <input type="submit" id="gen_js" value="Generate JS">
             <input type="submit" id="gen_script" value="Generate Script">
+            <h3>Recording:</h3>
+            <button id="record"></button>
+            <button id="pause-resume"></button>
             <h2>Help:</h2>
             <h3>KEYBOARD SHORTCUTS</h3>
             <code>cmd / ctrl z</code> to undo<br><br>
@@ -33,6 +36,7 @@
             <code>ctrl backspace</code> to delete any selected objects<br><br>
             <code>ctrl I or L or K or J</code> to scale selected object<br><br>
             <code>ctrl U or O</code> to rotate selected object<br><br>
+            <kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>b</kbd> / <kbd>m</kbd> / <kbd>r</kbd> / <kbd>e</kbd> to start, pause, resume and save a recording, respectively<br><br>
             <h3>THINGS TO DO WITH TEXT BOXES</h3>
             <code>x = 5</code> to assign a value to a variable<br><br>
             <code>e:x = x + 0.1</code> to repeatedly update x every frame<br><br>
@@ -52,6 +56,13 @@
             Click and drag to pan<br><br>
             <code>cmd</code> / <code>ctrl</code> click and drag to rotate<br><br>
             The camera will transition smoothly frame to frame<br><br>
+
+            <h3>RECORDING (MP4)</h3>
+            To start recording, click on <kbd>Start recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>b</kbd>.<br><br>
+            To pause, click on <kbd>Pause recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>m</kbd>.<br><br>
+            To resume, click on <kbd>Resume recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>r</kbd>.<br><br>
+            To stop recording and save, click on <kbd>Stop recording</kbd> or press <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>e</kbd>.<br><br>
+
             <h3>FILES</h3>
             Tapping save local will overwrite a local file in browser's cache<br><br>
             Tapping load local clears your work and load the cached file<br><br>
