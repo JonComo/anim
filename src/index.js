@@ -4,7 +4,6 @@ import Circle from './tools/circle';
 import Frames, { configureCanvas } from './graphics/frames';
 import Menu from './ui/menu';
 import Network from './tools/network';
-import MatrixOutput from './graphics/matrix-output';
 import Pen from './tools/pen';
 import Shape from './tools/shape';
 import Text from './tools/text';
@@ -4233,68 +4232,6 @@ window.addEventListener('load', () => {
     drawAxes(rtv.ctx);
 
     rtv.ctx.font = FONT.ANIM;
-
-    new MatrixOutput([
-      [
-        [
-          [1, 20, 3],
-          [400, 50, 60000],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-          [400, 50, 6], // I know that it's not possible, but `MatrixOutput` might be used to show arrays
-        ],
-        [
-          [1, 20.3632, 3],
-          [400, 50, 6],
-        ],
-      ],
-      [
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-      ],
-      [
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-      ],
-      [
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-        [
-          [1, 20, 3],
-          [400, 50, 6],
-        ],
-      ],
-    ]).draw(300, 300);
-
-    new MatrixOutput([30, 2000, 1]).draw(300, 1200);
 
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
