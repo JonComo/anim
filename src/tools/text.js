@@ -31,6 +31,18 @@ import {
   PI2,
 } from '../resources';
 
+function getSortedTexts() {
+  const texts = rtv.objs.filter((o) => o.type === 'Text');
+
+  texts.sort((a, b) => {
+    const ap = a.properties[rtv.frame].p;
+    const bp = b.properties[rtv.frame].p;
+    return ap.y > bp.y;
+  });
+
+  return texts;
+}
+
 export default function Text(text, pos) {
   this.type = 'Text';
   this.guid = guid();
@@ -414,44 +426,61 @@ export default function Text(text, pos) {
       this.cursor -= 1;
     }
 
+    if (key === 'Home') {
+      this.cursor = 0;
+    } else if (key === 'End') {
+      this.cursor = this.properties[rtv.frame].t.length;
+    }
+
     if (key === 'ArrowUp') {
-      // find text above
-      const texts = rtv.objs.filter((o) => o.type === 'Text');
+      // Find textbox above
+      const texts = getSortedTexts();
 
-      texts.sort((a, b) => {
-        const ap = a.properties[rtv.frame].p;
-        const bp = b.properties[rtv.frame].p;
-        return ap.y > bp.y;
-      });
-
-      const i = guidIndex(texts, this);
-      if (i === 0) {
-        return true;
+      const i = texts.indexOf(this);
+      if (i !== 0) {
+        texts[i - 1].selected = true;
+        this.selected = false;
       }
 
-      const newObj = texts[i - 1];
-      newObj.selected = true;
-      this.selected = false;
       return true;
     }
+
     if (key === 'ArrowDown') {
-      // find text below
-      const texts = rtv.objs.filter((o) => o.type === 'Text');
+      // Find textbox below
+      const texts = getSortedTexts();
 
-      texts.sort((a, b) => {
-        const ap = a.properties[rtv.frame].p;
-        const bp = b.properties[rtv.frame].p;
-        return ap.y > bp.y;
-      });
-
-      const i = guidIndex(texts, this);
-      if (i === texts.length - 1) {
-        return true;
+      const i = texts.indexOf(this);
+      if (i !== texts.length - 1) {
+        texts[i + 1].selected = true;
+        this.selected = false;
       }
 
-      const newObj = texts[i + 1];
-      newObj.selected = true;
-      this.selected = false;
+      return true;
+    }
+
+    if (key === 'PageUp') {
+      // Find highest textbox
+      const texts = getSortedTexts();
+
+      const first = texts[0];
+      if (this !== first) {
+        first.selected = true;
+        this.selected = false;
+      }
+
+      return true;
+    }
+
+    if (key === 'PageDown') {
+      // Find lowest textbox
+      const texts = getSortedTexts();
+
+      const last = texts[texts.length - 1];
+      if (this !== last) {
+        last.selected = true;
+        this.selected = false;
+      }
+
       return true;
     }
 
@@ -483,7 +512,7 @@ export default function Text(text, pos) {
       }
     }
 
-    if (!rtv.keys.shift || (key !== 'Shift' && key !== 'ArrowRight' && key !== 'ArrowLeft')) {
+    if (!rtv.keys.shift || (key !== 'Shift' && key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End')) {
       this.cursor_selection = this.cursor;
     }
 
