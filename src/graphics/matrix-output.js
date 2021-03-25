@@ -79,15 +79,21 @@ export default class MatrixOutput {
       if (row instanceof Array) {
         const elementDrawFunctions = this.generateElementDrawFunctions(row, rowIndex);
 
-        return (x, y) => this.columnWidths.reduceRight((pointerX, cw, columnIndex) => {
-          elementDrawFunctions[columnIndex](
-            pointerX, y,
-            cw, this.rowHeights[rowIndex],
-            true, this.ctx,
-          );
+        return (x, y, elementCallback) => this
+          .columnWidths.reduceRight((pointerX, cw, columnIndex) => {
+            if (elementCallback instanceof Function) {
+              elementCallback(rowIndex, columnIndex);
+            }
 
-          return pointerX - cw - this.padding;
-        }, x - this.padding);
+            elementDrawFunctions[columnIndex](
+              pointerX, y,
+              undefined,
+              cw, this.rowHeights[rowIndex],
+              true, this.ctx,
+            );
+
+            return pointerX - cw - this.padding;
+          }, x - this.padding);
       }
 
       const str = roundToString(row);
@@ -139,9 +145,9 @@ export default class MatrixOutput {
    * @param {number} y Top-left `y` coordinate.
    * @param {number} width The width of the matrix.
    */
-  drawInterior(x, y) {
+  drawInterior(x, y, elementCallback) {
     this.rowHeights.reduce((pointerY, rh, rowIndex) => {
-      this.rowDrawFunctions[rowIndex](x, pointerY);
+      this.rowDrawFunctions[rowIndex](x, pointerY, elementCallback);
 
       return pointerY + rh + this.padding;
     }, y + this.padding);
@@ -151,17 +157,19 @@ export default class MatrixOutput {
    * Draws matrix onto canvas.
    * @param {number} x Top-left (or right; see below) `x` coordinate.
    * @param {number} y Top-left `y` coordinate.
+   * @param {(rowIndex: number, columnIndex: number) => void} elementCallback
+   * Called before each matrix element is drawn.
    * @param {number} width Optional onscreen matrix width.
    * @param {number} height Optional onscreen matrix height.
    * @param {boolean} right If true, `x` will be considered the top-right coordinate.
    */
-  draw(x, y, width = this.width, height = this.height, right = false) {
+  draw(x, y, elementCallback = undefined, width = this.width, height = this.height, right = false) {
     this.ctx.save();
 
     this.ctx.textAlign = 'right';
     this.ctx.textBaseline = 'top';
 
-    this.drawInterior(right ? x : x + width, y);
+    this.drawInterior(right ? x : x + width, y, elementCallback);
 
     drawBrackets(right ? x - width : x, y, width, height);
 
