@@ -414,6 +414,12 @@ export default function Text(text, pos) {
       this.cursor -= 1;
     }
 
+    if (key === 'Home') {
+      this.cursor = 0;
+    } else if (key === 'End') {
+      this.cursor = this.properties[rtv.frame].t.length;
+    }
+
     if (key === 'ArrowUp') {
       // find text above
       const texts = rtv.objs.filter((o) => o.type === 'Text');
@@ -483,7 +489,7 @@ export default function Text(text, pos) {
       }
     }
 
-    if (!rtv.keys.shift || (key !== 'ArrowRight' && key !== 'ArrowLeft')) {
+    if (!rtv.keys.shift || (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End')) {
       this.cursor_selection = this.cursor;
     }
 
