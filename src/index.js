@@ -769,39 +769,6 @@ export function matrixSize(matrix) {
   return [matrix[0].length * (MAT_NUM_WIDTH + pad), matrix.length * GRID_SIZE];
 }
 
-export function drawMatrix(matrix, colorIJ) {
-  rtv.ctx.save();
-  rtv.ctx.textAlign = 'right';
-
-  const pad = 24;
-
-  let shift = 0;
-  if (rtv.keys.ctrl) {
-    shift = 24;
-  }
-
-  const maxWidth = MAT_NUM_WIDTH - 10;
-
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix[i].length; j++) {
-      if (colorIJ) {
-        colorIJ(i, j);
-      }
-      rtv.ctx.fillText(
-        matrix[i][j],
-        j * (MAT_NUM_WIDTH + pad) + 124 + shift,
-        i * GRID_SIZE + 20,
-        maxWidth,
-      );
-    }
-  }
-
-  const size = matrixSize(matrix);
-  drawBrackets(0, 0, size[0], size[1]);
-
-  rtv.ctx.restore();
-}
-
 export function formatMatrix(matrix) {
   if (matrix.length === 0) {
     return null;
