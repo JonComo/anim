@@ -275,15 +275,24 @@ export default function Text(text, pos) {
     // if its a matrix split that up too
     if (this.matrix_vals.length !== 0) {
       // create a bunch of matrix numbers
+
       const pad = 24;
 
+      const newTextbox = (initialText, i, j) => {
+        const newT = new Text(roundWithKey(initialText).toString(), {
+          x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
+          y: p.y + i * GRID_SIZE,
+        });
+        rtv.objs.push(newT);
+      };
+
       for (let i = 0; i < this.matrix_vals.length; i++) {
-        for (let j = 0; j < this.matrix_vals[i].length; j++) {
-          const newT = new Text(roundWithKey(this.matrix_vals[i][j]).toString(), {
-            x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
-            y: p.y + i * GRID_SIZE,
-          });
-          rtv.objs.push(newT);
+        if (this.matrix_vals[i] instanceof Array) {
+          for (let j = 0; j < this.matrix_vals[i].length; j++) {
+            newTextbox(this.matrix_vals[i][j], i, j);
+          }
+        } else {
+          newTextbox(this.matrix_vals[i], i, 0);
         }
       }
 

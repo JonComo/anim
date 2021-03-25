@@ -105,7 +105,13 @@ export default class MatrixOutput {
 
       this.rowHeights[rowIndex] = getFontHeight();
 
-      return (x, y) => this.ctx.fillText(str, x - this.padding, y);
+      return (x, y, elementCallback) => {
+        if (elementCallback instanceof Function) {
+          elementCallback(rowIndex, 0);
+        }
+
+        this.ctx.fillText(str, x - this.padding, y);
+      };
     });
   }
 
