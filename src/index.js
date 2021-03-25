@@ -231,7 +231,7 @@ export function prettyRound(num) {
   return (Math.round(num * 100) / 100).toFixed(2);
 }
 
-export function prettyRoundOne(num) {
+function prettyRoundOne(num) {
   return (Math.round(num * 10) / 10).toFixed(1);
 }
 
