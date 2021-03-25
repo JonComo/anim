@@ -6,6 +6,7 @@ import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
 import Shape from './tools/shape';
+import RecordingManager from './graphics/recording-manager';
 import Text from './tools/text';
 import Transition from './graphics/transition';
 import initVolumeMeter from './audio/volume-meter';
@@ -14,6 +15,7 @@ import {
   math,
   parser,
   DARK,
+  CANVAS_BG,
   COLORS,
   FONT,
   SCALE_FACTOR,
@@ -3721,10 +3723,25 @@ math.import({
   },
 });
 
+/**
+ * Draws a solid background.
+ * @param {CanvasRenderingContext2D} ctx Canvas context.
+ * @param {string} color Background color.
+ */
+function drawBackground(ctx, color) {
+  ctx.save(); // Save canvas state
+  ctx.globalCompositeOperation = 'destination-over'; // Draw underneath existing content
+  ctx.fillStyle = color; // Set fill style to requested background color
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Draw filled rectangle to cover surface
+  ctx.restore(); // Restore canvas state
+}
+
 window.addEventListener('load', () => {
   rtv.objs = [];
 
   rtv.c = document.getElementById('viewport');
+  rtv.c.style.backgroundColor = CANVAS_BG;
+
   rtv.ctx = rtv.c.getContext('2d');
 
   configureCanvas();
@@ -3736,10 +3753,7 @@ window.addEventListener('load', () => {
     rtv.speech.voices = window.speechSynthesis.getVoices();
   });
 
-  document.getElementById('save').addEventListener('click', (evt) => {
-    evt.preventDefault();
-    save(rtv.objs);
-  });
+  document.getElementById('save').addEventListener('click', () => save(rtv.objs));
 
   document.getElementById('file').addEventListener('change', (evt) => {
     enterSelect();
@@ -3809,6 +3823,12 @@ window.addEventListener('load', () => {
 
     saveState();
   });
+
+  rtv.recordingManager = new RecordingManager(
+    rtv.c,
+    document.getElementById('record'),
+    document.getElementById('pause-resume'),
+  );
 
   document.addEventListener('paste', (event) => {
     const paste = (event.clipboardData || window.clipboardData).getData('text');
@@ -4314,6 +4334,11 @@ window.addEventListener('load', () => {
     rtv.transition.update();
 
     rtv.t += 1;
+
+    // Draw background only if recording to speed up 'animate'
+    if (rtv.recordingManager.recording !== undefined) {
+      drawBackground(rtv.ctx, CANVAS_BG);
+    }
 
     requestAnimationFrame(animate);
   }

@@ -16,6 +16,10 @@ module.exports = {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.md$/i,
+        use: ['html-loader', 'markdown-loader'],
+      },
     ],
   },
   plugins: [
