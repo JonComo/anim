@@ -1,5 +1,4 @@
 #viewport {
-    background: #ffffff;
     width: 100%;
     height: 100vh;
 }
@@ -10,17 +9,52 @@ body {
     font-family: monospace;
 }
 
+h2 ~ *:not(h2) {
+    margin-left: 1em;
+}
+
 #controls {
-    margin: 10px;
+    margin: 1em 1em 3em;
+}
+
+ul {
+    list-style-type: '-→ ';
+}
+
+ol {
+    counter-reset: brackets;
+}
+
+li {
+    margin: 4px 0;
+}
+
+ol > li {
+    list-style: none;
+    counter-increment: brackets;
+}
+
+ol > li::marker {
+    content: counter(brackets) ')\a0';
 }
 
 code {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-right: 4px;
-    padding-left: 4px;
-    background-color: whitesmoke;
+    display: inline-block;
+    padding: 2px 4px;
     color: crimson;
+    background-color: whitesmoke;
+    border: 2px solid lightgray;
     border-radius: 4px;
     font-weight: bold;
+}
+
+kbd {
+    display: inline-block;
+    padding: 2px 4px;
+    min-width: 16px;
+    text-align: center;
+    background-color: lightgray;
+    border: 0 solid gray;
+    border-bottom-width: 4px;
+    border-radius: 4px;
 }
