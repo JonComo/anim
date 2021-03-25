@@ -21,14 +21,14 @@ export function drawBrackets(x, y, width, height, fingerLength = 8) {
     [x, y],
     [x, y + height],
     [x + fingerLength, y + height],
-  ]);
+  ]); // Left bracket
 
   drawPath([
     [x + width - fingerLength, y],
     [x + width, y],
     [x + width, y + height],
     [x + width - fingerLength, y + height],
-  ]);
+  ]); // Right bracket
 }
 
 /**
