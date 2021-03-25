@@ -483,7 +483,7 @@ export default function Text(text, pos) {
       }
     }
 
-    if (!rtv.keys.shift || (key !== 'ArrowRight' && key !== 'ArrowLeft')) {
+    if (!rtv.keys.shift || (key !== 'Shift' && key !== 'ArrowRight' && key !== 'ArrowLeft')) {
       this.cursor_selection = this.cursor;
     }
 
