@@ -140,7 +140,7 @@ export default function Circle(color, pos) {
         p.a_e += step;
       }
     } else {
-      this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame]);
+      this.properties[rtv.frame] = transformProps(evt, this.properties[rtv.frame]);
     }
 
     return false;

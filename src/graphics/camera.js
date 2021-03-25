@@ -138,8 +138,7 @@ export default function Camera() {
       return;
     }
 
-    const { key } = evt;
-    this.properties[rtv.frame] = transformProps(key, this.properties[rtv.frame], 0.01);
+    this.properties[rtv.frame] = transformProps(evt, this.properties[rtv.frame], 0.01);
   };
 
   this.update_props = () => {
