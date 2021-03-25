@@ -1,5 +1,4 @@
 #viewport {
-    background: #ffffff;
     width: 100%;
     height: 100vh;
 }
@@ -23,4 +22,15 @@ code {
     color: crimson;
     border-radius: 4px;
     font-weight: bold;
+}
+
+kbd {
+    display: inline-block;
+    padding: 2px 4px;
+    min-width: 16px !important;
+    text-align: center;
+    background-color: lightgray;
+    border: 0 solid gray;
+    border-bottom-width: 4px;
+    border-radius: 4px;
 }
