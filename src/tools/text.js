@@ -427,30 +427,25 @@ export default function Text(text, pos) {
     }
 
     if (key === 'ArrowUp') {
-      // find text above
+      // Find textbox above
       const texts = getSortedTexts();
 
-      const i = guidIndex(texts, this);
-      if (i === 0) {
-        return true;
-      }
+      const i = texts.indexOf(this);
+      if (i === 0) return true;
 
-      const newObj = texts[i - 1];
-      newObj.selected = true;
+      texts[i - 1].selected = true;
       this.selected = false;
       return true;
     }
+
     if (key === 'ArrowDown') {
-      // find text below
+      // Find textbox below
       const texts = getSortedTexts();
 
-      const i = guidIndex(texts, this);
-      if (i === texts.length - 1) {
-        return true;
-      }
+      const i = texts.indexOf(this);
+      if (i === texts.length - 1) return true;
 
-      const newObj = texts[i + 1];
-      newObj.selected = true;
+      texts[i + 1].selected = true;
       this.selected = false;
       return true;
     }
