@@ -455,6 +455,30 @@ export default function Text(text, pos) {
       return true;
     }
 
+    if (key === 'PageUp') {
+      // Find highest textbox
+      const texts = getSortedTexts();
+
+      const first = texts[0];
+      if (this === first) return true;
+
+      first.selected = true;
+      this.selected = false;
+      return true;
+    }
+
+    if (key === 'PageDown') {
+      // Find lowest textbox
+      const texts = getSortedTexts();
+
+      const last = texts[texts.length - 1];
+      if (this === last) return true;
+
+      last.selected = true;
+      this.selected = false;
+      return true;
+    }
+
     if (key === 'Backspace') {
       if (!this.is_text_selected()) {
         this.cursor_selection = this.cursor - 1;
