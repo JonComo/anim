@@ -80,7 +80,11 @@ export default class MatrixOutput {
         const elementDrawFunctions = this.generateElementDrawFunctions(row, rowIndex);
 
         return (x, y) => this.columnWidths.reduceRight((pointerX, cw, columnIndex) => {
-          elementDrawFunctions[columnIndex](pointerX, y, cw, this.rowHeights[rowIndex], true, this.ctx);
+          elementDrawFunctions[columnIndex](
+            pointerX, y,
+            cw, this.rowHeights[rowIndex],
+            true, this.ctx,
+          );
 
           return pointerX - cw - this.padding;
         }, x - this.padding);
