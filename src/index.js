@@ -2645,8 +2645,7 @@ math.import({
 
     const result = math.multiply(W, x);
 
-    const rformat = formatMatrix(result._data);
-    const rsize = matrixSize(rformat);
+    const rMO = new MatrixOutput(result.toArray());
 
     // draw neural network
     const rows = W._size[0];
@@ -2664,7 +2663,7 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    drawMatrix(rformat, (i, j) => {
+    rMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < highNeur.length; n++) {
         const highn = highNeur[n];
@@ -2675,10 +2674,10 @@ math.import({
     });
 
     rtv.ctx.fillStyle = 'black';
-    rtv.ctx.fillText('=', rsize[0] + pad, rsize[1] / 2);
+    rtv.ctx.fillText('=', rMO.width + pad, rMO.height / 2);
 
     // draw dot prod matrix
-    rtv.ctx.translate(rsize[0] + pad * 3, 0);
+    rtv.ctx.translate(rMO.width + pad * 3, 0);
     const dp = [];
 
     let round = prettyRoundOne;
