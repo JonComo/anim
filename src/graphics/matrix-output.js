@@ -48,6 +48,7 @@ export default class MatrixOutput {
     this.padding = padding;
     this.ctx = ctx;
 
+    // Initialize empty arrays to hold layout measurements
     this.columnWidths = [];
     this.rowHeights = [];
 
