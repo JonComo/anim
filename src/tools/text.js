@@ -431,10 +431,11 @@ export default function Text(text, pos) {
       const texts = getSortedTexts();
 
       const i = texts.indexOf(this);
-      if (i === 0) return true;
+      if (i !== 0) {
+        texts[i - 1].selected = true;
+        this.selected = false;
+      }
 
-      texts[i - 1].selected = true;
-      this.selected = false;
       return true;
     }
 
@@ -443,10 +444,11 @@ export default function Text(text, pos) {
       const texts = getSortedTexts();
 
       const i = texts.indexOf(this);
-      if (i === texts.length - 1) return true;
+      if (i !== texts.length - 1) {
+        texts[i + 1].selected = true;
+        this.selected = false;
+      }
 
-      texts[i + 1].selected = true;
-      this.selected = false;
       return true;
     }
 
@@ -455,10 +457,11 @@ export default function Text(text, pos) {
       const texts = getSortedTexts();
 
       const first = texts[0];
-      if (this === first) return true;
+      if (this !== first) {
+        first.selected = true;
+        this.selected = false;
+      }
 
-      first.selected = true;
-      this.selected = false;
       return true;
     }
 
@@ -467,10 +470,11 @@ export default function Text(text, pos) {
       const texts = getSortedTexts();
 
       const last = texts[texts.length - 1];
-      if (this === last) return true;
+      if (this !== last) {
+        last.selected = true;
+        this.selected = false;
+      }
 
-      last.selected = true;
-      this.selected = false;
       return true;
     }
 
