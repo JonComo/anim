@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver';
 import Camera from './graphics/camera';
 import Circle from './tools/circle';
 import Frames, { configureCanvas } from './graphics/frames';
+import MatrixOutput from './graphics/matrix-output';
 import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
@@ -2577,13 +2578,9 @@ math.import({
 
     const result = math.multiply(W, x);
 
-    const xformat = formatMatrix(x._data);
-    const rformat = formatMatrix(result._data);
-    const Wformat = formatMatrix(W._data);
-
-    const rsize = matrixSize(rformat);
-    const Wsize = matrixSize(formatMatrix(W._data));
-    const xsize = matrixSize(xformat);
+    const rMO = new MatrixOutput(result.toArray());
+    const WMO = new MatrixOutput(W.toArray());
+    const xMO = new MatrixOutput(x.toArray());
 
     // draw neural network
     const rows = W._size[0];
@@ -2601,7 +2598,7 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    drawMatrix(rformat, (i, j) => {
+    rMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < highNeur.length; n++) {
         const highn = highNeur[n];
@@ -2612,22 +2609,22 @@ math.import({
     });
 
     rtv.ctx.fillStyle = 'black';
-    rtv.ctx.fillText('=', rsize[0] + pad, rsize[1] / 2);
+    rtv.ctx.fillText('=', rMO.width + pad, rMO.height / 2);
 
     // draw W matrix
-    rtv.ctx.translate(rsize[0] + pad * 3, 0);
-    drawMatrix(Wformat, (i, j) => {
+    rtv.ctx.translate(rMO.width + pad * 3, 0);
+    WMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       if (highConn.length && highConn[0] === j && highConn[1] === i) {
         rtv.ctx.fillStyle = COLORS[3];
       }
     });
 
-    rtv.ctx.fillText('*', Wsize[0] + pad, rsize[1] / 2);
+    rtv.ctx.fillText('*', WMO.width + pad, WMO.height / 2);
 
     // draw x matrix
-    rtv.ctx.translate(Wsize[0] + pad * 3, rsize[1] / 2 - xsize[1] / 2);
-    drawMatrix(xformat, (i, j) => {
+    rtv.ctx.translate(WMO.width + pad * 3, WMO.height / 2 - xMO.height / 2);
+    xMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
 
       for (let n = 0; n < highNeur.length; n++) {
