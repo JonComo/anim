@@ -288,9 +288,6 @@ export default function Text(text, pos) {
         }
       }
 
-      const size = matrixSize(matrix);
-      drawBrackets(0, 0, size[0], size[1]);
-
       return;
     }
 
