@@ -13,6 +13,7 @@ import {
   matrixSize,
   prettyRound,
   rgbToHex,
+  roundWithKey,
   saveState,
   transformProps,
 } from '../index';
@@ -276,11 +277,9 @@ export default function Text(text, pos) {
       // create a bunch of matrix numbers
       const pad = 24;
 
-      const matrix = formatMatrix(this.matrix_vals);
-
-      for (let i = 0; i < matrix.length; i++) {
-        for (let j = 0; j < matrix[i].length; j++) {
-          const newT = new Text(matrix[i][j], {
+      for (let i = 0; i < this.matrix_vals.length; i++) {
+        for (let j = 0; j < this.matrix_vals[i].length; j++) {
+          const newT = new Text(roundWithKey(this.matrix_vals[i][j]).toString(), {
             x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
             y: p.y + i * GRID_SIZE,
           });
