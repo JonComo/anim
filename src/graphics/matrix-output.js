@@ -2,7 +2,7 @@ import {
   drawPath,
   getFontHeight,
   getTextWidth,
-  roundToString,
+  roundWithKey,
 } from '../index';
 import { rtv } from '../resources';
 
@@ -21,14 +21,14 @@ export function drawBrackets(x, y, width, height, fingerLength = 8) {
     [x, y],
     [x, y + height],
     [x + fingerLength, y + height],
-  ]);
+  ]); // Left bracket
 
   drawPath([
     [x + width - fingerLength, y],
     [x + width, y],
     [x + width, y + height],
     [x + width - fingerLength, y + height],
-  ]);
+  ]); // Right bracket
 }
 
 /**
@@ -48,6 +48,7 @@ export default class MatrixOutput {
     this.padding = padding;
     this.ctx = ctx;
 
+    // Initialize empty arrays to hold layout measurements
     this.columnWidths = [];
     this.rowHeights = [];
 
@@ -72,7 +73,7 @@ export default class MatrixOutput {
   }
 
   /**
-   * Generates and stores an array of draw functions for each row of matrix.
+   * Generates and stores an array of draw functions for each row of the matrix.
    */
   generateRowDrawFunctions() {
     this.rowDrawFunctions = this.matrix.map((row, rowIndex) => {
@@ -90,13 +91,14 @@ export default class MatrixOutput {
               undefined,
               cw, this.rowHeights[rowIndex],
               true, this.ctx,
-            );
+            ); // Call draw function (text or nested matrix)
 
-            return pointerX - cw - this.padding;
-          }, x - this.padding);
+            return pointerX - cw - this.padding; // Move left by column width and padding
+          }, x - this.padding); // Move left by padding
       }
 
-      const str = roundToString(row);
+      // Row is a number; return function to draw text
+      const str = roundWithKey(row);
 
       const rowWidth = getTextWidth(str);
       MatrixOutput.updateLayout(this.columnWidths, 0, rowWidth);
@@ -119,12 +121,14 @@ export default class MatrixOutput {
       let height;
       let draw;
 
-      if (element instanceof Array) {
+      if (element instanceof Array) { // Element is a nested matrix
         const childMatrix = new MatrixOutput(element);
         ({ width, height } = childMatrix);
+        // Substitute 'this' with 'childMatrix' instead of default array of draw functions
         draw = childMatrix.draw.bind(childMatrix);
-      } else {
-        const str = roundToString(element);
+      } else { // Element is a number
+        // Generate function to draw text
+        const str = roundWithKey(element);
 
         width = getTextWidth(str);
         height = getFontHeight();
@@ -147,10 +151,10 @@ export default class MatrixOutput {
    */
   drawInterior(x, y, elementCallback) {
     this.rowHeights.reduce((pointerY, rh, rowIndex) => {
-      this.rowDrawFunctions[rowIndex](x, pointerY, elementCallback);
+      this.rowDrawFunctions[rowIndex](x, pointerY, elementCallback); // Call row draw functions
 
-      return pointerY + rh + this.padding;
-    }, y + this.padding);
+      return pointerY + rh + this.padding; // Move down by row height and padding
+    }, y + this.padding); // Move down by padding
   }
 
   /**
@@ -166,11 +170,15 @@ export default class MatrixOutput {
   draw(x, y, elementCallback = undefined, width = this.width, height = this.height, right = false) {
     this.ctx.save();
 
-    this.ctx.textAlign = 'right';
+    // The origin of text drawn on the canvas will be the top-right corner
     this.ctx.textBaseline = 'top';
+    this.ctx.textAlign = 'right';
 
+    // Draw matrix contents; without brackets
+    // Since 'drawInterior' draws from the top-right corner, 'x' must be adjusted when 'right' is false
     this.drawInterior(right ? x : x + width, y, elementCallback);
 
+    // Since 'drawBrackets' draws from the top-left corner, 'x' must be adjusted when 'right' is true
     drawBrackets(right ? x - width : x, y, width, height);
 
     this.ctx.restore();
