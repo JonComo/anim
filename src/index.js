@@ -898,24 +898,22 @@ export function hexToRgb(hex) {
   ] : null;
 }
 
-export function transformProps(key, props, step = 0.2) {
-  const propsL = { ...props };
+export function transformProps(e, props, step = 0.2) {
+  const transformations = {
+    l: (p) => ({ w: p.w + 1 }),
+    j: (p) => ({ w: p.w - 1 }),
+    i: (p) => ({ h: p.h + 1 }),
+    k: (p) => ({ h: p.h - 1 }),
+    u: (p) => ({ r: p.r - Math.PI / 12 }),
+    o: (p) => ({ r: p.r + Math.PI / 12 }),
+  };
 
-  if (key === 'l') {
-    propsL.w += step;
-  } else if (key === 'j') {
-    propsL.w -= step;
-  } else if (key === 'i') {
-    propsL.h += step;
-  } else if (key === 'k') {
-    propsL.h -= step;
-  } else if (key === 'u') {
-    propsL.r -= Math.PI / 12;
-  } else if (key === 'o') {
-    propsL.r += Math.PI / 12;
+  if (e.key in transformations) {
+    e.preventDefault();
+    return { ...props, ...transformations[e.key](props) };
   }
 
-  return propsL;
+  return props;
 }
 
 export function constrain(v) {
