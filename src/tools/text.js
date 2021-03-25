@@ -274,17 +274,26 @@ export default function Text(text, pos) {
     // if its a matrix split that up too
     if (this.matrix_vals.length !== 0) {
       // create a bunch of matrix numbers
+
       const pad = 24;
 
       const matrix = formatMatrix(this.matrix_vals);
 
+      const newTextbox = (initialText, i, j) => {
+        const newT = new Text(initialText, {
+          x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
+          y: p.y + i * GRID_SIZE,
+        });
+        rtv.objs.push(newT);
+      };
+
       for (let i = 0; i < matrix.length; i++) {
-        for (let j = 0; j < matrix[i].length; j++) {
-          const newT = new Text(matrix[i][j], {
-            x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
-            y: p.y + i * GRID_SIZE,
-          });
-          rtv.objs.push(newT);
+        if (matrix[i] instanceof Array) {
+          for (let j = 0; j < matrix[i].length; j++) {
+            newTextbox(matrix[i][j], i, j);
+          }
+        } else {
+          newTextbox(matrix[i], i, 0);
         }
       }
 
