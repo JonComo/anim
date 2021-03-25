@@ -407,11 +407,19 @@ export default function Text(text, pos) {
         this.cursor = s.e;
       } else if (key === 'ArrowLeft') {
         this.cursor = s.s;
+      } else if (key === 'Home') {
+        this.cursor = 0;
+      } else if (key === 'End') {
+        this.cursor = this.properties[rtv.frame].t.length;
       }
     } else if (key === 'ArrowRight') {
       this.cursor += 1;
     } else if (key === 'ArrowLeft') {
       this.cursor -= 1;
+    } else if (key === 'Home') {
+      this.cursor = 0;
+    } else if (key === 'End') {
+      this.cursor = this.properties[rtv.frame].t.length;
     }
 
     if (key === 'ArrowUp') {
@@ -483,7 +491,7 @@ export default function Text(text, pos) {
       }
     }
 
-    if (!rtv.keys.shift || (key !== 'ArrowRight' && key !== 'ArrowLeft')) {
+    if (!rtv.keys.shift || (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End')) {
       this.cursor_selection = this.cursor;
     }
 
