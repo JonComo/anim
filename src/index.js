@@ -640,12 +640,12 @@ export function drawPath(points, canvas = rtv.ctx) {
 }
 
 /**
- * If `n` is not an integer, rounds `n` to one (or two, if `ctrl` is pressed) decimal place(s) and then returns `n` converted to a string.
+ * If `n` is not an integer, rounds `n` to one (or two, if `ctrl` is pressed) decimal place(s) and then returns `n`.
  * @param {number} n
  * @returns {string} Rounded `n` as a string.
  */
-export function roundToString(n) {
-  return math.round(n, rtv.keys.ctrl ? 2 : 1).toString();
+export function roundWithKey(n) {
+  return math.round(n, rtv.keys.ctrl ? 2 : 1);
 }
 
 /**

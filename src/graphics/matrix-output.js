@@ -2,7 +2,7 @@ import {
   drawPath,
   getFontHeight,
   getTextWidth,
-  roundToString,
+  roundWithKey,
 } from '../index';
 import { rtv } from '../resources';
 
@@ -92,7 +92,7 @@ export default class MatrixOutput {
       }
 
       // Row is a number; return function to draw text
-      const str = roundToString(row);
+      const str = roundWithKey(row);
 
       const rowWidth = getTextWidth(str);
       MatrixOutput.updateLayout(this.columnWidths, 0, rowWidth);
@@ -122,7 +122,7 @@ export default class MatrixOutput {
         draw = childMatrix.draw.bind(childMatrix);
       } else { // Element is a number
         // Generate function to draw text
-        const str = roundToString(element);
+        const str = roundWithKey(element);
 
         width = getTextWidth(str);
         height = getFontHeight();
