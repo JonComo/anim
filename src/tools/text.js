@@ -333,7 +333,7 @@ export default function Text(text, pos) {
 
     if (rtv.keys.meta || rtv.keys.ctrl) {
       if (this.is_selected()) {
-        if (key === 'c') {
+        const copyText = () => {
           // copy
           rtv.text_copied = this.text_selected();
 
@@ -344,6 +344,16 @@ export default function Text(text, pos) {
           el.select();
           document.execCommand('copy');
           document.body.removeChild(el);
+        };
+
+        if (key === 'c') {
+          copyText();
+
+          return true;
+        }
+        if (key === 'x') {
+          copyText();
+          this.change_text(this.replace_selected_text(''));
 
           return true;
         }
