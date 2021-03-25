@@ -512,7 +512,7 @@ export default function Text(text, pos) {
       }
     }
 
-    if (!rtv.keys.shift || (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End')) {
+    if (!rtv.keys.shift || (key !== 'Shift' && key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End')) {
       this.cursor_selection = this.cursor;
     }
 
