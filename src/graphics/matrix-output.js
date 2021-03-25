@@ -1,6 +1,15 @@
 import { drawPath, prettyRound, prettyRoundOne } from '../index';
 import { rtv } from '../resources';
 
+/**
+ * Draws a pair of vertical rectangular brackets.
+ * @param {number} x Top-left `x` coordinate.
+ * @param {number} y Top-left `y` coordinate.
+ * @param {number} width Distance between brackets.
+ * @param {number} height Height of brackets.
+ * @param {number} fingerLength
+ * Length of short horizontal block on top and bottom of bracket in pixels.
+ */
 export function drawBrackets(x, y, width, height, fingerLength = 8) {
   drawPath([
     [x + fingerLength, y],
@@ -17,16 +26,32 @@ export function drawBrackets(x, y, width, height, fingerLength = 8) {
   ]);
 }
 
+/**
+ * If `n` is not an integer, rounds `n` to one (or two, if `ctrl` is pressed) decimal place(s) and then returns `n` converted to a string.
+ * @param {number} n
+ * @returns {string} Rounded `n` as a string.
+ */
 export function roundToString(n) {
   if (n % 1 === 0) return n.toString();
   if (rtv.keys.ctrl) return prettyRound(n);
   return prettyRoundOne(n);
 }
 
+/**
+ * Returns the actual width of `text` on the canvas.
+ * @param {string} text
+ * @param {CanvasRenderingContext2D} ctx Optionally specifies a substitute context 2D.
+ * @returns {number} Length in pixels.
+ */
 export function getTextWidth(text, ctx = rtv.ctx) {
   return ctx.measureText(text).width;
 }
 
+/**
+ * Returns current font size of canvas.
+ * @param {CanvasRenderingContext2D} ctx Optionally specifies a substitute context 2D.
+ * @returns {number} Font size.
+ */
 export function getFontHeight(ctx = rtv.ctx) {
   return parseInt(ctx.font.match(/(\d+)px/)[1], 10);
 }
