@@ -3,6 +3,9 @@
 ### KEYBOARD SHORTCUTS
 
 - <kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>z</kbd> to undo last change.
+- <kbd>cmd</kbd> / <kbd>ctrl</kbd> + <kbd>c</kbd>, <kbd>x</kbd> and <kbd>v</kbd> to copy, cut and paste, respectively.
+- <kbd>↑</kbd> and <kbd>↓</kbd> to move to textboxes above and below, respectively.
+- <kbd>Page Up</kbd> and <kbd>Page Down</kbd> to move to highest and lowest textboxes, respectively.
 - <kbd>←</kbd> and <kbd>→</kbd> for previous and next frame.
 - <kbd>cmd</kbd> / <kbd>ctrl</kbd> + return to enter presentation mode.
 - <kbd>esc</kbd> to escape any tool or presentation mode.
