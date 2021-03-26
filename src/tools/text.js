@@ -9,7 +9,6 @@ import {
   drawSimple,
   enterSelect,
   formatMatrix,
-  guid,
   interpolate,
   matrixSize,
   prettyRound,
@@ -44,7 +43,6 @@ function getSortedTexts() {
 
 export default function Text(text, pos) {
   this.type = 'Text';
-  this.guid = guid();
   this.properties = {};
   this.properties[rtv.frame] = {
     t: text,
