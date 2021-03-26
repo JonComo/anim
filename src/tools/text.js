@@ -871,7 +871,7 @@ export default function Text(text, pos) {
 
     if (parsedText && parsedText.length) {
       parsedText = parsedText
-        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters}) = `)
+        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
         .replace(/@/g, '_anon'); // Replace @ with anonymous fn name
     }
 
