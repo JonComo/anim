@@ -873,14 +873,9 @@ export default function Text(text, pos) {
 
     // replace @ with anonymous fn name
     if (parsedText && parsedText.length) {
-      const split = parsedText.split('@');
-      let newT = '';
-      const N = split.length;
-      for (let i = 0; i < N - 1; i++) {
-        newT += `${split[i]}anon${guid().slice(0, 8)}`;
-      }
-      newT += split[N - 1];
-      parsedText = newT;
+      parsedText = parsedText
+        .replace(/@/g, '_anon_')
+        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `_anon_(${parameters}) = `);
     }
 
     if (parsedText && parsedText.includes(':')) {
