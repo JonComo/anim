@@ -28,3 +28,9 @@ jobs:
           git commit --message 'Publish site'
           git subtree split --prefix dist/ --branch gh-pages
           git push --force origin gh-pages
+
+      - name: Tag commit
+        run: |
+          VERSION="v$(node version.js)"
+          git tag "$VERSION"
+          git push origin "$VERSION"
