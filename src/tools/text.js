@@ -872,8 +872,8 @@ export default function Text(text, pos) {
     // replace @ with anonymous fn name
     if (parsedText && parsedText.length) {
       parsedText = parsedText
-        .replace(/@/g, '_anon_')
-        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `_anon_(${parameters}) = `);
+        .replace(/@/g, '_anon')
+        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `_anon(${parameters}) = `);
     }
 
     if (parsedText && parsedText.includes(':')) {
