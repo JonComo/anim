@@ -1004,18 +1004,6 @@ export function interpolate(a, b) {
   return interp;
 }
 
-export function guidIndex(objs, obj) {
-  const N = objs.length;
-  for (let i = 0; i < N; i++) {
-    const tobj = objs[i];
-    if (tobj.guid === obj.guid) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
 function textArrayToObjs(arr, keepAnimation) {
   const newObjs = [];
   for (let i = 0; i < arr.length; i++) {

@@ -10,7 +10,6 @@ import {
   enterSelect,
   formatMatrix,
   guid,
-  guidIndex,
   interpolate,
   matrixSize,
   prettyRound,
