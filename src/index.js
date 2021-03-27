@@ -748,49 +748,6 @@ export function drawFn(fn) {
   return size;
 }
 
-export function matrixSize(matrix) {
-  if (matrix && matrix.length === 0) {
-    return;
-  }
-
-  const pad = 24;
-
-  return [matrix[0].length * (MAT_NUM_WIDTH + pad), matrix.length * GRID_SIZE];
-}
-
-export function formatMatrix(matrix) {
-  if (matrix.length === 0) {
-    return null;
-  }
-
-  // format for display
-  const formatted = [];
-  let round = prettyRoundOne;
-
-  if (rtv.keys.ctrl) {
-    round = prettyRound;
-  }
-
-  if (typeof matrix[0] === 'number') {
-    // array
-    for (let i = 0; i < matrix.length; i++) {
-      formatted.push([round(matrix[i])]);
-    }
-  } else {
-    // matrix
-    for (let i = 0; i < matrix.length; i++) {
-      const row = [];
-      for (let j = 0; j < matrix[i].length; j++) {
-        row.push(round(matrix[i][j]));
-      }
-
-      formatted.push(row);
-    }
-  }
-
-  return formatted;
-}
-
 function getMousePos(canvas, evt) {
   const rect = canvas.getBoundingClientRect();
   let x; let
