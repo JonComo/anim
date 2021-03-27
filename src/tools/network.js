@@ -1,7 +1,6 @@
 import {
   copy,
   distance,
-  guid,
   interpolate,
 } from '../index';
 import {
@@ -13,7 +12,6 @@ import {
 
 export default function Network(position) {
   this.type = 'Network';
-  this.guid = guid();
   this.properties = {};
   this.properties[rtv.frame] = {
     layers: [2, 3, 2], p: position, c: [0, 0, 0, 1], w: 1, h: 1, r: 0,
