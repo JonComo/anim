@@ -31,6 +31,6 @@ jobs:
 
       - name: Tag commit
         run: |
-          VERSION="v$(node version.js)"
+          VERSION="v$(node utils/version.js)"
           git tag "$VERSION" gh-pages
           git push origin "$VERSION"
