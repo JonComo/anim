@@ -7,8 +7,6 @@ import {
   drawSimple,
   enterSelect,
   formatMatrix,
-  guid,
-  guidIndex,
   interpolate,
   matrixSize,
   prettyRound,
@@ -45,7 +43,6 @@ function getSortedTexts() {
 
 export default function Text(text, pos) {
   this.type = 'Text';
-  this.guid = guid();
   this.properties = {};
   this.properties[rtv.frame] = {
     t: text,
@@ -875,16 +872,10 @@ export default function Text(text, pos) {
 
     let parsedText = unparsedText;
 
-    // replace @ with anonymous fn name
     if (parsedText && parsedText.length) {
-      const split = parsedText.split('@');
-      let newT = '';
-      const N = split.length;
-      for (let i = 0; i < N - 1; i++) {
-        newT += `${split[i]}anon${guid().slice(0, 8)}`;
-      }
-      newT += split[N - 1];
-      parsedText = newT;
+      parsedText = parsedText
+        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
+        .replace(/@/g, '_anon'); // Replace @ with anonymous fn name
     }
 
     if (parsedText && parsedText.includes(':')) {

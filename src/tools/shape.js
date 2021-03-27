@@ -2,7 +2,6 @@ import {
   between,
   copy,
   distance,
-  guid,
   interpolate,
   rgbToHex,
   transformProps,
@@ -16,7 +15,6 @@ import {
 
 export default function Shape(color, path) {
   this.type = 'Shape';
-  this.guid = guid();
   this.properties = {};
   this.properties[rtv.frame] = {
     c: color, path, v: false, w: 1, h: 1, r: 0,

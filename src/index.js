@@ -219,17 +219,6 @@ function rgb1ToHex(a) {
   return rgbToHex(c);
 }
 
-// http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-export function guid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  }
-  return `${s4() + s4()}-${s4()}-${s4()}-${
-    s4()}-${s4()}${s4()}${s4()}`;
-}
-
 export function prettyRound(num) {
   return (Math.round(num * 100) / 100).toFixed(2);
 }
@@ -1013,18 +1002,6 @@ export function interpolate(a, b) {
   return interp;
 }
 
-export function guidIndex(objs, obj) {
-  const N = objs.length;
-  for (let i = 0; i < N; i++) {
-    const tobj = objs[i];
-    if (tobj.guid === obj.guid) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
 function textArrayToObjs(arr, keepAnimation) {
   const newObjs = [];
   for (let i = 0; i < arr.length; i++) {
@@ -1046,8 +1023,6 @@ function textArrayToObjs(arr, keepAnimation) {
       newObj.properties[rtv.frame] = o.properties[1];
       newObj.select();
     }
-
-    newObj.guid = o.guid;
 
     newObjs.push(newObj);
   }
