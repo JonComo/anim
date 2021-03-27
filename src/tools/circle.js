@@ -1,7 +1,6 @@
 import {
   copy,
   distance,
-  guid,
   interpolate,
   rgbToHex,
   transformProps,
@@ -15,7 +14,6 @@ import {
 
 export default function Circle(color, pos) {
   this.type = 'Circle';
-  this.guid = guid();
   this.properties = {};
   this.properties[rtv.frame] = {
     p: pos, c: color, fill: [0, 0, 0, 0], a_s: 0, a_e: Math.PI * 2.0, w: 1, h: 1, r: 0,
