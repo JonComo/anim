@@ -70,6 +70,6 @@
 
 ### SPECIAL VALUES
 
-- `_x` mouse x position, `_y` mouse y position.
+- `_mx` and `_my`: Mouse x and y positions relative to graph.
 - `_frame` current frame (counts up indefinitely).
 - `_t` frame transition from 0 to 1, `_tt` eased transition.
