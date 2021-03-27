@@ -7,7 +7,6 @@ import {
   drawSimple,
   enterSelect,
   interpolate,
-  prettyRound,
   rgbToHex,
   roundWithKey,
   saveState,
@@ -594,7 +593,7 @@ export default function Text(text, pos) {
               // nothing
               this.text_val = `=${val}`;
             } else {
-              this.text_val = `=${prettyRound(val)}`;
+              this.text_val = `=${roundWithKey(val)}`;
             }
           } else if (type === 'boolean') {
             this.text_val = ` = ${val}`;
@@ -608,9 +607,9 @@ export default function Text(text, pos) {
                 // nothing
                 this.text_val = `=${val}`;
               } else {
-                this.text_val = `=${prettyRound(
+                this.text_val = `=${roundWithKey(
                   val.re,
-                ).toString()} + ${prettyRound(val.im).toString()}i`;
+                ).toString()} + ${roundWithKey(val.im).toString()}i`;
               }
             }
           } else if (val) {
@@ -740,7 +739,7 @@ export default function Text(text, pos) {
         }
 
         const newVal = oldVal + delta;
-        this.text_val = `=${prettyRound(newVal)}`;
+        this.text_val = `=${roundWithKey(newVal)}`;
 
         try {
           parser.set(varName, newVal);

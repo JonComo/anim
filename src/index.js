@@ -219,14 +219,6 @@ function rgb1ToHex(a) {
   return rgbToHex(c);
 }
 
-export function prettyRound(num) {
-  return (Math.round(num * 100) / 100).toFixed(2);
-}
-
-function prettyRoundOne(num) {
-  return (Math.round(num * 10) / 10).toFixed(1);
-}
-
 export function drawSimple(text) {
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '*') {
@@ -1968,7 +1960,7 @@ math.import({
   view(x, { _data: p } = { _data: [0, 0] }) { // matrix, position: [x, y, z]
     let t = [];
     if (x._data) {
-      const d = x.map(prettyRound)._data;
+      const d = x.map(roundWithKey)._data;
       if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
@@ -2579,16 +2571,11 @@ math.import({
     rtv.ctx.translate(rMO.width + pad * 3, 0);
     const dp = [];
 
-    let round = prettyRoundOne;
-    if (rtv.keys.ctrl) {
-      round = prettyRound;
-    }
-
     for (let i = 0; i < W._data.length; i++) {
       let text = '';
 
       for (let j = 0; j < W._data[0].length; j++) {
-        text += `${round(W._data[i][j])}*${round(x._data[j])}`;
+        text += `${roundWithKey(W._data[i][j])}*${roundWithKey(x._data[j])}`;
         if (j < W._data[0].length - 1) {
           text += ' + ';
         }
