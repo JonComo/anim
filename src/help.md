@@ -70,6 +70,6 @@
 
 ### SPECIAL VALUES
 
-- `_x` mouse x position, `_y` mouse y position.
+- `_mx` mouse x position, `_my` mouse y position.
 - `_frame` current frame (counts up indefinitely).
 - `_t` frame transition from 0 to 1, `_tt` eased transition.
