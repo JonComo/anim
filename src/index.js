@@ -1869,13 +1869,13 @@ math.import({
   },
   draw(points, fill) { // draws line from point to point [[x1,y1,z1], ...], draws arrow
     const N = points.size()[0];
-    const graphed = rtv.cam.graph_to_screen_mat(points);
+    const mapped = rtv.cam.graph_to_screen_mat(points);
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
     let p; let lastp;
     for (let i = 0; i < N; i++) {
-      p = graphed[i];
+      p = mapped[i];
       if (i === 0) {
         rtv.ctx.moveTo(p[0], p[1]);
       } else {
@@ -2012,20 +2012,20 @@ math.import({
       }
     }
 
-    const graphed = rtv.cam.graph_to_screen(p[0], p[1], 0);
+    const mapped = rtv.cam.graph_to_screen(p[0], p[1], 0);
     for (let i = 0; i < t.length; i++) {
       rtv.ctx.textAlign = 'left';
-      rtv.ctx.fillText(t[i], graphed[0], graphed[1] + GRID_SIZE * i);
+      rtv.ctx.fillText(t[i], mapped[0], mapped[1] + GRID_SIZE * i);
     }
   },
   labels(labels, points) { // render labels ["l1", ...] at [[x1, y1, z1], ...]
-    const graphed = rtv.cam.graph_to_screen_mat(points);
+    const mapped = rtv.cam.graph_to_screen_mat(points);
     const N = labels.size()[0];
     let p;
     rtv.ctx.save();
     rtv.ctx.textAlign = 'center';
     for (let i = 0; i < N; i++) {
-      p = graphed[i];
+      p = mapped[i];
       rtv.ctx.fillText(labels._data[i], p[0], p[1]);
     }
     rtv.ctx.restore();
