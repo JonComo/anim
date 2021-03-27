@@ -937,7 +937,7 @@ export function interpolate(a, b) {
   }
 
   const interp = {};
-  for (const key in a) {
+  Object.keys(a).forEach((key) => {
     if (key === 'p') {
       // interpolate position
       const ap = a[key];
@@ -988,7 +988,7 @@ export function interpolate(a, b) {
     } else {
       interp[key] = a[key];
     }
-  }
+  });
 
   return interp;
 }
