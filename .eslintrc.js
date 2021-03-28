@@ -11,6 +11,6 @@ module.exports = {
   rules: {
     'no-plusplus': 'off',
     'no-underscore-dangle': 'off',
-    'prefer-destructuring': 'off',
+    'prefer-destructuring': 'warn',
   },
 };
