@@ -3604,13 +3604,12 @@ math.import({
 });
 
 /**
- * Draws a solid background.
+ * Draws a colored rectangle that covers the canvas.
  * @param {CanvasRenderingContext2D} ctx Canvas context.
  * @param {string} color Background color.
  */
-function drawBackground(ctx, color) {
+function drawBackground(ctx = rtv.ctx, color = CANVAS_BG) {
   ctx.save(); // Save canvas state
-  ctx.globalCompositeOperation = 'destination-over'; // Draw underneath existing content
   ctx.fillStyle = color; // Set fill style to requested background color
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Draw filled rectangle to cover surface
   ctx.restore(); // Restore canvas state
@@ -4124,7 +4123,7 @@ window.addEventListener('load', () => {
     }
 
     if (!parser.get('_trace')) {
-      rtv.ctx.clearRect(0, 0, rtv.c.width, rtv.c.height);
+      drawBackground();
     }
 
     rtv.cam.update_props();
@@ -4214,11 +4213,6 @@ window.addEventListener('load', () => {
     rtv.transition.update();
 
     rtv.t += 1;
-
-    // Draw background only if recording to speed up 'animate'
-    if (rtv.recordingManager.recording !== undefined) {
-      drawBackground(rtv.ctx, CANVAS_BG);
-    }
 
     requestAnimationFrame(animate);
   }
