@@ -3660,7 +3660,7 @@ math.import({
  * @param {CanvasRenderingContext2D} ctx Canvas context.
  * @param {string} color Background color.
  */
-function drawBackground(ctx, color) {
+function drawBackground(ctx = rtv.ctx, color = CANVAS_BG) {
   ctx.save(); // Save canvas state
   ctx.fillStyle = color; // Set fill style to requested background color
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Draw filled rectangle to cover surface
@@ -4175,7 +4175,7 @@ window.addEventListener('load', () => {
     }
 
     if (!parser.get('_trace')) {
-      drawBackground(rtv.ctx, CANVAS_BG);
+      drawBackground();
     }
 
     rtv.cam.update_props();
