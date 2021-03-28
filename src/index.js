@@ -507,7 +507,7 @@ function drawR(o, p, d) {
     } else if (o.items) {
       // array
 
-      const items = o.items;
+      const { items } = o;
       let h = 0;
 
       // get height of all args
@@ -1040,7 +1040,7 @@ function save(objs) {
 }
 
 function load(evt) {
-  const files = evt.target.files; // FileList object
+  const { files } = evt.target; // FileList object
   const f = files[0];
 
   const reader = new FileReader();
@@ -1384,8 +1384,8 @@ math.import({
       const s = copy(arguments[k]);
 
       const props = parser.evaluate('text_props');
-      const x = props.p.x;
-      const y = props.p.y;
+      const { x } = props.p;
+      const { y } = props.p;
       rtv.ctx.translate(x + 5 * GRID_SIZE * k, y + GRID_SIZE);
       rtv.ctx.fillText(s, 0, 0);
 
@@ -1505,8 +1505,8 @@ math.import({
     rtv.ctx.save();
 
     const props = parser.evaluate('text_props');
-    const x = props.p.x;
-    const y = props.p.y;
+    const { x } = props.p;
+    const { y } = props.p;
     rtv.ctx.translate(x, y);
     rtv.ctx.rotate(props.r);
     rtv.ctx.scale(props.w, props.h * 1.2);
@@ -2722,8 +2722,8 @@ math.import({
     rtv.ctx.save();
 
     const props = parser.evaluate('text_props');
-    const x = props.p.x;
-    const y = props.p.y;
+    const { x } = props.p;
+    const { y } = props.p;
 
     rtv.ctx.translate(x, y);
     rtv.ctx.rotate(props.r);
@@ -2902,8 +2902,8 @@ math.import({
     rtv.ctx.save();
 
     const props = parser.evaluate('text_props');
-    const x = props.p.x;
-    const y = props.p.y;
+    const { x } = props.p;
+    const { y } = props.p;
 
     rtv.ctx.translate(x, y);
     rtv.ctx.rotate(props.r);
@@ -3137,8 +3137,8 @@ math.import({
     rtv.ctx.save();
 
     const props = parser.evaluate('text_props');
-    const x = props.p.x;
-    const y = props.p.y;
+    const { x } = props.p;
+    const { y } = props.p;
 
     rtv.ctx.translate(x, y);
     rtv.ctx.rotate(props.r);
@@ -3236,8 +3236,8 @@ math.import({
     rtv.ctx.save();
 
     const props = parser.evaluate('text_props');
-    const x = props.p.x;
-    const y = props.p.y;
+    const { x } = props.p;
+    const { y } = props.p;
 
     rtv.ctx.translate(x, y);
     rtv.ctx.rotate(props.r);
@@ -3743,7 +3743,7 @@ window.addEventListener('load', () => {
   });
 
   window.addEventListener('keydown', (evt) => {
-    const key = evt.key;
+    const { key } = evt;
 
     if (key === 'Escape' && rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
       rtv.presenting = false;
@@ -4046,8 +4046,8 @@ window.addEventListener('load', () => {
     if (rtv.selecting) {
       rtv.selecting = false;
 
-      const x = rtv.mouse.start.x;
-      const y = rtv.mouse.start.y;
+      const { x } = rtv.mouse.start;
+      const { y } = rtv.mouse.start;
       const x2 = rtv.mouse.pos.x;
       const y2 = rtv.mouse.pos.y;
 
