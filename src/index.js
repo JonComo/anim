@@ -2639,7 +2639,7 @@ math.import({
     rtv.ctx.restore();
   },
   // eslint-disable-next-line max-len
-  magfield(path, current, { _data: atPoint }) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
+  magfield(path, current, { _data: atPoint } = {}) { // mag field from path [[x1, y1, z1], [x2, y2, z2], ...]
     const n = 5;
     const d = 20 / n;
 
@@ -2665,7 +2665,7 @@ math.import({
       return math.multiply(b, c);
     }
 
-    if (arguments.length >= 3) {
+    if (atPoint !== undefined) {
       const b = bAt(atPoint[0], atPoint[1], atPoint[2], path, current);
 
       return b;
