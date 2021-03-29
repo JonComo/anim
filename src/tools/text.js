@@ -12,7 +12,7 @@ import {
   saveState,
   transformProps,
 } from '../index';
-import MatrixOutput, { drawBrackets } from '../graphics/matrix-output';
+import MatrixOutput from '../graphics/matrix-output';
 import {
   math,
   parser,
