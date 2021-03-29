@@ -615,14 +615,18 @@ export default function Text(text, pos) {
         }
       }
     } catch (e) {
+      const trimmedStack = e.stack.substring(0,
+        e.stack.search(/(at Text.eval \(|^Text\/this.eval@)/m));
       const lastError = this.properties[rtv.frame].e;
 
       if (
         lastError === undefined
         || lastError.message !== e.message
         || lastError.name !== e.name
+        || lastError.trimmedStack !== trimmedStack
       ) {
-        console.error('eval error: ', e);
+        console.error('eval error: ', e.stack);
+        e.trimmedStack = trimmedStack;
         this.properties[rtv.frame].e = e;
       }
     }
