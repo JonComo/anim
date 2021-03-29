@@ -123,7 +123,6 @@ export default function Text(text, pos) {
       this.properties[rtv.frame].t = t.slice(0, this.cursor)
         + copiedText
         + t.slice(this.cursor, t.length);
-      this.properties[rtv.frame].i = undefined;
       this.cursor += copiedText.length;
       this.cursor_selection = this.cursor;
     }
@@ -625,7 +624,7 @@ export default function Text(text, pos) {
         || lastError.name !== e.name
         || lastError.trimmedStack !== trimmedStack
       ) {
-        console.error('eval error: ', e.stack);
+        console.error('eval error: ', e);
         e.trimmedStack = trimmedStack;
         this.properties[rtv.frame].e = e;
       }
@@ -638,7 +637,6 @@ export default function Text(text, pos) {
     const changed = this.properties[rtv.frame].t !== newText;
 
     this.properties[rtv.frame].t = newText;
-    this.properties[rtv.frame].i = undefined;
     this.constrain_cursors();
 
     if (changed) {
