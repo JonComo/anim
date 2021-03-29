@@ -607,7 +607,7 @@ export default function Text(text, pos) {
             } else {
               this.text_val = `=${roundWithKey(
                 val.re,
-              ).toString()} + ${roundWithKey(val.im).toString()}i`;
+              ).toString()} + ${roundWithKey(val.im)}i`;
             }
           }
         } else if (val) {
