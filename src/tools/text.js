@@ -48,7 +48,7 @@ export default function Text(text, pos) {
     w: 1,
     h: 1,
     r: 0,
-    i: false,
+    e: undefined,
   };
 
   // ephemeral
@@ -120,7 +120,6 @@ export default function Text(text, pos) {
       this.properties[rtv.frame].t = t.slice(0, this.cursor)
         + copiedText
         + t.slice(this.cursor, t.length);
-      this.properties[rtv.frame].i = false;
       this.cursor += copiedText.length;
       this.cursor_selection = this.cursor;
     }
@@ -575,50 +574,60 @@ export default function Text(text, pos) {
       }
     }
 
-    if (!this.properties[rtv.frame].i) {
-      try {
-        parser.set('text_props', i);
+    try {
+      parser.set('text_props', i);
 
-        const val = this.cargs[0].evaluate(parser.scope);
+      const val = this.cargs[0].evaluate(parser.scope);
 
-        // only display the value if its not an assignment or constant
-        const opType = math.parse(this.args[0]).type;
+      // only display the value if its not an assignment or constant
+      const opType = math.parse(this.args[0]).type;
 
-        if (!opType.includes('Assignment') && opType !== 'ConstantNode') {
-          const type = typeof val;
+      if (!opType.includes('Assignment') && opType !== 'ConstantNode') {
+        const type = typeof val;
 
-          // set display text
-          if (type === 'number') {
+        // set display text
+        if (type === 'number') {
+          if (rtv.keys.ctrl) {
+            // nothing
+            this.text_val = `=${val}`;
+          } else {
+            this.text_val = `=${roundWithKey(val)}`;
+          }
+        } else if (type === 'boolean') {
+          this.text_val = ` = ${val}`;
+        } else if (type === 'object' && val._data && val._data.length !== 0) {
+          // prob a matrix, render entries
+          this.matrix_vals = val._data;
+          this.text_val = null;
+        } else if (val && 're' in val && val.im) {
+          if (val) {
             if (rtv.keys.ctrl) {
               // nothing
               this.text_val = `=${val}`;
             } else {
-              this.text_val = `=${roundWithKey(val)}`;
+              this.text_val = `=${roundWithKey(
+                val.re,
+              ).toString()} + ${roundWithKey(val.im).toString()}i`;
             }
-          } else if (type === 'boolean') {
-            this.text_val = ` = ${val}`;
-          } else if (type === 'object' && val._data && val._data.length !== 0) {
-            // prob a matrix, render entries
-            this.matrix_vals = val._data;
-            this.text_val = null;
-          } else if (val && 're' in val && val.im) {
-            if (val) {
-              if (rtv.keys.ctrl) {
-                // nothing
-                this.text_val = `=${val}`;
-              } else {
-                this.text_val = `=${roundWithKey(
-                  val.re,
-                ).toString()} + ${roundWithKey(val.im).toString()}i`;
-              }
-            }
-          } else if (val) {
-            this.text_val = `=${val.toString()}`;
           }
+        } else if (val) {
+          this.text_val = `=${val.toString()}`;
         }
-      } catch (e) {
+      }
+    } catch (e) {
+      const trimmedStack = e.stack.substring(0,
+        e.stack.search(/(at Text.eval \(|^Text\/this.eval@)/m));
+      const lastError = this.properties[rtv.frame].e;
+
+      if (
+        lastError === undefined
+        || lastError.message !== e.message
+        || lastError.name !== e.name
+        || lastError.trimmedStack !== trimmedStack
+      ) {
         console.error('eval error: ', e);
-        this.properties[rtv.frame].i = true;
+        e.trimmedStack = trimmedStack;
+        this.properties[rtv.frame].e = e;
       }
     }
 
@@ -629,7 +638,6 @@ export default function Text(text, pos) {
     const changed = this.properties[rtv.frame].t !== newText;
 
     this.properties[rtv.frame].t = newText;
-    this.properties[rtv.frame].i = false;
     this.constrain_cursors();
 
     if (changed) {
