@@ -309,11 +309,11 @@ export default function Text(text, pos) {
       const c = t[i];
       if (c === ' ') {
         xoff += GRID_SIZE / 2;
-        continue;
+      } else {
+        const newT = new Text(c, { x: p.x + xoff, y: p.y });
+        rtv.objs.push(newT);
+        xoff += GRID_SIZE / 2;
       }
-      const newT = new Text(c, { x: p.x + xoff, y: p.y });
-      rtv.objs.push(newT);
-      xoff += GRID_SIZE / 2;
     }
 
     this.deleted = true;
@@ -946,68 +946,66 @@ export default function Text(text, pos) {
 
       for (let i = 0; i < stuff.length; i++) {
         const o = stuff[i];
-        if (o === ' ') {
-          continue;
-        }
+        if (o !== ' ') {
+          let t;
+          const np = {
+            x: p.x + i * xoff - ((stuff.length - 1) / 2) * xoff,
+            y: p.y,
+          };
 
-        let t;
-        const np = {
-          x: p.x + i * xoff - ((stuff.length - 1) / 2) * xoff,
-          y: p.y,
-        };
-
-        if (o.args) {
+          if (o.args) {
           // draw the op name
 
-          if (o.name && o.name.length) {
-            t = o.name;
-          } else if (o.op && o.op.length) {
-            t = o.op;
-          }
+            if (o.name && o.name.length) {
+              t = o.name;
+            } else if (o.op && o.op.length) {
+              t = o.op;
+            }
 
-          if (distance(rtv.mouse.pos, np) < GRID_SIZE) {
-            t = o.toString();
-          }
+            if (distance(rtv.mouse.pos, np) < GRID_SIZE) {
+              t = o.toString();
+            }
 
-          /* ctx.beginPath();
+            /* ctx.beginPath();
                   ctx.arc(np.x, np.y, op_size, 0, pi2);
                   ctx.stroke(); */
 
-          ctx.fillText(t, np.x, np.y);
+            ctx.fillText(t, np.x, np.y);
 
-          for (let j = 0; j < o.args.length; j++) {
-            while (nextStuff[li] === ' ') {
+            for (let j = 0; j < o.args.length; j++) {
+              while (nextStuff[li] === ' ') {
+                lx += xoff;
+                li += 1;
+              }
+
+              const argp = { x: p.x + lx, y: np.y + yoff };
+              let diff = { x: argp.x - np.x, y: argp.y - np.y };
+              const n = math.norm([diff.x, diff.y]);
+              diff = { x: diff.x / n, y: diff.y / n };
+
+              ctx.beginPath();
+              ctx.moveTo(np.x + diff.x * opSize, np.y + diff.y * opSize);
+              ctx.lineTo(argp.x - diff.x * opSize, argp.y - diff.y * opSize);
+              ctx.stroke();
+
               lx += xoff;
               li += 1;
             }
-
-            const argp = { x: p.x + lx, y: np.y + yoff };
-            let diff = { x: argp.x - np.x, y: argp.y - np.y };
-            const n = math.norm([diff.x, diff.y]);
-            diff = { x: diff.x / n, y: diff.y / n };
-
-            ctx.beginPath();
-            ctx.moveTo(np.x + diff.x * opSize, np.y + diff.y * opSize);
-            ctx.lineTo(argp.x - diff.x * opSize, argp.y - diff.y * opSize);
-            ctx.stroke();
-
-            lx += xoff;
-            li += 1;
-          }
-        } else {
-          if (o.name && o.name.length) {
-            t = o.name;
-          } else if (o.items) {
-            t = 'A'; // array
-          } else if (o.value) {
-            t = o.value;
-          } else if (o.content) {
-            t = o.content;
           } else {
-            t = '?';
-          }
+            if (o.name && o.name.length) {
+              t = o.name;
+            } else if (o.items) {
+              t = 'A'; // array
+            } else if (o.value) {
+              t = o.value;
+            } else if (o.content) {
+              t = o.content;
+            } else {
+              t = '?';
+            }
 
-          ctx.fillText(t, np.x, np.y);
+            ctx.fillText(t, np.x, np.y);
+          }
         }
       }
 
