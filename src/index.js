@@ -1134,8 +1134,8 @@ export function enterSelect() {
  */
 export function present() {
   /**
-     * Sets page up for presentation mode.
-     */
+   * Sets page up for presentation mode.
+   */
   function setUpPresentationMode() {
     enterSelect(); // Enter select mode
     document.body.style.cursor = 'none'; // Hide cursor
