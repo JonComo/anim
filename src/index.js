@@ -680,7 +680,7 @@ export function drawFn(fn) {
   } else {
     try {
       tree = math.parse(fn);
-    } catch (e) {
+    } catch {
       // Continue
     }
 
@@ -3908,7 +3908,7 @@ window.addEventListener('load', () => {
 
     try {
       math.compile('click()').evaluate(parser.scope);
-    } catch (e) {
+    } catch {
       // Continue
     }
 
