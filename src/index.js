@@ -680,9 +680,7 @@ export function drawFn(fn) {
   } else {
     try {
       tree = math.parse(fn);
-    } catch {
-      // Continue
-    }
+    } catch { /* Continue */ }
 
     if (tree) {
       cacheFn[fn] = tree;
@@ -3908,9 +3906,7 @@ window.addEventListener('load', () => {
 
     try {
       math.compile('click()').evaluate(parser.scope);
-    } catch {
-      // Continue
-    }
+    } catch { /* Continue */ }
 
     if (rtv.cam.mouse_down(evt)) {
       return;
