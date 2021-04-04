@@ -1143,21 +1143,22 @@ export function present() {
     rtv.presenting = true; // Declare presentation mode entered
   }
 
+  /**
+   * Sets up presentation mode once window is scrolled to top.
+   */
+  function scrollListener() { // Scroll listener
+    if (window.scrollY === 0) { // Check if smooth scroll finished
+      window.removeEventListener('scroll', scrollListener); // Stop listening
+      setUpPresentationMode();
+    }
+  }
+
   if (window.scrollY !== 0) { // Check if already at top
     window.scrollTo({
       top: 0, // Scroll to top
       behavior: 'smooth', // Smooth scroll
     }); // Scroll window
 
-    /**
-         * Sets up presentation mode once window is scrolled to top.
-         */
-    function scrollListener() { // Scroll listener
-      if (window.scrollY === 0) { // Check if smooth scroll finished
-        window.removeEventListener('scroll', scrollListener); // Stop listening
-        setUpPresentationMode();
-      }
-    }
     window.addEventListener('scroll', scrollListener); // Attach scroll listener
   } else {
     setUpPresentationMode();
