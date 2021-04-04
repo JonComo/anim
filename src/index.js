@@ -895,7 +895,7 @@ export function interpolate(a, b) {
   }
 
   const interp = {};
-  for (const key in a) {
+  Object.keys(a).forEach((key) => {
     if (key === 'p') {
       // interpolate position
       const ap = a[key];
@@ -946,7 +946,7 @@ export function interpolate(a, b) {
     } else {
       interp[key] = a[key];
     }
-  }
+  });
 
   return interp;
 }
@@ -1730,7 +1730,7 @@ math.import({
   },
   rotateCamera(rx, ry, rz) { // rotates the camera
     const rxyz = [rx, ry, rz];
-    if (!isNaN(math.sum(rxyz))) {
+    if (!Number.isNaN(math.sum(rxyz))) {
       rtv.cam.properties[rtv.frame].rxyz = rxyz;
     } else {
       rtv.cam.properties[rtv.frame].rxyz = [0, 0, 0];
