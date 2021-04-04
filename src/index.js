@@ -1134,13 +1134,23 @@ export function enterSelect() {
  */
 export function present() {
   /**
-     * Sets page up for presentation mode.
-     */
+   * Sets page up for presentation mode.
+   */
   function setUpPresentationMode() {
     enterSelect(); // Enter select mode
     document.body.style.cursor = 'none'; // Hide cursor
     document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
     rtv.presenting = true; // Declare presentation mode entered
+  }
+
+  /**
+   * Sets up presentation mode once window is scrolled to top.
+   */
+  function scrollListener() { // Scroll listener
+    if (window.scrollY === 0) { // Check if smooth scroll finished
+      window.removeEventListener('scroll', scrollListener); // Stop listening
+      setUpPresentationMode();
+    }
   }
 
   if (window.scrollY !== 0) { // Check if already at top
@@ -1149,15 +1159,6 @@ export function present() {
       behavior: 'smooth', // Smooth scroll
     }); // Scroll window
 
-    /**
-         * Sets up presentation mode once window is scrolled to top.
-         */
-    function scrollListener() { // Scroll listener
-      if (window.scrollY === 0) { // Check if smooth scroll finished
-        window.removeEventListener('scroll', scrollListener); // Stop listening
-        setUpPresentationMode();
-      }
-    }
     window.addEventListener('scroll', scrollListener); // Attach scroll listener
   } else {
     setUpPresentationMode();
