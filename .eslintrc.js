@@ -19,8 +19,6 @@ module.exports = {
     'no-mixed-operators': 'warn',
     'no-nested-ternary': 'warn',
     'no-plusplus': 'off',
-    'no-restricted-globals': 'warn',
-    'no-restricted-syntax': 'warn',
     'no-shadow': 'warn',
     'no-underscore-dangle': 'off',
     'no-unused-vars': 'warn',
