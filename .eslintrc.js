@@ -15,7 +15,6 @@ module.exports = {
     'no-continue': 'warn',
     'no-empty': 'warn',
     'no-eval': 'warn',
-    'no-inner-declarations': 'warn',
     'no-mixed-operators': 'warn',
     'no-nested-ternary': 'warn',
     'no-plusplus': 'off',
