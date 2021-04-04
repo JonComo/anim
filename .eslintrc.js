@@ -12,7 +12,6 @@ module.exports = {
     'consistent-return': 'warn',
     'import/no-cycle': 'warn',
     'no-bitwise': 'warn',
-    'no-empty': 'warn',
     'no-eval': 'warn',
     'no-mixed-operators': 'warn',
     'no-nested-ternary': 'warn',
