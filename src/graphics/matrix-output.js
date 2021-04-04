@@ -181,10 +181,12 @@ export default class MatrixOutput {
     this.ctx.textAlign = 'right';
 
     // Draw matrix contents; without brackets
-    // Since 'drawInterior' draws from the top-right corner, 'x' must be adjusted when 'right' is false
+    // Since 'drawInterior' draws from the top-right corner,
+    // 'x' must be adjusted when 'right' is false
     this.drawInterior(right ? x : x + width, y, elementCallback);
 
-    // Since 'drawBrackets' draws from the top-left corner, 'x' must be adjusted when 'right' is true
+    // Since 'drawBrackets' draws from the top-left corner,
+    // 'x' must be adjusted when 'right' is true
     drawBrackets(right ? x - width : x, y, width, height);
 
     this.ctx.restore();
