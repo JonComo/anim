@@ -18,6 +18,7 @@ module.exports = {
     'no-inner-declarations': 'warn',
     'no-mixed-operators': 'warn',
     'no-nested-ternary': 'warn',
+    'no-param-reassign': ['error', { props: false }],
     'no-plusplus': 'off',
     'no-restricted-globals': 'warn',
     'no-restricted-syntax': 'warn',
