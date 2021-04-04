@@ -102,10 +102,7 @@ function graph(fn, d1, d2, d3) { // graphs y=f(x) from -10 to 10
       rtv.ctx.stroke();
       rtv.ctx.beginPath();
       rtv.ctx.moveTo(p[0], p[1]);
-      continue;
-    }
-
-    if (i === 0) {
+    } else if (i === 0) {
       rtv.ctx.moveTo(p[0], p[1]);
     } else {
       rtv.ctx.lineTo(p[0], p[1]);
@@ -1067,10 +1064,7 @@ export function insertFrame() {
   for (let f = rtv.num_frames; f >= rtv.frame; f--) {
     for (let i = 0; i < rtv.objs.length; i++) {
       const obj = rtv.objs[i];
-      if (typeof obj.copy_properties === 'function') {
-        if (!obj.properties[f]) {
-          continue;
-        }
+      if (typeof obj.copy_properties === 'function' && obj.properties[f]) {
         obj.copy_properties(f, f + 1);
       }
     }
@@ -1174,14 +1168,12 @@ function drawAxes(ctx) {
       axis = rtv.cam.graph_to_screen_mat(axis);
       const N = axis.length;
       for (let j = 0; j < N; j += 2) {
-        if (j === 20 || j === 62) {
-          continue;
+        if (j !== 20 && j !== 62) {
+          ctx.beginPath();
+          ctx.moveTo(axis[j][0], axis[j][1]);
+          ctx.lineTo(axis[j + 1][0], axis[j + 1][1]);
+          ctx.stroke();
         }
-
-        ctx.beginPath();
-        ctx.moveTo(axis[j][0], axis[j][1]);
-        ctx.lineTo(axis[j + 1][0], axis[j + 1][1]);
-        ctx.stroke();
       }
     } else {
       const w = rtv.c.clientWidth * 2;
@@ -2440,24 +2432,22 @@ math.import({
 
     // add up forces from charges
     for (let i = 0; i < charges.length; i += 4) {
-      if (i === j * 4) {
-        continue;
+      if (i !== j * 4) {
+        const q = charges[i];
+        const cx = charges[i + 1];
+        const cy = charges[i + 2];
+        const cz = charges[i + 3];
+
+        const v = [xp - cx, yp - cy, zp - cz];
+        const len = math.norm(v);
+        const l2 = len * len;
+
+        const c = math.coulomb.value * q * oc / len / l2; // math.coulomb.value*
+
+        fx += c * v[0];
+        fy += c * v[1];
+        fz += c * v[2];
       }
-
-      const q = charges[i];
-      const cx = charges[i + 1];
-      const cy = charges[i + 2];
-      const cz = charges[i + 3];
-
-      const v = [xp - cx, yp - cy, zp - cz];
-      const len = math.norm(v);
-      const l2 = len * len;
-
-      const c = math.coulomb.value * q * oc / len / l2; // math.coulomb.value*
-
-      fx += c * v[0];
-      fy += c * v[1];
-      fz += c * v[2];
     }
 
     return [fx, fy, fz];
@@ -3384,13 +3374,12 @@ math.import({
     for (let x = -10; x <= 10; x += 2) {
       for (let y = -10; y <= 10; y += 2) {
         const dydx = f(x + 0.0001, y + 0.0001); // to avoid asymptotes at x=0 or y=0
-        if (dydx.im) {
-          continue;
+        if (!dydx.im) {
+          let uv = [1, dydx];
+          uv = math.matrix(uv);
+          uv = math.multiply(uv, 1 / math.norm(uv));
+          drawVect(x, y, 0, x + uv._data[0], y + uv._data[1], 0);
         }
-        let uv = [1, dydx];
-        uv = math.matrix(uv);
-        uv = math.multiply(uv, 1 / math.norm(uv));
-        drawVect(x, y, 0, x + uv._data[0], y + uv._data[1], 0);
       }
     }
   },
