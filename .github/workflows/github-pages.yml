@@ -13,16 +13,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Ensure version is unique
+        run: |
+          VERSION="v$(node utils/version.js)"
+          git rev-parse "$VERSION" && echo "Version is not unique; exiting..." || echo "UNIQUE_VERSION=1" >> $GITHUB_ENV
+
       - name: Configure Git
+        if: ${{ env.UNIQUE_VERSION == '1' }}
         run: git config user.name "GitHub Pages CD"
 
       - name: Install NPM packages
+        if: ${{ env.UNIQUE_VERSION == '1' }}
         run: npm install
 
       - name: Compile Webpack project
+        if: ${{ env.UNIQUE_VERSION == '1' }}
         run: npm run build
 
       - name: Publish build
+        if: ${{ env.UNIQUE_VERSION == '1' }}
         run: |
           git add --force dist/
           git commit --message 'Publish site'
@@ -30,6 +39,7 @@ jobs:
           git push --force origin gh-pages
 
       - name: Tag commit
+        if: ${{ env.UNIQUE_VERSION == '1' }}
         run: |
           VERSION="v$(node utils/version.js)"
           git tag "$VERSION" gh-pages
