@@ -13,9 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Ensure version is unique
+      - name: Retrieve release version
         run: |
           echo "VERSION=v$(node utils/version.js)" >> $GITHUB_ENV
+
+      - name: Ensure version is unique
+        run: |
           git fetch origin "$VERSION" \
             && echo "Version is not unique; exiting..." \
             || echo "UNIQUE_VERSION=1" >> $GITHUB_ENV
