@@ -20,19 +20,19 @@ jobs:
           git rev-parse "$VERSION" && echo "Version is not unique; exiting..." || echo "UNIQUE_VERSION=1" >> $GITHUB_ENV
 
       - name: Configure Git
-        if: ${{ env.UNIQUE_VERSION == '1' }}
+        if: ${{ env.UNIQUE_VERSION }}
         run: git config user.name "GitHub Pages CD"
 
       - name: Install NPM packages
-        if: ${{ env.UNIQUE_VERSION == '1' }}
+        if: ${{ env.UNIQUE_VERSION }}
         run: npm install
 
       - name: Compile Webpack project
-        if: ${{ env.UNIQUE_VERSION == '1' }}
+        if: ${{ env.UNIQUE_VERSION }}
         run: npm run build
 
       - name: Publish build
-        if: ${{ env.UNIQUE_VERSION == '1' }}
+        if: ${{ env.UNIQUE_VERSION }}
         run: |
           git add --force dist/
           git commit --message 'Publish site'
@@ -40,7 +40,7 @@ jobs:
           git push --force origin gh-pages
 
       - name: Tag commit
-        if: ${{ env.UNIQUE_VERSION == '1' }}
+        if: ${{ env.UNIQUE_VERSION }}
         run: |
           VERSION="v$(node utils/version.js)"
           git tag "$VERSION" gh-pages
