@@ -15,6 +15,7 @@ jobs:
 
       - name: Ensure version is unique
         run: |
+          git fetch --tags
           VERSION="v$(node utils/version.js)"
           git rev-parse "$VERSION" && echo "Version is not unique; exiting..." || echo "UNIQUE_VERSION=1" >> $GITHUB_ENV
 
