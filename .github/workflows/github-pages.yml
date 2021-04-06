@@ -15,7 +15,7 @@ jobs:
 
       - name: Ensure version is unique
         run: |
-          VERSION="v$(node utils/version.js)"
+          echo "VERSION=v$(node utils/version.js)" >> $GITHUB_ENV
           git fetch origin "$VERSION" \
             && echo "Version is not unique; exiting..." \
             || echo "UNIQUE_VERSION=1" >> $GITHUB_ENV
@@ -43,6 +43,5 @@ jobs:
       - name: Tag commit
         if: ${{ env.UNIQUE_VERSION }}
         run: |
-          VERSION="v$(node utils/version.js)"
           git tag "$VERSION" gh-pages
           git push origin "$VERSION"
