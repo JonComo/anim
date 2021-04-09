@@ -212,6 +212,11 @@ export function rgbToHex(c) {
   return `#${((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1)}`;
 }
 
+function formatRgb1(rgb) {
+  const [r, g, b] = rgb.map((x) => Math.round(x * 255));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 function rgb1ToHex(a) {
   const c = [Math.round(a[0] * 255),
     Math.round(a[1] * 255),
