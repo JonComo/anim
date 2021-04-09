@@ -204,6 +204,10 @@ function reportError(e) {
 // undo
 let states = [];
 
+export function formatRgb([r, g, b]) {
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 export function rgbToHex(c) {
   return `#${((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1)}`;
 }
