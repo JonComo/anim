@@ -1409,12 +1409,11 @@ window.requestAnimationFrame
     ?? ((f) => setTimeout(f, 1000 / rtv.fps)); // simulate calling code 60
 
 math.import({
-  logicTable() {
+  logicTable(...scenarios) {
     const O = [true, false];
 
-    for (let k = 0; k < arguments.length; k++) {
+    scenarios.forEach((s, k) => {
       rtv.ctx.save();
-      const s = copy(arguments[k]);
 
       const props = parser.evaluate('text_props');
       const { x } = props.p;
@@ -1451,7 +1450,7 @@ math.import({
       }
 
       rtv.ctx.restore();
-    }
+    });
   },
   implies(p, q) { // LOGIC: Returns whether p => q is a true statement. Only false when p=T and q=F
     return implies(p, q);
