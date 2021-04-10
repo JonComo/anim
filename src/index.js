@@ -1409,12 +1409,11 @@ window.requestAnimationFrame
     ?? ((f) => setTimeout(f, 1000 / rtv.fps)); // simulate calling code 60
 
 math.import({
-  logicTable() {
+  logicTable(...scenarios) {
     const O = [true, false];
 
-    for (let k = 0; k < arguments.length; k++) {
+    scenarios.forEach((s, k) => {
       rtv.ctx.save();
-      const s = copy(arguments[k]);
 
       const props = parser.evaluate('text_props');
       const { x } = props.p;
@@ -1451,7 +1450,7 @@ math.import({
       }
 
       rtv.ctx.restore();
-    }
+    });
   },
   implies(p, q) { // LOGIC: Returns whether p => q is a true statement. Only false when p=T and q=F
     return implies(p, q);
@@ -1723,10 +1722,8 @@ math.import({
       rtv.ctx.stroke();
     }
   },
-  randn() { // no args: random normal, 1 arg shape: dims of matrix to return
-    const N = arguments.length;
-    if (N === 1) {
-      const shape = arguments[0];
+  randn(shape) { // no args: random normal, 1 arg shape: dims of matrix to return
+    if (shape) {
       let m = cached(shape._data);
       m = m.map(randNBm);
 
@@ -1773,15 +1770,10 @@ math.import({
     return math.transpose(m);
   },
   // eslint-disable-next-line max-len
-  scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+  scatter(points, psize = 8, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
     const pointsD = points._data;
-
-    let psize = 8;
-    if (arguments.length >= 2) {
-      psize = arguments[1];
-    }
     const psizeHalf = psize / 2;
 
     const camData = rtv.cam.graph_to_screen_mat(points);
