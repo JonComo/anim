@@ -1771,15 +1771,10 @@ math.import({
     return math.transpose(m);
   },
   // eslint-disable-next-line max-len
-  scatter(points, pointSize, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+  scatter(points, psize = 8, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
     const pointsD = points._data;
-
-    let psize = 8;
-    if (arguments.length >= 2) {
-      psize = arguments[1];
-    }
     const psizeHalf = psize / 2;
 
     const camData = rtv.cam.graph_to_screen_mat(points);
