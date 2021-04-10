@@ -14,7 +14,6 @@ module.exports = {
     'no-bitwise': 'warn',
     'no-eval': 'warn',
     'no-mixed-operators': 'warn',
-    'no-nested-ternary': 'warn',
     'no-plusplus': 'off',
     'no-shadow': 'warn',
     'no-underscore-dangle': 'off',
