@@ -20,6 +20,5 @@ module.exports = {
     'no-underscore-dangle': 'off',
     'no-unused-vars': 'warn',
     'prefer-destructuring': 'warn',
-    'prefer-rest-params': 'warn',
   },
 };
