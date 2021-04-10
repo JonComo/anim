@@ -14,13 +14,11 @@ module.exports = {
     'no-bitwise': 'warn',
     'no-eval': 'warn',
     'no-mixed-operators': 'warn',
-    'no-nested-ternary': 'warn',
     'no-param-reassign': ['error', { props: false }],
     'no-plusplus': 'off',
     'no-shadow': 'warn',
     'no-underscore-dangle': 'off',
     'no-unused-vars': 'warn',
     'prefer-destructuring': 'warn',
-    'prefer-rest-params': 'warn',
   },
 };
