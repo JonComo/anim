@@ -1428,9 +1428,9 @@ math.import({
         for (let j = 0; j < 2; j++) {
           const q = O[j];
 
-          s.replace('P', p);
-          s.replace('Q', q);
-          const r = math.beval(s);
+          const r = math.beval(s
+            .replace('P', p)
+            .replace('Q', q));
 
           if (r) {
             rtv.ctx.fillStyle = COLORS[4];
