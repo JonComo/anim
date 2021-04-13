@@ -1807,7 +1807,7 @@ math.import({
         // constrain
         col = colorFn(p)._data;
         col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
-        rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+        rtv.ctx.fillStyle = formatRgb1(col);
         rtv.ctx.fillRect(camData[i][0] - psizeHalf, camData[i][1] - psizeHalf, psize, psize);
       }
     } else {
@@ -1833,7 +1833,7 @@ math.import({
     rtv.ctx.beginPath();
     if (color) {
       const constrained = color.map(constrain);
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
+      rtv.ctx.fillStyle = formatRgb1(constrained);
     }
     rtv.ctx.arc(camData[0], camData[1], psize, 0, PI2);
     rtv.ctx.fill();
@@ -1879,7 +1879,7 @@ math.import({
     rtv.ctx.stroke();
     if (fill) {
       const col = fill._data.map(constrain);
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+      rtv.ctx.fillStyle = formatRgb1(col);
       rtv.ctx.globalAlpha = 0.8;
       rtv.ctx.fill();
     }
@@ -2415,11 +2415,7 @@ math.import({
 
               if (dead === false) {
                 p = rtv.cam.graph_to_screen(xp, yp, zp);
-                rtv.ctx.strokeStyle = rgbToHex([
-                  math.round((pl - j) / pl * 255),
-                  0,
-                  math.round(j / pl * 255),
-                ]);
+                rtv.ctx.strokeStyle = formatRgb1([1 - j / pl, 0, j / pl]);
                 rtv.ctx.lineTo(p[0], p[1]);
                 rtv.ctx.stroke();
               }
