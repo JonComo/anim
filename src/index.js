@@ -1770,9 +1770,9 @@ math.import({
     return math.transpose(m);
   },
   // eslint-disable-next-line max-len
-  scatter(points, psize = 8, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
+  scatter(points, pSize = 8, colorFn) { // points [[x1, y1, z1], ...], pSize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const pointsArray = points.toArray();
-    const psizeHalf = psize / 2;
+    const pSizeHalf = pSize / 2;
     const colored = colorFn instanceof Function;
 
     const mappedPoints = rtv.cam.graph_to_screen_mat(points)
@@ -1791,7 +1791,7 @@ math.import({
 
     mappedPoints.forEach(({ color, mapped }) => {
       rtv.ctx.fillStyle = color;
-      rtv.ctx.fillRect(mapped[0] - psizeHalf, mapped[1] - psizeHalf, psize, psize);
+      rtv.ctx.fillRect(mapped[0] - pSizeHalf, mapped[1] - pSizeHalf, pSize, pSize);
     });
 
     rtv.ctx.restore();
