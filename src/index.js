@@ -1777,10 +1777,10 @@ math.import({
 
     const mappedPoints = rtv.cam.graph_to_screen_mat(points)
       .map((mapped, i) => ({
+        mapped,
         color: colored
           ? rgb1ToHex(colorFn(pointsArray[i]).map(constrain).toArray())
           : undefined,
-        mapped,
       }));
 
     if (colored) {
