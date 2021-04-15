@@ -1791,7 +1791,6 @@ math.import({
     mappedPoints.forEach(({ color, mapped }) => {
       // gradation
       rtv.ctx.fillStyle = color;
-
       rtv.ctx.fillRect(mapped[0] - psizeHalf, mapped[1] - psizeHalf, psize, psize);
     });
 
