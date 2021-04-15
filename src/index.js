@@ -1776,24 +1776,22 @@ math.import({
 
     const mappedPoints = rtv.cam.graph_to_screen_mat(points)
       .map((mapped, i) => ({
-        original: pointsArray[i],
+        color: colorFn instanceof Function
+          ? rgbToHex(math.multiply(colorFn(pointsArray[i]).map(constrain), 255).toArray())
+          : undefined,
         mapped,
       }));
 
     if (colorFn instanceof Function) {
-      mappedPoints.sort(({ original: [,, a] }, { original: [,, b] }) => (a <= b ? 1 : -1));
+      mappedPoints.sort(({ mapped: [,, a] }, { mapped: [,, b] }) => (a <= b ? 1 : -1));
     }
 
     rtv.ctx.save();
 
-    let col;
-    mappedPoints.forEach(({ original, mapped }) => {
-      if (colorFn instanceof Function) {
-        // gradation
-        col = colorFn(original)
-          .map(constrain); // Constrain
-        rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255).toArray());
-      }
+    mappedPoints.forEach(({ color, mapped }) => {
+      // gradation
+      rtv.ctx.fillStyle = color;
+
       rtv.ctx.fillRect(mapped[0] - psizeHalf, mapped[1] - psizeHalf, psize, psize);
     });
 
