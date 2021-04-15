@@ -1787,9 +1787,9 @@ math.import({
 
       let col;
       mappedPoints.forEach(({ original, mapped }) => {
-        col = colorFn(original)._data;
-        col = [constrain(col[0]), constrain(col[1]), constrain(col[2])]; // Constrain
-        rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+        col = colorFn(original)
+          .map(constrain); // Constrain
+        rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255).toArray());
         rtv.ctx.fillRect(mapped[0] - psizeHalf, mapped[1] - psizeHalf, psize, psize);
       });
     } else {
