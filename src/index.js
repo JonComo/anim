@@ -1773,16 +1773,17 @@ math.import({
   scatter(points, psize = 8, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const pointsArray = points.toArray();
     const psizeHalf = psize / 2;
+    const colored = colorFn instanceof Function;
 
     const mappedPoints = rtv.cam.graph_to_screen_mat(points)
       .map((mapped, i) => ({
-        color: colorFn instanceof Function
+        color: colored
           ? rgb1ToHex(colorFn(pointsArray[i]).map(constrain).toArray())
           : undefined,
         mapped,
       }));
 
-    if (colorFn instanceof Function) {
+    if (colored) {
       mappedPoints.sort(({ mapped: [,, a] }, { mapped: [,, b] }) => (a <= b ? 1 : -1));
     }
 
