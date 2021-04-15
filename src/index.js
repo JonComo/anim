@@ -1778,8 +1778,11 @@ math.import({
       .map((mapped, i) => ({
         original: pointsArray[i],
         mapped,
-      }))
-      .sort(({ original: [,, a] }, { original: [,, b] }) => (a <= b ? 1 : -1));
+      }));
+
+    if (colorFn instanceof Function) {
+      mappedPoints.sort(({ original: [,, a] }, { original: [,, b] }) => (a <= b ? 1 : -1));
+    }
 
     rtv.ctx.save();
 
