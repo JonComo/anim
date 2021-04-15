@@ -1782,25 +1782,18 @@ math.import({
       .sort(({ original: [,, a] }, { original: [,, b] }) => (a <= b ? 1 : -1));
 
     rtv.ctx.save();
-    if (arguments.length === 3) {
-      // gradation
 
-      let col;
-      mappedPoints.forEach(({ original, mapped }) => {
+    let col;
+    mappedPoints.forEach(({ original, mapped }) => {
+      if (colorFn instanceof Function) {
+        // gradation
         col = colorFn(original)
           .map(constrain); // Constrain
         rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255).toArray());
-        rtv.ctx.fillRect(mapped[0] - psizeHalf, mapped[1] - psizeHalf, psize, psize);
-      });
-    } else {
-      points.forEach((p, i) => {
-        rtv.ctx.fillRect(
-          mappedPoints[i][0] - psizeHalf,
-          mappedPoints[i][1] - psizeHalf,
-          psize, psize,
-        );
-      });
-    }
+      }
+      rtv.ctx.fillRect(mapped[0] - psizeHalf, mapped[1] - psizeHalf, psize, psize);
+    });
+
     rtv.ctx.restore();
   },
   point(a, size, color) { // point [x,y,z] size color[r,g,b]
