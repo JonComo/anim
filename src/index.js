@@ -1773,7 +1773,6 @@ math.import({
   scatter(points, psize = 8, colorFn) { // points [[x1, y1, z1], ...], psize, color([x,y,z])=[r,g,b] 0 <= r <= 1
     const size = points.size();
     const n = size[0];
-    const pointsD = points._data;
     const psizeHalf = psize / 2;
 
     const camData = rtv.cam.graph_to_screen_mat(points);
@@ -1790,21 +1789,19 @@ math.import({
         .sort((a, b) => (a <= b ? 1 : -1));
 
       let col;
-      for (let j = 0; j < n; j++) {
+      points.toArray().forEach((p, j) => {
         const i = indices[j];
-
-        const p = pointsD[i];
 
         // constrain
         col = colorFn(p)._data;
         col = [constrain(col[0]), constrain(col[1]), constrain(col[2])];
         rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
         rtv.ctx.fillRect(camData[i][0] - psizeHalf, camData[i][1] - psizeHalf, psize, psize);
-      }
+      });
     } else {
-      for (let i = 0; i < n; i++) {
+      points.forEach((p, i) => {
         rtv.ctx.fillRect(camData[i][0] - psizeHalf, camData[i][1] - psizeHalf, psize, psize);
-      }
+      });
     }
     rtv.ctx.restore();
   },
