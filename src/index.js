@@ -1806,7 +1806,7 @@ math.import({
       return;
     }
 
-    const camData = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
+    const camData = rtv.cam.graph_to_screen(...a.toArray());
 
     rtv.ctx.save();
     rtv.ctx.beginPath();
