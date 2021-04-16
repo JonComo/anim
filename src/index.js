@@ -1796,15 +1796,8 @@ math.import({
 
     rtv.ctx.restore();
   },
-  point(a, size, color) { // point [x,y,z] size color[r,g,b]
-    let psize = 8;
-    if (size) {
-      psize = size;
-    }
-
-    if (psize <= 0) {
-      return;
-    }
+  point(a, size = 8, color) { // point [x,y,z] size color[r,g,b]
+    if (size <= 0) return;
 
     const camData = rtv.cam.graph_to_screen(...a.toArray());
 
@@ -1814,7 +1807,7 @@ math.import({
       const constrained = color.map(constrain);
       rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
     }
-    rtv.ctx.arc(camData[0], camData[1], psize, 0, PI2);
+    rtv.ctx.arc(camData[0], camData[1], size, 0, PI2);
     rtv.ctx.fill();
 
     rtv.ctx.restore();
