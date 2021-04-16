@@ -1802,11 +1802,12 @@ math.import({
     const camData = rtv.cam.graph_to_screen(...a.toArray());
 
     rtv.ctx.save();
-    rtv.ctx.beginPath();
+
     if (color) {
-      const constrained = color.map(constrain);
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
+      rtv.ctx.fillStyle = rgb1ToHex(color.map(constrain).toArray());
     }
+
+    rtv.ctx.beginPath();
     rtv.ctx.arc(camData[0], camData[1], size, 0, PI2);
     rtv.ctx.fill();
 
