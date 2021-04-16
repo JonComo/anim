@@ -1,8 +1,8 @@
 import {
   copy,
   distance,
+  formatRgb,
   interpolate,
-  rgbToHex,
   transformProps,
 } from '../index';
 import {
@@ -201,7 +201,7 @@ export default function Circle(color, pos) {
     js += `ctx.scale(${props.w}, ${props.h});\n`;
     js += `ctx.arc(0, 0, 20, ${props.a_s}, ${props.a_e}, false);\n`;
     js += `ctx.globalAlpha = ${props.c[3]};\n`;
-    js += `ctx.strokeStyle = "${rgbToHex(props.c)}";\n`;
+    js += `ctx.strokeStyle = "${formatRgb(props.c)}";\n`;
     js += 'ctx.restore();\n';
     js += 'ctx.stroke();\n';
 
@@ -228,12 +228,12 @@ export default function Circle(color, pos) {
 
     ctx.save();
 
-    ctx.fillStyle = rgbToHex(props.fill);
+    ctx.fillStyle = formatRgb(props.fill);
     ctx.globalAlpha = math.min(props.fill[3], props.c[3]);
     ctx.fill();
 
     ctx.globalAlpha = props.c[3];
-    ctx.strokeStyle = rgbToHex(props.c);
+    ctx.strokeStyle = formatRgb(props.c);
 
     ctx.stroke();
 
