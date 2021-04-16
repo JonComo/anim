@@ -1,4 +1,4 @@
-import { rgbToHex } from '../index';
+import { formatRgb } from '../index';
 import { math, rtv } from '../resources';
 
 export default function Pen() {
@@ -85,7 +85,7 @@ export default function Pen() {
 
   this.set_color = (rgb) => {
     if (rtv.tool === 'pen') {
-      this.color = rgbToHex(rgb);
+      this.color = formatRgb(rgb);
       return true;
     }
 
