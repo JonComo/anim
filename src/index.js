@@ -1799,7 +1799,7 @@ math.import({
   point(a, size = 8, color) { // point [x,y,z] size color[r,g,b]
     if (size <= 0) return;
 
-    const camData = rtv.cam.graph_to_screen(...a.toArray());
+    const mapped = rtv.cam.graph_to_screen(...a.toArray());
 
     rtv.ctx.save();
 
@@ -1808,7 +1808,7 @@ math.import({
     }
 
     rtv.ctx.beginPath();
-    rtv.ctx.arc(camData[0], camData[1], size, 0, PI2);
+    rtv.ctx.arc(mapped[0], mapped[1], size, 0, PI2);
     rtv.ctx.fill();
 
     rtv.ctx.restore();
