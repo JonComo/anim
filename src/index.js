@@ -1796,25 +1796,19 @@ math.import({
 
     rtv.ctx.restore();
   },
-  point(a, size, color) { // point [x,y,z] size color[r,g,b]
-    let psize = 8;
-    if (size) {
-      psize = size;
-    }
+  point(a, size = 8, color) { // point [x,y,z] size color[r,g,b]
+    if (size <= 0) return;
 
-    if (psize <= 0) {
-      return;
-    }
-
-    const camData = rtv.cam.graph_to_screen_mat(math.matrix([a]))[0];
+    const mapped = rtv.cam.graph_to_screen(...a.toArray());
 
     rtv.ctx.save();
-    rtv.ctx.beginPath();
+
     if (color) {
-      const constrained = color.map(constrain);
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(constrained, 255).toArray());
+      rtv.ctx.fillStyle = rgb1ToHex(color.map(constrain).toArray());
     }
-    rtv.ctx.arc(camData[0], camData[1], psize, 0, PI2);
+
+    rtv.ctx.beginPath();
+    rtv.ctx.arc(mapped[0], mapped[1], size, 0, PI2);
     rtv.ctx.fill();
 
     rtv.ctx.restore();
