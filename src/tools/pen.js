@@ -1,4 +1,4 @@
-import { formatRgb, rgbToHex } from '../index';
+import { formatRgb } from '../index';
 import { math, rtv } from '../resources';
 
 export default function Pen() {
