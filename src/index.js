@@ -205,8 +205,17 @@ function reportError(e) {
 // undo
 let states = [];
 
+export function formatRgb([r, g, b]) {
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 export function rgbToHex(c) {
   return `#${((1 << 24) + (Math.round(c[0]) << 16) + (Math.round(c[1]) << 8) + Math.round(c[2])).toString(16).slice(1)}`;
+}
+
+function formatRgb1(rgb) {
+  const [r, g, b] = rgb.map((x) => Math.round(x * 255));
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function rgb1ToHex(a) {
@@ -1737,7 +1746,7 @@ math.import({
       .map((mapped, i) => ({
         mapped,
         color: colored
-          ? rgb1ToHex(colorFn(pointsArray[i]).map(constrain).toArray())
+          ? formatRgb1(colorFn(pointsArray[i]).map(constrain).toArray())
           : undefined,
       }));
 
@@ -1762,7 +1771,7 @@ math.import({
     rtv.ctx.save();
 
     if (color) {
-      rtv.ctx.fillStyle = rgb1ToHex(color.map(constrain).toArray());
+      rtv.ctx.fillStyle = formatRgb1(color.map(constrain).toArray());
     }
 
     rtv.ctx.beginPath();
@@ -1810,7 +1819,7 @@ math.import({
     rtv.ctx.stroke();
     if (fill) {
       const col = fill._data.map(constrain);
-      rtv.ctx.fillStyle = rgbToHex(math.multiply(col, 255));
+      rtv.ctx.fillStyle = formatRgb1(col);
       rtv.ctx.globalAlpha = 0.8;
       rtv.ctx.fill();
     }
@@ -2346,11 +2355,7 @@ math.import({
 
               if (dead === false) {
                 p = rtv.cam.graph_to_screen(xp, yp, zp);
-                rtv.ctx.strokeStyle = rgbToHex([
-                  math.round((pl - j) / pl * 255),
-                  0,
-                  math.round(j / pl * 255),
-                ]);
+                rtv.ctx.strokeStyle = formatRgb1([1 - j / pl, 0, j / pl]);
                 rtv.ctx.lineTo(p[0], p[1]);
                 rtv.ctx.stroke();
               }

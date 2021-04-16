@@ -2,8 +2,8 @@ import {
   between,
   copy,
   distance,
+  formatRgb,
   interpolate,
-  rgbToHex,
   transformProps,
 } from '../index';
 import {
@@ -300,7 +300,7 @@ export default function Shape(color, path) {
     let js = '';
     js += 'ctx.save();\n';
     js += `ctx.globalAlpha = ${props.c[3]};\n`;
-    js += `ctx.strokeStyle = "${rgbToHex(props.c)}";\n`;
+    js += `ctx.strokeStyle = "${formatRgb(props.c)}";\n`;
     js += `ctx.translate(x + ${c.x - cp.x}, y + ${c.y - cp.y});\n`;
     js += `ctx.rotate(${props.r});\n`;
     js += `ctx.scale(${props.w}, ${props.h});\n`;
@@ -340,7 +340,7 @@ export default function Shape(color, path) {
     ctx.save();
     ctx.beginPath();
     ctx.globalAlpha = props.c[3];
-    ctx.strokeStyle = rgbToHex(props.c);
+    ctx.strokeStyle = formatRgb(props.c);
     this.draw_path(props);
     ctx.stroke();
     ctx.restore();
