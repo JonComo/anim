@@ -68,8 +68,6 @@ You can interact with a variable by using a slider (just type in into a text obj
 
 Then enter presentation mode, <code>ctrl enter</code>, and drag (with your mouse) the variable name left and right to change it's value.
 
-That's about it for now! Good luck! Even now the code is begging for bug fixes and cleaning up... So much repetition of code too(not used to javascript.. okay, end of my excuses).
-
 ## Setup Guide (Development)
 
 This section explains the process of setting up your own environment for developing `anim`.
@@ -120,3 +118,5 @@ Now, you should be all set to start modifying the code.
 ### Compile it!
 
 Once you're satisfied with your changes, you can bundle everything up. Just run `npm run build` and look in the `dist/` directory. You should see a new file named `main.js`. This file is Webpack's compiled version of your code. Opening up `dist/index.html` in your browser should open up `anim` accompanied by your changes. Hooray!
+
+That's about it for now! Good luck! Even now the code is begging for bug fixes and cleaning up... So much repetition of code too(not used to javascript.. okay, end of my excuses).
