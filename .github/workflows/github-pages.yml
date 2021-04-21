@@ -13,18 +13,38 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Retrieve release version
+        run: |
+          echo "VERSION=v$(node utils/version.js)" >> $GITHUB_ENV
+
+      - name: Ensure version is unique
+        run: |
+          git fetch origin "$VERSION" \
+            && echo "Version is not unique; exiting..." \
+            || echo "UNIQUE_VERSION=1" >> $GITHUB_ENV
+
       - name: Configure Git
+        if: ${{ env.UNIQUE_VERSION }}
         run: git config user.name "GitHub Pages CD"
 
       - name: Install NPM packages
+        if: ${{ env.UNIQUE_VERSION }}
         run: npm install
 
       - name: Compile Webpack project
+        if: ${{ env.UNIQUE_VERSION }}
         run: npm run build
 
       - name: Publish build
+        if: ${{ env.UNIQUE_VERSION }}
         run: |
           git add --force dist/
           git commit --message 'Publish site'
           git subtree split --prefix dist/ --branch gh-pages
           git push --force origin gh-pages
+
+      - name: Tag commit
+        if: ${{ env.UNIQUE_VERSION }}
+        run: |
+          git tag "$VERSION" gh-pages
+          git push origin "$VERSION"
