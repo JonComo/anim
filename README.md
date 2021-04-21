@@ -4,6 +4,70 @@ WARNING! Internal tool! Turn back while you still can! On that note, anim has st
 
 Anim is used to make animations and graphs for the youtube series, https://www.youtube.com/watch?v=ZzWaow1Rvho
 
+## Quick user guide (subject to change or be out of date as the code changes):
+
+This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. An object's properties are smoothly transitioned while presenting.
+
+### Setup
+
+(If you are planning to modify `anim`, see the [development setup guide](#setup-guide-development)!)
+
+`anim` is available both as [source code](https://github.com/JonComo/anim) and as a bundled `index.html`, `main.*.js` and a few extra files (including licenses and source maps). If you are not planning to modify `anim`, you should proceed with the second option. This section describes how to do so.
+
+To run `anim`, you can visit the [GitHub Pages site](https://joncomo.github.io/anim/) which hosts the compiled code. However, the code is available for download at https://github.com/JonComo/anim/releases (instructions are available under [Downloading](#downloading)). This enables you to open an `index.html` file in your favorite browser and use `anim` there, with the added benefit of `anim` working while you don't have a valid internet connection. Keep in mind that a local copy of `anim` might become outdated.
+
+### Downloading
+
+1. Visit https://github.com/JonComo/anim/releases and pick a release (if you have no preference, go with the latest).
+![Releases](https://user-images.githubusercontent.com/49883288/115542188-06da3c80-a26e-11eb-8413-33e61262d387.png)
+
+2. Choose an archive format. Click on it to download. You'll need to be able to unarchive it once it's downloaded, so make sure your computer has the necessary software installed that correspond to the format you pick.
+![Archive Download](https://user-images.githubusercontent.com/49883288/115542797-a4357080-a26e-11eb-982e-5fcb387859b9.png)
+
+3. Navigate to where the archive was downloaded onto your system. If you are on Windows and have downloaded the `.zip` archive, right-click it and select <kbd>Extract All</kbd>, and then follow the on-screen instructions. On macOS, it should be sufficient to double-click the archive. Finally, if you're running Linux, you can execute `tar -xzvf <archive>.tar.gz` or `unzip <archive>.zip` to unarchive the download. If you prefer the GUI, you might have an archive manager installed that will unarchive the download for you.
+
+4. Navigate into the `<archive>` directory (it doesn't have a file extension!) and open `index.html` in your favorite browser. If all went well, you should now have a local copy of (compiled) `anim`.
+
+6. Since the archive has been extracted, you can delete it. If you'd like to download another version of `anim`, follow the previous steps again. If you are not planning to use a local version of `anim` anymore, you can delete the extracted directory that contains it.
+
+### Frequently Used Features
+
+(A more elaborate help section can be found by scrolling down on `anim`!)
+
+Present: <code>ctrl enter</code>
+
+Exit present mode: <code>esc</code>
+
+Change frames: keys <code>0</code> and up or left and right arrow keys.
+
+Insert frame: <code>+</code> button
+Remove current frame: <code>-</code> button
+
+Add objects:
+  Select the tool for the object you want to create
+  Text: click to place a line of text under the mouse
+  Shape or vector: click and keep clicking to draw a shape
+  Press <code>esc</code> to finish
+  Circle: click to place a circle under the mouse pointer
+
+You can select objects with the select tool (which uses rectangular selection)
+
+You can define functions in text objects by just typing them in.
+
+<code>f(x) = x^(2)</code>
+
+Then you can graph them:
+
+<code>graphxy(f)</code>
+
+(click the <code>view xy</code> button in the menu to rotate the 3D coordinate axes to see your 2D graph)
+
+You can interact with a variable by using a slider (just type in into a text object):
+
+<code>slide:x</code>
+
+Then enter presentation mode, <code>ctrl enter</code>, and drag (with your mouse) the variable name left and right to change it's value.
+
 ## Setup Guide (Development)
 
 This section explains the process of setting up your own environment for developing `anim`.
@@ -54,43 +118,5 @@ Now, you should be all set to start modifying the code.
 ### Compile it!
 
 Once you're satisfied with your changes, you can bundle everything up. Just run `npm run build` and look in the `dist/` directory. You should see a new file named `main.js`. This file is Webpack's compiled version of your code. Opening up `dist/index.html` in your browser should open up `anim` accompanied by your changes. Hooray!
-
-## Quick user guide (subject to change or be out of date as the code changes):
-
-This was made to assist in creating quick animations for my youtube series on neural networks. You can add text, circles, and draw shapes. An object's properties are smoothly transitioned while presenting.
-
-Present: <code>ctrl enter</code>
-
-Exit present mode: <code>esc</code>
-
-Change frames: keys <code>0</code> and up or left and right arrow keys.
-
-Insert frame: <code>+</code> button
-Remove current frame: <code>-</code> button
-
-Add objects:
-  Select the tool for the object you want to create
-  Text: click to place a line of text under the mouse
-  Shape or vector: click and keep clicking to draw a shape
-  Press <code>esc</code> to finish
-  Circle: click to place a circle under the mouse pointer
-
-You can select objects with the select tool (which uses rectangular selection)
-
-You can define functions in text objects by just typing them in.
-
-<code>f(x) = x^(2)</code>
-
-Then you can graph them:
-
-<code>graphxy(f)</code>
-
-(click the <code>view xy</code> button in the menu to rotate the 3D coordinate axes to see your 2D graph)
-
-You can interact with a variable by using a slider (just type in into a text object):
-
-<code>slide:x</code>
-
-Then enter presentation mode, <code>ctrl enter</code>, and drag (with your mouse) the variable name left and right to change it's value.
 
 That's about it for now! Good luck! Even now the code is begging for bug fixes and cleaning up... So much repetition of code too(not used to javascript.. okay, end of my excuses).
