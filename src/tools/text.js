@@ -2,20 +2,17 @@ import {
   constrain,
   copy,
   distance,
-  drawBrackets,
   drawFn,
-  drawMatrix,
   drawNetwork,
   drawSimple,
   enterSelect,
-  formatMatrix,
   formatRgb,
   interpolate,
-  matrixSize,
-  prettyRound,
+  roundWithKey,
   saveState,
   transformProps,
 } from '../index';
+import MatrixOutput from '../graphics/matrix-output';
 import {
   math,
   parser,
@@ -283,22 +280,26 @@ export default function Text(text, pos) {
     // if its a matrix split that up too
     if (this.matrix_vals.length !== 0) {
       // create a bunch of matrix numbers
+
       const pad = 24;
 
-      const matrix = formatMatrix(this.matrix_vals);
+      const newTextbox = (initialText, i, j) => {
+        const newT = new Text(roundWithKey(initialText).toString(), {
+          x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
+          y: p.y + i * GRID_SIZE,
+        });
+        rtv.objs.push(newT);
+      };
 
-      for (let i = 0; i < matrix.length; i++) {
-        for (let j = 0; j < matrix[i].length; j++) {
-          const newT = new Text(matrix[i][j], {
-            x: p.x + j * (MAT_NUM_WIDTH + pad) + 110,
-            y: p.y + i * GRID_SIZE,
-          });
-          rtv.objs.push(newT);
+      for (let i = 0; i < this.matrix_vals.length; i++) {
+        if (this.matrix_vals[i] instanceof Array) {
+          for (let j = 0; j < this.matrix_vals[i].length; j++) {
+            newTextbox(this.matrix_vals[i][j], i, j);
+          }
+        } else {
+          newTextbox(this.matrix_vals[i], i, 0);
         }
       }
-
-      const size = matrixSize(matrix);
-      drawBrackets(0, 0, size[0], size[1]);
 
       return;
     }
@@ -590,7 +591,7 @@ export default function Text(text, pos) {
             // nothing
             this.text_val = `=${val}`;
           } else {
-            this.text_val = `=${prettyRound(val)}`;
+            this.text_val = `=${roundWithKey(val)}`;
           }
         } else if (type === 'boolean') {
           this.text_val = ` = ${val}`;
@@ -604,9 +605,9 @@ export default function Text(text, pos) {
               // nothing
               this.text_val = `=${val}`;
             } else {
-              this.text_val = `=${prettyRound(
+              this.text_val = `=${roundWithKey(
                 val.re,
-              ).toString()} + ${prettyRound(val.im).toString()}i`;
+              ).toString()} + ${roundWithKey(val.im)}i`;
             }
           }
         } else if (val) {
@@ -746,7 +747,7 @@ export default function Text(text, pos) {
         }
 
         const newVal = oldVal + delta;
-        this.text_val = `=${prettyRound(newVal)}`;
+        this.text_val = `=${roundWithKey(newVal)}`;
 
         try {
           parser.set(varName, newVal);
@@ -856,8 +857,7 @@ export default function Text(text, pos) {
       ctx.translate(135, 0);
 
       ctx.translate(-100, -20);
-      const formatted = formatMatrix(this.matrix_vals);
-      drawMatrix(formatted);
+      new MatrixOutput(this.matrix_vals).draw(0, 0);
 
       ctx.restore();
     } else if (!this.selected && this.text_val && this.text_val.length) {
