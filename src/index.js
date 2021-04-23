@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver';
 import Camera from './graphics/camera';
 import Circle from './tools/circle';
 import Frames, { configureCanvas } from './graphics/frames';
+import MatrixOutput from './graphics/matrix-output';
 import Menu from './ui/menu';
 import Network from './tools/network';
 import Pen from './tools/pen';
@@ -222,14 +223,6 @@ function rgb1ToHex(a) {
     Math.round(a[1] * 255),
     Math.round(a[2] * 255)];
   return rgbToHex(c);
-}
-
-export function prettyRound(num) {
-  return (Math.round(num * 100) / 100).toFixed(2);
-}
-
-function prettyRoundOne(num) {
-  return (Math.round(num * 10) / 10).toFixed(1);
 }
 
 export function drawSimple(text) {
@@ -623,6 +616,47 @@ function drawVect(_x, _y, _z, x, y, z) {
   rtv.ctx.stroke();
 }
 
+export function drawPath(points, canvas = rtv.ctx) {
+  if (points.length < 1) return; // Do not continue if no points exist to be drawn
+
+  canvas.beginPath();
+  canvas.moveTo(...points[0]); // Start path at first point
+
+  points
+    .slice(1) // Exclude first point
+    .forEach((p) => canvas.lineTo(...p));
+
+  canvas.stroke();
+}
+
+/**
+ * Returns `x` rounded to two decimal places if `ctrl` is pressed, otherwise one decimal place.
+ * @param {number} x
+ * @returns {number}
+ */
+export function roundWithKey(x) {
+  return math.round(x, rtv.keys.ctrl ? 2 : 1);
+}
+
+/**
+ * Returns the actual width of `text` on the canvas.
+ * @param {string} text
+ * @param {CanvasRenderingContext2D} ctx Optionally specifies a substitute context 2D.
+ * @returns {number} Length in pixels.
+ */
+export function getTextWidth(text, ctx = rtv.ctx) {
+  return ctx.measureText(text).width;
+}
+
+/**
+ * Returns current font size of canvas.
+ * @param {CanvasRenderingContext2D} ctx Optionally specifies a substitute context 2D.
+ * @returns {number} Font size.
+ */
+export function getFontHeight(ctx = rtv.ctx) {
+  return parseInt(ctx.font.match(/(\d+)px/)[1], 10);
+}
+
 export function drawBrackets(sx, sy, width, height) {
   rtv.ctx.beginPath();
   rtv.ctx.moveTo(sx + 7, sy);
@@ -708,82 +742,6 @@ export function drawFn(fn) {
   rtv.ctx.restore();
 
   return size;
-}
-
-export function matrixSize(matrix) {
-  if (matrix && matrix.length === 0) {
-    return;
-  }
-
-  const pad = 24;
-
-  return [matrix[0].length * (MAT_NUM_WIDTH + pad), matrix.length * GRID_SIZE];
-}
-
-export function drawMatrix(matrix, colorIJ) {
-  rtv.ctx.save();
-  rtv.ctx.textAlign = 'right';
-
-  const pad = 24;
-
-  let shift = 0;
-  if (rtv.keys.ctrl) {
-    shift = 24;
-  }
-
-  const maxWidth = MAT_NUM_WIDTH - 10;
-
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix[i].length; j++) {
-      if (colorIJ) {
-        colorIJ(i, j);
-      }
-      rtv.ctx.fillText(
-        matrix[i][j],
-        j * (MAT_NUM_WIDTH + pad) + 124 + shift,
-        i * GRID_SIZE + 20,
-        maxWidth,
-      );
-    }
-  }
-
-  const size = matrixSize(matrix);
-  drawBrackets(0, 0, size[0], size[1]);
-
-  rtv.ctx.restore();
-}
-
-export function formatMatrix(matrix) {
-  if (matrix.length === 0) {
-    return null;
-  }
-
-  // format for display
-  const formatted = [];
-  let round = prettyRoundOne;
-
-  if (rtv.keys.ctrl) {
-    round = prettyRound;
-  }
-
-  if (typeof matrix[0] === 'number') {
-    // array
-    for (let i = 0; i < matrix.length; i++) {
-      formatted.push([round(matrix[i])]);
-    }
-  } else {
-    // matrix
-    for (let i = 0; i < matrix.length; i++) {
-      const row = [];
-      for (let j = 0; j < matrix[i].length; j++) {
-        row.push(round(matrix[i][j]));
-      }
-
-      formatted.push(row);
-    }
-  }
-
-  return formatted;
 }
 
 function getMousePos(canvas, evt) {
@@ -1976,7 +1934,7 @@ math.import({
   view(x, { _data: p } = { _data: [0, 0] }) { // matrix, position: [x, y, z]
     let t = [];
     if (x._data) {
-      const d = x.map(prettyRound)._data;
+      const d = x.map(roundWithKey)._data;
       if (x._size.length === 1) {
         t = [d.join(' ')];
       } else {
@@ -2479,13 +2437,9 @@ math.import({
 
     const result = math.multiply(W, x);
 
-    const xformat = formatMatrix(x._data);
-    const rformat = formatMatrix(result._data);
-    const Wformat = formatMatrix(W._data);
-
-    const rsize = matrixSize(rformat);
-    const Wsize = matrixSize(formatMatrix(W._data));
-    const xsize = matrixSize(xformat);
+    const rMO = new MatrixOutput(result.toArray());
+    const WMO = new MatrixOutput(W.toArray());
+    const xMO = new MatrixOutput(x.toArray());
 
     // draw neural network
     const rows = W._size[0];
@@ -2503,7 +2457,7 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    drawMatrix(rformat, (i, j) => {
+    rMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < highNeur.length; n++) {
         const highn = highNeur[n];
@@ -2514,22 +2468,22 @@ math.import({
     });
 
     rtv.ctx.fillStyle = 'black';
-    rtv.ctx.fillText('=', rsize[0] + pad, rsize[1] / 2);
+    rtv.ctx.fillText('=', rMO.width + pad, rMO.height / 2);
 
     // draw W matrix
-    rtv.ctx.translate(rsize[0] + pad * 3, 0);
-    drawMatrix(Wformat, (i, j) => {
+    rtv.ctx.translate(rMO.width + pad * 3, 0);
+    WMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       if (highConn.length && highConn[0] === j && highConn[1] === i) {
         rtv.ctx.fillStyle = COLORS[3];
       }
     });
 
-    rtv.ctx.fillText('*', Wsize[0] + pad, rsize[1] / 2);
+    rtv.ctx.fillText('*', WMO.width + pad, WMO.height / 2);
 
     // draw x matrix
-    rtv.ctx.translate(Wsize[0] + pad * 3, rsize[1] / 2 - xsize[1] / 2);
-    drawMatrix(xformat, (i, j) => {
+    rtv.ctx.translate(WMO.width + pad * 3, WMO.height / 2 - xMO.height / 2);
+    xMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
 
       for (let n = 0; n < highNeur.length; n++) {
@@ -2550,8 +2504,7 @@ math.import({
 
     const result = math.multiply(W, x);
 
-    const rformat = formatMatrix(result._data);
-    const rsize = matrixSize(rformat);
+    const rMO = new MatrixOutput(result.toArray());
 
     // draw neural network
     const rows = W._size[0];
@@ -2569,7 +2522,7 @@ math.import({
     rtv.ctx.font = FONT.ANIM;
 
     rtv.ctx.translate(loc[0] + 10, loc[1] + 330);
-    drawMatrix(rformat, (i, j) => {
+    rMO.draw(0, 0, (i, j) => {
       rtv.ctx.fillStyle = 'black';
       for (let n = 0; n < highNeur.length; n++) {
         const highn = highNeur[n];
@@ -2580,22 +2533,17 @@ math.import({
     });
 
     rtv.ctx.fillStyle = 'black';
-    rtv.ctx.fillText('=', rsize[0] + pad, rsize[1] / 2);
+    rtv.ctx.fillText('=', rMO.width + pad, rMO.height / 2);
 
     // draw dot prod matrix
-    rtv.ctx.translate(rsize[0] + pad * 3, 0);
+    rtv.ctx.translate(rMO.width + pad * 3, 0);
     const dp = [];
-
-    let round = prettyRoundOne;
-    if (rtv.keys.ctrl) {
-      round = prettyRound;
-    }
 
     for (let i = 0; i < W._data.length; i++) {
       let text = '';
 
       for (let j = 0; j < W._data[0].length; j++) {
-        text += `${round(W._data[i][j])}*${round(x._data[j])}`;
+        text += `${roundWithKey(W._data[i][j])}*${roundWithKey(x._data[j])}`;
         if (j < W._data[0].length - 1) {
           text += ' + ';
         }
