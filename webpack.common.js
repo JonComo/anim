@@ -7,11 +7,6 @@ module.exports = {
   entry: {
     main: path.resolve(__dirname, 'src', 'index.js'),
   },
-  resolve: {
-    fallback: {
-      fs: false,
-    },
-  },
   module: {
     rules: [
       {
