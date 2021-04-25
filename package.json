@@ -38,7 +38,6 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
-    "ccapture.js-npmfixed": "^1.1.0",
     "file-saver": "^2.0.5",
     "html-loader": "^2.1.2",
     "markdown-loader": "^6.0.0",
