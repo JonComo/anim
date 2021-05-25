@@ -3709,46 +3709,53 @@ window.addEventListener('load', () => {
     rtv.keys.ctrl = false;
   });
 
+  window.addEventListener('keydown', (evt) => {
+    switch (evt.key) {
+      case 'Tab':
+        rtv.keys.tab = true;
+        break;
+
+      case 'Meta':
+        rtv.keys.meta = true;
+        break;
+
+      case 'Shift':
+        rtv.keys.shift = true;
+        break;
+
+      case 'Control':
+        rtv.keys.ctrl = true;
+        break;
+
+      case 'Enter':
+        if (rtv.keys.meta || rtv.keys.ctrl) present();
+        break;
+
+      case ' ':
+        evt.preventDefault();
+
+      // no default
+    }
+  });
+
   rtv.c.addEventListener('keydown', (evt) => {
     const { key } = evt;
 
-    if (key === 'Escape' && rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
-      rtv.presenting = false;
-      document.body.style.cursor = '';
-      document.body.style.overflow = 'auto'; // Enable and show scrollbar
-      return false;
-    }
-
     if (key === 'Escape') {
+      if (rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
+        rtv.presenting = false;
+        document.body.style.cursor = '';
+        document.body.style.overflow = 'auto'; // Enable and show scrollbar
+        return;
+      }
+
       enterSelect();
     }
 
-    if (key === 'Tab') {
-      rtv.keys.tab = true;
-    }
-
-    if (key === 'Meta') {
-      rtv.keys.meta = true;
-    }
-
-    if (key === 'Shift') {
-      rtv.keys.shift = true;
-    }
-
-    if (key === 'Control') {
-      rtv.keys.ctrl = true;
-    }
-
-    if (key === 'Backspace') {
-      if (rtv.keys.ctrl) {
-        const N = rtv.objs.length;
-        for (let i = 0; i < N; i++) {
-          const obj = rtv.objs[i];
-          if (obj.is_selected()) {
-            obj.deleted = true;
-          }
-        }
-      }
+    if (rtv.keys.ctrl && key === 'Backspace') {
+      rtv.objs.forEach((obj) => {
+        if (obj.is_selected) obj.deleted = true;
+      });
     }
 
     if (key === 'z' && (rtv.keys.meta || rtv.keys.ctrl)) {
@@ -3756,78 +3763,55 @@ window.addEventListener('load', () => {
       return;
     }
 
-    if ((rtv.keys.meta || rtv.keys.ctrl) && key === 'Enter') {
-      present();
-      return true;
-    }
-
-    if (document.getElementById('formula_text') === document.activeElement) {
-      return true;
-    }
-
-    let captured = false;
-    const N = rtv.objs.length;
-    for (let i = 0; i < N; i++) {
-      const obj = rtv.objs[i];
-
-      if (typeof obj.onkeydown === 'function') {
-        if (obj.onkeydown(evt)) {
-          captured = true;
-          evt.preventDefault(); // Prevent default if event has been handled
-          if (key === 'ArrowUp' || key === 'ArrowDown') {
-            // stops text selection from propagating as you iterate the array
-            break;
-          }
-        }
-      }
-    }
-
-    if (captured) {
+    if (rtv.objs.some((obj) => {
+      if (obj?.onkeydown(evt)) return key === 'ArrowUp' || key === 'ArrowDown';
       return false;
+    })) {
+      evt.preventDefault();
+      return;
     }
 
     if (rtv.frames.onkeydown(evt)) {
-      return false;
+      evt.preventDefault();
+      return;
     }
 
     rtv.cam.onkeydown(evt);
     rtv.pen.onkeydown(evt);
 
-    if (key === ' ') {
-      return false;
-    }
-
-    if (rtv.tool === 'select' && evt.target === document.body) {
+    if (rtv.tool === 'select') {
       const tools = {
         t: 'text', s: 'shape', c: 'camera', v: 'vector',
       };
-      if (key in tools) {
-        rtv.tool = tools[key];
-      }
+      if (key in tools) rtv.tool = tools[key];
     }
   });
 
-  rtv.c.addEventListener('keyup', ({ key }) => {
-    if (key === 'Tab') {
-      rtv.keys.tab = false;
-    }
+  window.addEventListener('keyup', ({ key }) => {
+    switch (key) {
+      case 'Tab':
+        rtv.keys.tab = false;
+        break;
 
-    if (key === 'Meta') {
-      rtv.keys.meta = false;
-    }
+      case 'Meta':
+        rtv.keys.meta = false;
+        break;
 
-    if (key === 'Shift') {
-      rtv.keys.shift = false;
-    }
+      case 'Shift':
+        rtv.keys.shift = false;
+        break;
 
-    if (key === 'Control') {
-      rtv.keys.ctrl = false;
+      case 'Control':
+        rtv.keys.ctrl = false;
+        break;
+
+      // no default
     }
 
     saveState();
   });
 
-  ['mousedown', 'touchstart'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
+  ['mousedown', 'touchstart'].forEach((evtName) => rtv.c.addEventListener(evtName, (evt) => {
     rtv.mouse.down = true;
     rtv.mouse.start = getMousePos(rtv.c, evt);
 
@@ -3835,49 +3819,10 @@ window.addEventListener('load', () => {
       math.compile('click()').evaluate(parser.scope);
     } catch { /* Continue */ }
 
-    if (rtv.cam.mouse_down(evt)) {
-      return;
-    }
-
-    if (rtv.pen.mouse_down(evt)) {
-      return;
-    }
-
-    if (rtv.presenting) {
-      return false;
-    }
-
-    let captured = false;
-    for (let i = rtv.objs.length - 1; i >= 0; i--) {
-      const obj = rtv.objs[i];
-      if (typeof obj.mouse_down === 'function') {
-        if (obj.mouse_down(evt)) {
-          captured = true;
-          break;
-        }
-      }
-    }
-
-    if (captured) {
-      return false;
-    }
-
-    if (rtv.frames.mouse_down()) {
-      return;
-    }
-
-    // didn't touch an obj, if tool is move start a rect
-    let objSelected = false;
-    const N = rtv.objs.length;
-    for (let i = 0; i < N; i++) {
-      if (rtv.objs[i].is_selected()) {
-        objSelected = true;
-      }
-    }
-
-    if (rtv.tool === 'select' && objSelected === false) {
-      rtv.selecting = true;
-    }
+    if (rtv.cam.mouse_down(evt) || rtv.pen.mouse_down(evt) || rtv.presenting) return;
+    if (rtv.objs.some((obj) => obj?.mouse_down(evt))) evt.preventDefault();
+    if (rtv.frames.mouse_down()) return;
+    if (rtv.tool === 'select') rtv.selecting = true;
   }));
 
   ['mousemove', 'touchmove'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
@@ -3889,61 +3834,28 @@ window.addEventListener('load', () => {
     parser.set('_y', rtv.mouse.graph.x);
     parser.set('_z', rtv.mouse.graph.y);
 
-    if (rtv.pen.mouse_move(evt)) {
-      return;
-    }
+    if (rtv.pen.mouse_move(evt)) return;
 
-    if (rtv.mouse.down) {
-      let captured = false;
-      const N = rtv.objs.length;
-      for (let i = N - 1; i >= 0; i--) {
-        const obj = rtv.objs[i];
-        if (!captured && typeof obj.mouse_drag === 'function') {
-          captured = obj.mouse_drag(evt);
-        }
-      }
+    if (rtv.mouse.down) rtv.objs.some((obj) => obj?.mouse_drag(evt));
+    else rtv.objs.forEach((obj) => obj?.mouse_move(evt));
 
-      if (!captured) {
-        rtv.cam.mouse_drag(evt);
-      }
-    } else {
-      const N = rtv.objs.length;
-      for (let i = 0; i < N; i++) {
-        const obj = rtv.objs[i];
-        if (typeof obj.mouse_move === 'function') {
-          obj.mouse_move(evt);
-        }
-      }
-    }
-
-    if (rtv.presenting) {
-      rtv.mouse.time = MOUSE_DURATION;
-    }
+    if (rtv.presenting) rtv.mouse.time = MOUSE_DURATION;
 
     rtv.mouse.last = getMousePos(rtv.c, evt);
     rtv.mouse.gridLast = constrainToGrid(rtv.mouse.pos);
   }));
 
-  ['mouseup', 'touchend'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
+  ['mouseup', 'touchend'].forEach((evtName) => rtv.c.addEventListener(evtName, (evt) => {
     rtv.mouse.down = false;
 
     if (rtv.presenting) {
       // maybe tap some text
-      let captured = false;
-      const N = rtv.objs.length;
-      for (let i = 0; i < N; i++) {
-        const obj = rtv.objs[i];
-        if (!captured && typeof obj.mouse_up === 'function') {
-          captured = obj.mouse_up(evt);
-        }
-      }
+      rtv.objs.some((obj) => obj?.mouse_up());
 
-      return false;
+      evt.preventDefault();
     }
 
-    if (rtv.frames.mouse_up(evt)) {
-      return;
-    }
+    if (rtv.frames.mouse_up(evt)) return;
 
     if (rtv.menu.mouse_up(evt)) {
       rtv.new_line = null;
@@ -3958,96 +3870,86 @@ window.addEventListener('load', () => {
       return;
     }
 
-    if (rtv.tool === 'select') {
-      let captured = false;
-      const N = rtv.objs.length;
-      for (let i = N - 1; i >= 0; i--) {
-        const obj = rtv.objs[i];
-        if (!captured && typeof obj.mouse_up === 'function') {
-          captured = obj.mouse_up(evt);
+    switch (rtv.tool) {
+      case 'select':
+        rtv.objs.some((obj) => obj?.mouse_up());
+        break;
+
+      case 'text': {
+        rtv.objs.forEach((obj) => { obj.selected = false; });
+
+        // add a num obj at mouse pos
+        const newText = new Text('', rtv.mouse.grid);
+        newText.select();
+        rtv.objs.push(newText);
+      } break;
+
+      case 'shape':
+      case 'vector':
+        // add a num obj at mouse pos
+        if (rtv.new_line) {
+          // add a point
+          rtv.new_line.add_point({ x: rtv.mouse.grid.x, y: rtv.mouse.grid.y });
+        } else {
+          const l = new Shape([0, 0, 0, 1], [{ x: rtv.mouse.grid.x, y: rtv.mouse.grid.y }]);
+
+          switch (rtv.tool) {
+            case 'vector':
+              l.properties[rtv.frame].v = true;
+              break;
+
+            case 'circle':
+              l.properties[rtv.frame].circle = true;
+              break;
+
+            // no default
+          }
+
+          rtv.objs.push(l);
+          rtv.new_line = l;
         }
-      }
-    } else if (rtv.tool === 'text') {
-      // add a num obj at mouse pos
-      const n = new Text('', rtv.mouse.grid);
+        return;
 
-      const N = rtv.objs.length;
-      for (let i = 0; i < N; i++) {
-        const obj = rtv.objs[i];
-        if (typeof obj.is_selected === 'function') {
-          obj.selected = false;
-        }
-      }
+      case 'circle': {
+        const newCircle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
+        rtv.objs.push(newCircle);
+      } break;
 
-      n.select();
-      rtv.objs.push(n);
-    } else if (rtv.tool === 'shape' || rtv.tool === 'vector') {
-      // add a num obj at mouse pos
-      if (rtv.new_line) {
-        // add a point
-        rtv.new_line.add_point({ x: rtv.mouse.grid.x, y: rtv.mouse.grid.y });
-      } else {
-        const l = new Shape([0, 0, 0, 1], [{ x: rtv.mouse.grid.x, y: rtv.mouse.grid.y }]);
+      case 'network': {
+        const newNetwork = new Network(rtv.mouse.grid);
+        rtv.objs.push(newNetwork);
+      } break;
 
-        if (rtv.tool === 'vector') {
-          l.properties[rtv.frame].v = true;
-        } else if (rtv.tool === 'circle') {
-          l.properties[rtv.frame].circle = true;
-        }
-
-        rtv.objs.push(l);
-        rtv.new_line = l;
-      }
-
-      return;
-    } else if (rtv.tool === 'circle') {
-      const newCircle = new Circle([0, 0, 0, 1], rtv.mouse.grid);
-      rtv.objs.push(newCircle);
-    } else if (rtv.tool === 'network') {
-      const n = new Network(rtv.mouse.grid);
-      rtv.objs.push(n);
+      // no default
     }
 
     if (rtv.selecting) {
       rtv.selecting = false;
 
-      const { x } = rtv.mouse.start;
-      const { y } = rtv.mouse.start;
-      const x2 = rtv.mouse.pos.x;
-      const y2 = rtv.mouse.pos.y;
+      const { x, y } = rtv.mouse.start;
+      const { x: x2, y: y2 } = rtv.mouse.pos;
 
       const xx = Math.min(x, x2);
       const yy = Math.min(y, y2);
       const xx2 = Math.max(x, x2);
       const yy2 = Math.max(y, y2);
 
-      rtv.selected_objs = [];
-
-      for (let i = 0; i < rtv.objs.length; i++) {
-        const obj = rtv.objs[i];
+      rtv.selected_objs = rtv.objs.filter((obj) => {
         if (typeof obj.in_rect === 'function') {
           obj.in_rect(xx, yy, xx2, yy2);
-          if (obj.is_selected()) {
-            rtv.selected_objs.push(obj);
-          }
+          return obj.is_selected();
         }
-      }
+        return false;
+      });
 
-      const scopy = copy(rtv.selected_objs);
-      for (let i = 0; i < scopy.length; i++) {
-        const obj = scopy[i];
-        const props = copy(obj.properties[rtv.frame]);
-        obj.properties = { 1: props };
-      }
-
-      if (scopy.length > 0) {
+      if (rtv.selected_objs.length) {
         // store as text rep
-        const string = JSON.stringify(scopy);
-        document.getElementById('selected_objects_text').value = string;
+        document.getElementById('selected_objects_text').value = JSON.stringify(
+          rtv.selected_objs.map(
+            (obj) => ({ ...obj, properties: { 1: obj.properties[rtv.frame] } }),
+          ),
+        );
       }
-
-      saveState();
-      return false;
     }
 
     saveState();
