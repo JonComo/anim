@@ -3734,6 +3734,7 @@ window.addEventListener('load', () => {
 
       case ' ':
         evt.preventDefault();
+        break;
 
       // no default
     }
@@ -3764,10 +3765,15 @@ window.addEventListener('load', () => {
       return;
     }
 
-    if (rtv.objs.some((obj) => {
-      if (obj?.onkeydown(evt)) return key === 'ArrowUp' || key === 'ArrowDown';
+    let captured = false;
+    rtv.objs.forEach((obj) => {
+      if (obj?.onkeydown(evt)) {
+        captured = true;
+        return key === 'ArrowDown';
+      }
       return false;
-    })) {
+    });
+    if (captured) {
       evt.preventDefault();
       return;
     }
