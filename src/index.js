@@ -3768,7 +3768,7 @@ window.addEventListener('load', () => {
 
     let captured = false;
     rtv.objs.forEach((obj) => {
-      if (obj?.onkeydown(evt)) {
+      if (obj.onkeydown?.(evt)) {
         captured = true;
         return key === 'ArrowDown';
       }
@@ -3828,7 +3828,7 @@ window.addEventListener('load', () => {
     } catch { /* Continue */ }
 
     if (rtv.cam.mouse_down(evt) || rtv.pen.mouse_down(evt) || rtv.presenting) return;
-    if (rtv.objs.some((obj) => obj?.mouse_down(evt))) evt.preventDefault();
+    if (rtv.objs.some((obj) => obj.mouse_down?.(evt))) evt.preventDefault();
     if (rtv.frames.mouse_down()) return;
     if (rtv.tool === 'select') rtv.selecting = true;
   }));
@@ -3845,11 +3845,11 @@ window.addEventListener('load', () => {
     if (rtv.pen.mouse_move(evt)) return;
 
     if (rtv.mouse.down) {
-      if (!rtv.objs.some((obj) => obj?.mouse_drag(evt))) {
+      if (!rtv.objs.some((obj) => obj.mouse_drag?.(evt))) {
         rtv.cam.mouse_drag();
       }
     } else {
-      rtv.objs.forEach((obj) => obj?.mouse_move(evt));
+      rtv.objs.forEach((obj) => obj.mouse_move?.(evt));
     }
 
     if (rtv.presenting) rtv.mouse.time = MOUSE_DURATION;
@@ -3863,7 +3863,7 @@ window.addEventListener('load', () => {
 
     if (rtv.presenting) {
       // maybe tap some text
-      rtv.objs.some((obj) => obj?.mouse_up());
+      rtv.objs.some((obj) => obj.mouse_up?.());
 
       evt.preventDefault();
     }
@@ -3885,7 +3885,7 @@ window.addEventListener('load', () => {
 
     switch (rtv.tool) {
       case 'select':
-        rtv.objs.some((obj) => obj?.mouse_up());
+        rtv.objs.some((obj) => obj.mouse_up?.());
         break;
 
       case 'text': {
