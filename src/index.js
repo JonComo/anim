@@ -3709,7 +3709,7 @@ window.addEventListener('load', () => {
     rtv.keys.ctrl = false;
   });
 
-  window.addEventListener('keydown', (evt) => {
+  rtv.c.addEventListener('keydown', (evt) => {
     const { key } = evt;
 
     if (key === 'Escape' && rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
@@ -3807,7 +3807,7 @@ window.addEventListener('load', () => {
     }
   });
 
-  window.addEventListener('keyup', ({ key }) => {
+  rtv.c.addEventListener('keyup', ({ key }) => {
     if (key === 'Tab') {
       rtv.keys.tab = false;
     }
@@ -3880,7 +3880,7 @@ window.addEventListener('load', () => {
     }
   }));
 
-  ['mousemove', 'touchmove'].forEach((key) => window.addEventListener(key, (evt) => {
+  ['mousemove', 'touchmove'].forEach((key) => rtv.c.addEventListener(key, (evt) => {
     // update mouse
     rtv.mouse.pos = getMousePos(rtv.c, evt);
     rtv.mouse.grid = constrainToGrid(rtv.mouse.pos);
