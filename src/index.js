@@ -3787,10 +3787,6 @@ window.addEventListener('load', () => {
         if (rtv.keys.meta || rtv.keys.ctrl) present();
         break;
 
-      case ' ':
-        evt.preventDefault();
-        break;
-
       // no default
     }
   });
