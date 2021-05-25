@@ -3837,8 +3837,13 @@ window.addEventListener('load', () => {
 
     if (rtv.pen.mouse_move(evt)) return;
 
-    if (rtv.mouse.down) rtv.objs.some((obj) => obj?.mouse_drag(evt));
-    else rtv.objs.forEach((obj) => obj?.mouse_move(evt));
+    if (rtv.mouse.down) {
+      if (!rtv.objs.some((obj) => obj?.mouse_drag(evt))) {
+        rtv.cam.mouse_drag();
+      }
+    } else {
+      rtv.objs.forEach((obj) => obj?.mouse_move(evt));
+    }
 
     if (rtv.presenting) rtv.mouse.time = MOUSE_DURATION;
 
