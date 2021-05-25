@@ -1096,6 +1096,7 @@ export function present() {
    * Sets page up for presentation mode.
    */
   function setUpPresentationMode() {
+    rtv.c.focus();
     enterSelect(); // Enter select mode
     document.body.style.cursor = 'none'; // Hide cursor
     document.body.style.overflow = 'hidden'; // Disable and hide scrollbars
