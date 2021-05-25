@@ -26,6 +26,7 @@ import {
   PI2,
   MAT_NUM_WIDTH,
   CHAR,
+  MODE_KEYS,
 } from './resources';
 
 // custom functions!
@@ -3757,12 +3758,7 @@ window.addEventListener('load', () => {
     rtv.cam.onkeydown(evt);
     rtv.pen.onkeydown(evt);
 
-    if (rtv.tool === 'select') {
-      const tools = {
-        t: 'text', s: 'shape', c: 'camera', v: 'vector',
-      };
-      if (key in tools) rtv.tool = tools[key];
-    }
+    if (rtv.tool === 'select' && key in MODE_KEYS) rtv.tool = MODE_KEYS[key];
   });
 
   window.addEventListener('keydown', (evt) => {
