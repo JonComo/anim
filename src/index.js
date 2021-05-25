@@ -3711,36 +3711,6 @@ window.addEventListener('load', () => {
     rtv.keys.ctrl = false;
   });
 
-  window.addEventListener('keydown', (evt) => {
-    switch (evt.key) {
-      case 'Tab':
-        rtv.keys.tab = true;
-        break;
-
-      case 'Meta':
-        rtv.keys.meta = true;
-        break;
-
-      case 'Shift':
-        rtv.keys.shift = true;
-        break;
-
-      case 'Control':
-        rtv.keys.ctrl = true;
-        break;
-
-      case 'Enter':
-        if (rtv.keys.meta || rtv.keys.ctrl) present();
-        break;
-
-      case ' ':
-        evt.preventDefault();
-        break;
-
-      // no default
-    }
-  });
-
   rtv.c.addEventListener('keydown', (evt) => {
     const { key } = evt;
 
@@ -3792,6 +3762,36 @@ window.addEventListener('load', () => {
         t: 'text', s: 'shape', c: 'camera', v: 'vector',
       };
       if (key in tools) rtv.tool = tools[key];
+    }
+  });
+
+  window.addEventListener('keydown', (evt) => {
+    switch (evt.key) {
+      case 'Tab':
+        rtv.keys.tab = true;
+        break;
+
+      case 'Meta':
+        rtv.keys.meta = true;
+        break;
+
+      case 'Shift':
+        rtv.keys.shift = true;
+        break;
+
+      case 'Control':
+        rtv.keys.ctrl = true;
+        break;
+
+      case 'Enter':
+        if (rtv.keys.meta || rtv.keys.ctrl) present();
+        break;
+
+      case ' ':
+        evt.preventDefault();
+        break;
+
+      // no default
     }
   });
 
