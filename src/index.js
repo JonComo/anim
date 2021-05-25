@@ -3588,6 +3588,7 @@ window.addEventListener('load', () => {
 
   rtv.c = document.getElementById('viewport');
   rtv.c.style.backgroundColor = CANVAS_BG;
+  rtv.c.focus();
 
   rtv.ctx = rtv.c.getContext('2d');
 
