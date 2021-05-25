@@ -3713,9 +3713,7 @@ window.addEventListener('load', () => {
   });
 
   rtv.c.addEventListener('keydown', (evt) => {
-    const { key } = evt;
-
-    if (key === 'Escape') {
+    if (evt.key === 'Escape') {
       if (rtv.presenting && rtv.tool !== 'camera' && rtv.tool !== 'pen') {
         rtv.presenting = false;
         document.body.style.cursor = '';
@@ -3726,13 +3724,13 @@ window.addEventListener('load', () => {
       enterSelect();
     }
 
-    if (rtv.keys.ctrl && key === 'Backspace') {
+    if (rtv.keys.ctrl && evt.key === 'Backspace') {
       rtv.objs.forEach((obj) => {
         if (obj.is_selected) obj.deleted = true;
       });
     }
 
-    if (key === 'z' && (rtv.keys.meta || rtv.keys.ctrl)) {
+    if (evt.key === 'z' && (rtv.keys.meta || rtv.keys.ctrl)) {
       undo();
       return;
     }
@@ -3741,7 +3739,7 @@ window.addEventListener('load', () => {
     rtv.objs.forEach((obj) => {
       if (obj.onkeydown?.(evt)) {
         captured = true;
-        return key === 'ArrowDown';
+        return evt.key === 'ArrowDown';
       }
       return false;
     });
@@ -3758,7 +3756,7 @@ window.addEventListener('load', () => {
     rtv.cam.onkeydown(evt);
     rtv.pen.onkeydown(evt);
 
-    if (rtv.tool === 'select' && key in MODE_KEYS) rtv.tool = MODE_KEYS[key];
+    if (rtv.tool === 'select' && evt.key in MODE_KEYS) rtv.tool = MODE_KEYS[evt.key];
   });
 
   window.addEventListener('keydown', (evt) => {
