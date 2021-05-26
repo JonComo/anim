@@ -788,12 +788,17 @@ export default function Text(text, pos) {
 
     if (this.near_mouse) {
       if (!this.dragged) {
-        this.select();
+        if (rtv.presenting) {
+          this.eval();
+        } else {
+          this.select();
 
-        // move cursor
-        this.cursor = this.char_index_at_x(rtv.mouse.pos.x);
-        this.cursor_selection = this.cursor;
-        this.constrain_cursors();
+          // move cursor
+          this.cursor = this.char_index_at_x(rtv.mouse.pos.x);
+          this.cursor_selection = this.cursor;
+          this.constrain_cursors();
+        }
+
         return true;
       }
     } else if (!rtv.keys.shift && this.is_selected()) {
