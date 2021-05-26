@@ -878,9 +878,18 @@ export default function Text(text, pos) {
     let parsedText = unparsedText;
 
     if (parsedText && parsedText.length) {
+      this.requirements = [];
+      this.fulfillments = [];
+
       parsedText = parsedText
         .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
-        .replace(/@/g, '_anon'); // Replace @ with anonymous fn name
+        .replace(/@/g, '_anon') // Replace @ with anonymous fn name
+        .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
+          this.requirements = requirements.split(' ');
+          this.fulfillments = fulfillments.split(' ');
+
+          return expression;
+        });
     }
 
     if (parsedText && parsedText.includes(':')) {
