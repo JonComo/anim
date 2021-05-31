@@ -1306,7 +1306,6 @@ export function transitionWithNext(next) {
         obj.eval();
       }
     });
-    Text.setVariable('frame', rtv.frame);
   });
 }
 
