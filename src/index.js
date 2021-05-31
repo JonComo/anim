@@ -1301,8 +1301,9 @@ export function transitionWithNext(next) {
     rtv.frame = targ;
 
     rtv.objs.forEach((obj) => {
-      if (typeof obj.parse_text === 'function') {
+      if (obj instanceof Text) {
         obj.parse_text(obj.properties[rtv.frame].t);
+        obj.eval();
       }
     });
     Text.setVariable('frame', rtv.frame);
