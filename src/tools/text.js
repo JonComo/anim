@@ -538,7 +538,7 @@ export default function Text(text, pos) {
 
     if (this.new) {
       this.new = false;
-      this.parse_text(this.properties[rtv.frame].t);
+      this.parse_text();
     }
 
     if (!this.cargs[0]) {
@@ -641,7 +641,7 @@ export default function Text(text, pos) {
     this.constrain_cursors();
 
     if (changed) {
-      this.parse_text(newText);
+      this.parse_text();
     }
   };
 
@@ -875,12 +875,12 @@ export default function Text(text, pos) {
     return size;
   };
 
-  this.parse_text = (unparsedText) => {
+  this.parse_text = () => {
     this.command = '';
     this.args = [];
     this.cargs = [];
 
-    let parsedText = unparsedText;
+    let parsedText = this.properties[rtv.frame].t;
 
     if (parsedText && parsedText.length) {
       this.requirements = [];
@@ -1248,5 +1248,5 @@ export default function Text(text, pos) {
     return js;
   };
 
-  this.parse_text(text);
+  this.parse_text();
 }
