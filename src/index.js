@@ -1302,7 +1302,7 @@ export function transitionWithNext(next) {
 
     rtv.objs.forEach((obj) => {
       if (obj instanceof Text) {
-        obj.parse_text(obj.properties[rtv.frame].t);
+        obj.parse_text();
         obj.eval();
       }
     });
