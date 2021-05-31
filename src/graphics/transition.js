@@ -1,5 +1,6 @@
 import { easeInOut, sigmoid } from '../index';
-import { math, parser, rtv } from '../resources';
+import { math, rtv } from '../resources';
+import Text from '../tools/text';
 
 export default function Transition() {
   this.steps = 0;
@@ -26,9 +27,9 @@ export default function Transition() {
       this.step += 1;
       rtv.t_percent = this.step / this.steps;
       rtv.t_in_out = -math.cos(rtv.t_percent * 2 * math.PI - math.PI) / 2 + 0.5;
-      parser.set('_t', rtv.t_percent);
+      Text.setVariable('_t', rtv.t_percent);
       rtv.t_ease = easeInOut(rtv.t_percent);
-      parser.set('_tt', rtv.t_ease);
+      Text.setVariable('_tt', rtv.t_ease);
       rtv.t_ease = sigmoid(rtv.t_percent, 1.2, -0.4, 14) - sigmoid(rtv.t_percent, 0.2, -0.6, 15);
       if (this.step >= this.steps) {
         rtv.t_percent = 1.0;

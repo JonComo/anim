@@ -122,8 +122,5 @@ export const rtv = {
 };
 
 export const math = create(all);
-
 export const parser = math.parser();
-parser.set('frame', rtv.frame);
-
 export const date = new Date();

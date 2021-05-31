@@ -65,6 +65,7 @@ export default function Text(text, pos) {
   this.near_mouse = false;
   this.size = { w: 0, h: 0 }; // pixel width and height
   this.image = null;
+  this.dirty = false;
 
   this.select = () => {
     this.selected = true;
@@ -533,12 +534,13 @@ export default function Text(text, pos) {
       return;
     }
 
+    this.dirty = true;
     this.text_val = '';
     this.matrix_vals = [];
 
     if (this.new) {
       this.new = false;
-      this.parse_text(this.properties[rtv.frame].t);
+      this.parse_text();
     }
 
     if (!this.cargs[0]) {
@@ -575,7 +577,7 @@ export default function Text(text, pos) {
     }
 
     try {
-      parser.set('text_props', i);
+      Text.setVariable('text_props', i);
 
       const val = this.cargs[0].evaluate(parser.scope);
 
@@ -614,6 +616,10 @@ export default function Text(text, pos) {
           this.text_val = `=${val.toString()}`;
         }
       }
+
+      this.fulfillments.forEach((f) => {
+        Text.assignments.dispatchEvent(new Event(f));
+      });
     } catch (e) {
       const trimmedStack = e.stack.substring(0,
         e.stack.search(/(at Text.eval \(|^Text\/this.eval@)/m));
@@ -641,7 +647,7 @@ export default function Text(text, pos) {
     this.constrain_cursors();
 
     if (changed) {
-      this.parse_text(newText);
+      this.parse_text();
     }
   };
 
@@ -750,7 +756,7 @@ export default function Text(text, pos) {
         this.text_val = `=${roundWithKey(newVal)}`;
 
         try {
-          parser.set(varName, newVal);
+          Text.setVariable(varName, newVal);
         } catch (e) {
           console.error('slide error: ', e);
         }
@@ -875,26 +881,45 @@ export default function Text(text, pos) {
     return size;
   };
 
-  this.parse_text = (unparsedText) => {
+  this.handleAssignment = () => {
+    if (!this.dirty) this.eval();
+  };
+
+  this.parse_text = () => {
     this.command = '';
     this.args = [];
     this.cargs = [];
+    this.dirty = false;
 
-    let parsedText = unparsedText;
+    let parsedText = this.properties[rtv.frame].t;
 
     if (parsedText && parsedText.length) {
-      this.requirements = [];
+      let newRequirements = [];
       this.fulfillments = [];
 
       parsedText = parsedText
         .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
         .replace(/@/g, '_anon') // Replace @ with anonymous fn name
         .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
-          this.requirements = requirements.split(' ');
-          this.fulfillments = fulfillments.split(' ');
+          newRequirements = requirements.split(' ').filter((s) => s);
+          this.fulfillments = fulfillments.split(' ').filter((s) => s);
 
           return expression;
         });
+
+      this.requirements?.forEach((r) => {
+        if (!newRequirements.includes(r)) {
+          Text.assignments.removeEventListener(r, this.handleAssignment);
+        }
+      });
+
+      newRequirements.forEach((r) => {
+        if (!this.requirements?.includes(r)) {
+          Text.assignments.addEventListener(r, this.handleAssignment);
+        }
+      });
+
+      this.requirements = newRequirements;
     }
 
     if (parsedText && parsedText.includes(':')) {
@@ -1057,6 +1082,8 @@ export default function Text(text, pos) {
   };
 
   this.render = (ctx) => {
+    this.dirty = false;
+
     const a = this.properties[rtv.frame];
 
     if (!a) {
@@ -1248,5 +1275,12 @@ export default function Text(text, pos) {
     return js;
   };
 
-  this.parse_text(text);
+  this.parse_text();
 }
+
+Text.assignments = new EventTarget();
+
+Text.setVariable = (name, value) => {
+  parser.set(name, value);
+  Text.assignments.dispatchEvent(new Event(name));
+};
