@@ -1,5 +1,6 @@
 import { easeInOut, sigmoid } from '../index';
-import { math, parser, rtv } from '../resources';
+import { math, rtv } from '../resources';
+import Text from '../tools/text';
 
 export default function Transition() {
   this.steps = 0;
