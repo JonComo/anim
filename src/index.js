@@ -1304,10 +1304,6 @@ export function transitionWithNext(next) {
       if (typeof obj.parse_text === 'function') {
         obj.parse_text(obj.properties[rtv.frame].t);
       }
-
-      if (typeof obj.eval === 'function') {
-        obj.eval();
-      }
     });
     Text.setVariable('frame', rtv.frame);
   });
@@ -4099,13 +4095,6 @@ window.addEventListener('load', () => {
     rtv.ctx.font = FONT.ANIM;
 
     const N = rtv.objs.length;
-    for (let i = 0; i < N; i++) {
-      const obj = rtv.objs[i];
-      if (typeof obj.eval === 'function') {
-        obj.eval();
-      }
-    }
-
     for (let i = 0; i < N; i++) {
       const obj = rtv.objs[i];
       obj.render(rtv.ctx);
