@@ -575,7 +575,7 @@ export default function Text(text, pos) {
     }
 
     try {
-      parser.set('text_props', i);
+      Text.setVariable('text_props', i);
 
       const val = this.cargs[0].evaluate(parser.scope);
 
@@ -750,7 +750,7 @@ export default function Text(text, pos) {
         this.text_val = `=${roundWithKey(newVal)}`;
 
         try {
-          parser.set(varName, newVal);
+          Text.setVariable(varName, newVal);
         } catch (e) {
           console.error('slide error: ', e);
         }
@@ -1250,3 +1250,10 @@ export default function Text(text, pos) {
 
   this.parse_text();
 }
+
+Text.assignments = new EventTarget();
+
+Text.setVariable = (name, value) => {
+  parser.set(name, value);
+  Text.assignments.dispatchEvent(new Event(name));
+};

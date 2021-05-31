@@ -786,14 +786,14 @@ function grad2(c, x, y) {
   // depends on x and y
   const h = 0.0001;
 
-  parser.set('x', x + h);
+  Text.setVariable('x', x + h);
   const fxh = c.evaluate(parser.scope);
-  parser.set('x', x);
+  Text.setVariable('x', x);
   const fx = c.evaluate(parser.scope);
 
-  parser.set('y', y + h);
+  Text.setVariable('y', y + h);
   const fyh = c.evaluate(parser.scope);
-  parser.set('y', y);
+  Text.setVariable('y', y);
   const fy = c.evaluate(parser.scope);
 
   return [(fxh - fx) / h, (fyh - fy) / h];
@@ -1299,7 +1299,6 @@ export function transitionWithNext(next) {
 
   rtv.transition.run(steps, next, (targ) => {
     rtv.frame = targ;
-    parser.set('frame', rtv.frame);
 
     rtv.objs.forEach((obj) => {
       if (typeof obj.parse_text === 'function') {
@@ -1310,6 +1309,7 @@ export function transitionWithNext(next) {
         obj.eval();
       }
     });
+    Text.setVariable('frame', rtv.frame);
   });
 }
 
@@ -2681,10 +2681,10 @@ math.import({
     try {
       parser.evaluate('_trace');
     } catch (e) {
-      parser.set('_trace', false);
+      Text.setVariable('_trace', false);
     }
 
-    parser.set('_trace', !parser.evaluate('_trace'));
+    Text.setVariable('_trace', !parser.evaluate('_trace'));
   },
   drawFarmer() {
     rtv.ctx.save();
@@ -3584,6 +3584,7 @@ function drawBackground(ctx = rtv.ctx, color = CANVAS_BG) {
 
 window.addEventListener('load', () => {
   rtv.objs = [];
+  Text.setVariable('frame', rtv.frame);
 
   rtv.c = document.getElementById('viewport');
   rtv.c.style.backgroundColor = CANVAS_BG;
@@ -3886,8 +3887,8 @@ window.addEventListener('load', () => {
     rtv.mouse.grid = constrainToGrid(rtv.mouse.pos);
     rtv.mouse.graph = rtv.cam.screen_to_graph(rtv.mouse.pos);
 
-    parser.set('_y', rtv.mouse.graph.x);
-    parser.set('_z', rtv.mouse.graph.y);
+    Text.setVariable('_y', rtv.mouse.graph.x);
+    Text.setVariable('_z', rtv.mouse.graph.y);
 
     if (rtv.pen.mouse_move(evt)) {
       return;
@@ -4073,14 +4074,14 @@ window.addEventListener('load', () => {
       rtv.fps = 30; // save power when editing
     }
 
-    parser.set('_frame', rtv.t);
-    parser.set('_millis', rtv.millis);
+    Text.setVariable('_frame', rtv.t);
+    Text.setVariable('_millis', rtv.millis);
     const mp = rtv.cam.screen_to_graph({ x: rtv.mouse.pos.x, y: rtv.mouse.pos.y });
-    parser.set('_mx', mp.x);
-    parser.set('_my', mp.y);
+    Text.setVariable('_mx', mp.x);
+    Text.setVariable('_my', mp.y);
 
     if (rtv.meter) {
-      parser.set('_vol', rtv.meter.volume);
+      Text.setVariable('_vol', rtv.meter.volume);
     }
 
     if (rtv.presenting) {
