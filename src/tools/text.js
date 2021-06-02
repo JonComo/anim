@@ -59,7 +59,7 @@ export default function Text(text, pos) {
   this.cursor_selection = 0;
   this.command = '';
   this.args = [];
-  this.cargs = []; // compiled arguments
+  this.pArgs = []; // Parsed arguments
   this.text_val = '';
   this.matrix_vals = [];
   this.near_mouse = false;
@@ -543,7 +543,7 @@ export default function Text(text, pos) {
       this.parse_text();
     }
 
-    if (!this.cargs[0]) {
+    if (!this.pArgs[0]) {
       return;
     }
 
@@ -579,10 +579,10 @@ export default function Text(text, pos) {
     try {
       Text.setVariable('text_props', i);
 
-      const val = this.cargs[0].evaluate(parser.scope);
+      const val = this.pArgs[0].evaluate(parser.scope);
 
       // only display the value if its not an assignment or constant
-      const opType = math.parse(this.args[0]).type;
+      const opType = this.pArgs[0].type;
 
       if (!opType.includes('Assignment') && opType !== 'ConstantNode') {
         const type = typeof val;
@@ -888,15 +888,14 @@ export default function Text(text, pos) {
   this.parse_text = () => {
     this.command = '';
     this.args = [];
-    this.cargs = [];
+    this.pArgs = [];
     this.dirty = false;
+    this.fulfillments = null;
 
     let parsedText = this.properties[rtv.frame].t;
+    let newRequirements;
 
     if (parsedText && parsedText.length) {
-      let newRequirements = [];
-      this.fulfillments = [];
-
       parsedText = parsedText
         .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
         .replace(/@/g, '_anon') // Replace @ with anonymous fn name
@@ -906,41 +905,66 @@ export default function Text(text, pos) {
 
           return expression;
         });
-
-      this.requirements?.forEach((r) => {
-        if (!newRequirements.includes(r)) {
-          Text.assignments.removeEventListener(r, this.handleAssignment);
-        }
-      });
-
-      newRequirements.forEach((r) => {
-        if (!this.requirements?.includes(r)) {
-          Text.assignments.addEventListener(r, this.handleAssignment);
-        }
-      });
-
-      this.requirements = newRequirements;
     }
 
     if (parsedText && parsedText.includes(':')) {
       const split = parsedText.split(':');
       this.command = split[0];
       this.args = [split[1]];
-
-      try {
-        this.cargs = math.compile(this.args);
-      } catch (e) {
-        // report_error(e);
-      }
     } else {
       this.args = [parsedText];
-
-      try {
-        this.cargs = math.compile(this.args);
-      } catch (e) {
-        console.log('compile2 error: ', e);
-      }
     }
+
+    try {
+      this.pArgs = math.parse(this.args);
+
+      if (!newRequirements) {
+        newRequirements = [];
+        this.fulfillments = [];
+
+        this.pArgs[0].traverse((node, path, parent) => {
+          switch (node.type) {
+            case 'SymbolNode':
+            case 'FunctionNode':
+              if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
+                newRequirements.push(node.name);
+              }
+              break;
+
+            case 'AssignmentNode':
+              this.fulfillments.push((function extractName(object) {
+                return object.object ? extractName(object.object) : object.name;
+              })(node.object));
+              break;
+
+            case 'FunctionAssignmentNode':
+              this.fulfillments.push(node.name);
+              break;
+
+            // no default
+          }
+        });
+      }
+    } catch (e) {
+      console.log('parsing error:', e);
+    }
+
+    newRequirements ??= [];
+    this.fulfillments ??= [];
+
+    this.requirements?.forEach((r) => {
+      if (!newRequirements.includes(r)) {
+        Text.assignments.removeEventListener(r, this.handleAssignment);
+      }
+    });
+
+    newRequirements.forEach((r) => {
+      if (!this.requirements?.includes(r)) {
+        Text.assignments.addEventListener(r, this.handleAssignment);
+      }
+    });
+
+    this.requirements = newRequirements;
   };
 
   this.draw_tree = (ctx, props) => {
