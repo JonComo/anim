@@ -66,6 +66,7 @@ export default function Text(text, pos) {
   this.size = { w: 0, h: 0 }; // pixel width and height
   this.image = null;
   this.dirty = false;
+  this.requirements = [];
 
   this.select = () => {
     this.selected = true;
@@ -886,80 +887,90 @@ export default function Text(text, pos) {
   };
 
   this.parse_text = () => {
-    this.command = '';
+    this.command = null;
     this.args = [];
     this.pArgs = [];
+
+    if (!(rtv.frame in this.properties)) {
+      this.requirements = [];
+      this.fulfillments = [];
+
+      return;
+    }
+
     this.dirty = false;
     this.fulfillments = null;
 
-    let parsedText = this.properties[rtv.frame].t;
     let newRequirements;
 
-    if (parsedText && parsedText.length) {
-      parsedText = parsedText
-        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
-        .replace(/@/g, '_anon') // Replace @ with anonymous fn name
-        .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
-          newRequirements = requirements.split(' ').filter((s) => s);
-          this.fulfillments = fulfillments.split(' ').filter((s) => s);
+    const parsedText = this.properties[rtv.frame].t
+      .replace(/^(\w+?):(.*)$/, (match, command, arg) => {
+        this.command = command;
+        this.args[0] = arg;
 
-          return expression;
-        });
-    }
+        return arg;
+      })
+      .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
+      .replace(/@/g, '_anon') // Replace @ with anonymous fn name
+      .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
+        newRequirements = requirements.split(' ').filter((s) => s);
+        this.fulfillments = fulfillments.split(' ').filter((s) => s);
 
-    if (parsedText && parsedText.includes(':')) {
-      const split = parsedText.split(':');
-      this.command = split[0];
-      this.args = [split[1]];
-    } else {
-      this.args = [parsedText];
-    }
+        return expression;
+      });
+
+    this.command ??= '';
+    this.args[0] ??= parsedText;
 
     try {
       this.pArgs = math.parse(this.args);
-
-      if (!newRequirements) {
-        newRequirements = [];
-        this.fulfillments = [];
-
-        this.pArgs[0].traverse((node, path, parent) => {
-          switch (node.type) {
-            case 'SymbolNode':
-            case 'FunctionNode':
-              if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
-                newRequirements.push(node.name);
-              }
-              break;
-
-            case 'AssignmentNode':
-              this.fulfillments.push((function extractName(object) {
-                return object.object ? extractName(object.object) : object.name;
-              })(node.object));
-              break;
-
-            case 'FunctionAssignmentNode':
-              this.fulfillments.push(node.name);
-              break;
-
-            // no default
-          }
-        });
-      }
     } catch (e) {
-      console.log('parsing error:', e);
+      console.error('Parsing error:', e);
+
+      this.args = [];
+      this.pArgs = [];
+      this.requirements = [];
+      this.fulfillments = [];
+
+      return;
     }
 
-    newRequirements ??= [];
-    this.fulfillments ??= [];
+    if (newRequirements) return;
 
-    this.requirements?.forEach((r) => {
+    newRequirements = [];
+    this.fulfillments = [];
+
+    this.pArgs[0].traverse((node, path, parent) => {
+      switch (node.type) {
+        case 'SymbolNode':
+        case 'FunctionNode':
+          if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
+            newRequirements.push(node.name);
+          }
+          break;
+
+        case 'AssignmentNode':
+          this.fulfillments.push((function extractName(object) {
+            return object.object ? extractName(object.object) : object.name;
+          })(node.object));
+          break;
+
+        case 'FunctionAssignmentNode':
+          this.fulfillments.push(node.name);
+          break;
+
+        // no default
+      }
+    });
+
+    this.requirements.forEach((r) => {
       if (!newRequirements.includes(r)) {
         Text.assignments.removeEventListener(r, this.handleAssignment);
       }
     });
 
     newRequirements.forEach((r) => {
-      if (!this.requirements?.includes(r)) {
+      if (!this.requirements.includes(r)) {
         Text.assignments.addEventListener(r, this.handleAssignment);
       }
     });
