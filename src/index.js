@@ -4094,6 +4094,44 @@ window.addEventListener('load', () => {
 
     rtv.ctx.font = FONT.ANIM;
 
+    [
+      'circle',
+      'diffEq',
+      'diffEqF',
+      'diffEqTri',
+      'dirField',
+      'draw',
+      'drawxy',
+      'drawComputer',
+      'drawDog',
+      'drawFace',
+      'drawFarmer',
+      'egg',
+      'elefield',
+      'eleforce',
+      'eulerMeth',
+      'field',
+      'fielda',
+      'paras',
+      'graph',
+      'graphxy',
+      'graphyx',
+      'graphxz',
+      'graphyz',
+      'logicTable',
+      'magfield',
+      'oval',
+      'paral',
+      'point',
+      'scatter',
+      'surface',
+      'surfacez',
+      'vect',
+      'visdot',
+      'vismult',
+      'visnet',
+    ].forEach(Text.dispatchAssignment); // Force re-evaluation of all drawing text boxes
+
     const N = rtv.objs.length;
     for (let i = 0; i < N; i++) {
       const obj = rtv.objs[i];

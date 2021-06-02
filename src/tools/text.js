@@ -619,9 +619,7 @@ export default function Text(text, pos) {
         }
       }
 
-      this.fulfillments.forEach((f) => {
-        Text.assignments.dispatchEvent(new Event(f));
-      });
+      this.fulfillments.forEach(Text.dispatchAssignment);
     } catch (e) {
       const trimmedStack = e.stack.substring(0,
         e.stack.search(/(at Text.eval \(|^Text\/this.eval@)/m));
@@ -1312,7 +1310,9 @@ export default function Text(text, pos) {
 
 Text.assignments = new EventTarget();
 
+Text.dispatchAssignment = (name) => Text.assignments.dispatchEvent(new Event(name));
+
 Text.setVariable = (name, value) => {
   parser.set(name, value);
-  Text.assignments.dispatchEvent(new Event(name));
+  Text.dispatchAssignment(name);
 };
