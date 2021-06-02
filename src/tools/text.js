@@ -890,13 +890,21 @@ export default function Text(text, pos) {
     this.args = [];
     this.pArgs = [];
     this.dirty = false;
+    this.fulfillments = null;
 
     let parsedText = this.properties[rtv.frame].t;
+    let newRequirements;
 
     if (parsedText && parsedText.length) {
       parsedText = parsedText
         .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
-        .replace(/@/g, '_anon'); // Replace @ with anonymous fn name
+        .replace(/@/g, '_anon') // Replace @ with anonymous fn name
+        .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
+          newRequirements = requirements.split(' ').filter((s) => s);
+          this.fulfillments = fulfillments.split(' ').filter((s) => s);
+
+          return expression;
+        });
     }
 
     if (parsedText && parsedText.includes(':')) {
@@ -910,45 +918,53 @@ export default function Text(text, pos) {
     try {
       this.pArgs = math.parse(this.args);
 
-      const newRequirements = [];
-      this.fulfillments = [];
+      if (!newRequirements) {
+        newRequirements = [];
+        this.fulfillments = [];
 
-      this.pArgs[0].traverse((node, path, parent) => {
-        switch (node.type) {
-          case 'SymbolNode':
-          case 'FunctionNode':
-            if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
-              newRequirements.push(node.name);
-              if (!this.requirements?.includes(node.name)) {
-                Text.assignments.addEventListener(node.name, this.handleAssignment);
+        this.pArgs[0].traverse((node, path, parent) => {
+          switch (node.type) {
+            case 'SymbolNode':
+            case 'FunctionNode':
+              if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
+                newRequirements.push(node.name);
               }
-            }
-            break;
+              break;
 
-          case 'AssignmentNode':
-            this.fulfillments.push((function extractName(object) {
-              return object.object ? extractName(object.object) : object.name;
-            })(node.object));
-            break;
+            case 'AssignmentNode':
+              this.fulfillments.push((function extractName(object) {
+                return object.object ? extractName(object.object) : object.name;
+              })(node.object));
+              break;
 
-          case 'FunctionAssignmentNode':
-            this.fulfillments.push(node.name);
-            break;
+            case 'FunctionAssignmentNode':
+              this.fulfillments.push(node.name);
+              break;
 
-          // no default
-        }
-      });
-
-      this.requirements?.forEach((r) => {
-        if (!newRequirements.includes(r)) {
-          Text.assignments.removeEventListener(r, this.handleAssignment);
-        }
-      });
-
-      this.requirements = newRequirements;
+            // no default
+          }
+        });
+      }
     } catch (e) {
       console.log('parsing error:', e);
     }
+
+    newRequirements ??= [];
+    this.fulfillments ??= [];
+
+    this.requirements?.forEach((r) => {
+      if (!newRequirements.includes(r)) {
+        Text.assignments.removeEventListener(r, this.handleAssignment);
+      }
+    });
+
+    newRequirements.forEach((r) => {
+      if (!this.requirements?.includes(r)) {
+        Text.assignments.addEventListener(r, this.handleAssignment);
+      }
+    });
+
+    this.requirements = newRequirements;
   };
 
   this.draw_tree = (ctx, props) => {
