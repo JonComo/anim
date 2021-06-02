@@ -407,6 +407,7 @@ export default function Text(text, pos) {
 
     if (key === 'Enter') {
       this.selected = false;
+      this.parse_text();
       this.eval();
       if (rtv.keys.shift) {
         // create a new text below this one
@@ -642,13 +643,9 @@ export default function Text(text, pos) {
   };
 
   this.change_text = (newText) => {
-    const changed = this.properties[rtv.frame].t !== newText;
-
-    this.properties[rtv.frame].t = newText;
-    this.constrain_cursors();
-
-    if (changed) {
-      this.parse_text();
+    if (this.properties[rtv.frame].t !== newText) {
+      this.properties[rtv.frame].t = newText;
+      this.constrain_cursors();
     }
   };
 
