@@ -582,7 +582,7 @@ export default function Text(text, pos) {
       const val = this.cargs[0].evaluate(parser.scope);
 
       // only display the value if its not an assignment or constant
-      const opType = math.parse(this.args[0]).type;
+      const opType = this.cargs[0].type;
 
       if (!opType.includes('Assignment') && opType !== 'ConstantNode') {
         const type = typeof val;
@@ -894,18 +894,50 @@ export default function Text(text, pos) {
     let parsedText = this.properties[rtv.frame].t;
 
     if (parsedText && parsedText.length) {
-      let newRequirements = [];
-      this.fulfillments = [];
-
       parsedText = parsedText
         .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
-        .replace(/@/g, '_anon') // Replace @ with anonymous fn name
-        .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
-          newRequirements = requirements.split(' ').filter((s) => s);
-          this.fulfillments = fulfillments.split(' ').filter((s) => s);
+        .replace(/@/g, '_anon'); // Replace @ with anonymous fn name
+    }
 
-          return expression;
-        });
+    if (parsedText && parsedText.includes(':')) {
+      const split = parsedText.split(':');
+      this.command = split[0];
+      this.args = [split[1]];
+    } else {
+      this.args = [parsedText];
+    }
+
+    try {
+      this.cargs = math.parse(this.args);
+
+      const newRequirements = [];
+      this.fulfillments = [];
+
+      this.cargs[0].traverse((node, path, parent) => {
+        switch (node.type) {
+          case 'SymbolNode':
+          case 'FunctionNode':
+            if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
+              newRequirements.push(node.name);
+              if (!this.requirements?.includes(node.name)) {
+                Text.assignments.addEventListener(node.name, this.handleAssignment);
+              }
+            }
+            break;
+
+          case 'AssignmentNode':
+            this.fulfillments.push((function extractName(object) {
+              return object.object ? extractName(object.object) : object.name;
+            })(node.object));
+            break;
+
+          case 'FunctionAssignmentNode':
+            this.fulfillments.push(node.name);
+            break;
+
+          // no default
+        }
+      });
 
       this.requirements?.forEach((r) => {
         if (!newRequirements.includes(r)) {
@@ -913,33 +945,9 @@ export default function Text(text, pos) {
         }
       });
 
-      newRequirements.forEach((r) => {
-        if (!this.requirements?.includes(r)) {
-          Text.assignments.addEventListener(r, this.handleAssignment);
-        }
-      });
-
       this.requirements = newRequirements;
-    }
-
-    if (parsedText && parsedText.includes(':')) {
-      const split = parsedText.split(':');
-      this.command = split[0];
-      this.args = [split[1]];
-
-      try {
-        this.cargs = math.compile(this.args);
-      } catch (e) {
-        // report_error(e);
-      }
-    } else {
-      this.args = [parsedText];
-
-      try {
-        this.cargs = math.compile(this.args);
-      } catch (e) {
-        console.log('compile2 error: ', e);
-      }
+    } catch (e) {
+      console.log('parsing error:', e);
     }
   };
 
