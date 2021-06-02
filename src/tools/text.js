@@ -59,7 +59,7 @@ export default function Text(text, pos) {
   this.cursor_selection = 0;
   this.command = '';
   this.args = [];
-  this.cargs = []; // compiled arguments
+  this.pArgs = []; // Parsed arguments
   this.text_val = '';
   this.matrix_vals = [];
   this.near_mouse = false;
@@ -543,7 +543,7 @@ export default function Text(text, pos) {
       this.parse_text();
     }
 
-    if (!this.cargs[0]) {
+    if (!this.pArgs[0]) {
       return;
     }
 
@@ -579,10 +579,10 @@ export default function Text(text, pos) {
     try {
       Text.setVariable('text_props', i);
 
-      const val = this.cargs[0].evaluate(parser.scope);
+      const val = this.pArgs[0].evaluate(parser.scope);
 
       // only display the value if its not an assignment or constant
-      const opType = this.cargs[0].type;
+      const opType = this.pArgs[0].type;
 
       if (!opType.includes('Assignment') && opType !== 'ConstantNode') {
         const type = typeof val;
@@ -888,7 +888,7 @@ export default function Text(text, pos) {
   this.parse_text = () => {
     this.command = '';
     this.args = [];
-    this.cargs = [];
+    this.pArgs = [];
     this.dirty = false;
 
     let parsedText = this.properties[rtv.frame].t;
@@ -908,12 +908,12 @@ export default function Text(text, pos) {
     }
 
     try {
-      this.cargs = math.parse(this.args);
+      this.pArgs = math.parse(this.args);
 
       const newRequirements = [];
       this.fulfillments = [];
 
-      this.cargs[0].traverse((node, path, parent) => {
+      this.pArgs[0].traverse((node, path, parent) => {
         switch (node.type) {
           case 'SymbolNode':
           case 'FunctionNode':
