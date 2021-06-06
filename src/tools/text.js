@@ -432,8 +432,10 @@ export default function Text(text, pos) {
       }
     } else if (key === 'ArrowRight') {
       this.cursor += 1;
+      this.constrain_cursors();
     } else if (key === 'ArrowLeft') {
       this.cursor -= 1;
+      this.constrain_cursors();
     }
 
     if (key === 'Home') {
