@@ -66,7 +66,7 @@ export default function Text(text, pos) {
   this.size = { w: 0, h: 0 }; // pixel width and height
   this.image = null;
   this.dirty = false;
-  this.requirements = [];
+  this.requirements = {};
 
   this.select = () => {
     this.selected = true;
@@ -887,7 +887,7 @@ export default function Text(text, pos) {
     this.pArgs = [];
 
     if (!(rtv.frame in this.properties)) {
-      this.requirements = [];
+      this.requirements = {};
       this.fulfillments = [];
 
       return;
@@ -908,7 +908,10 @@ export default function Text(text, pos) {
       .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
       .replace(/@/g, '_anon') // Replace @ with anonymous fn name
       .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
-        newRequirements = requirements.split(' ').filter((s) => s);
+        newRequirements = {};
+        requirements.split(' ').forEach((r) => {
+          if (r) newRequirements[r] = 1;
+        });
         this.fulfillments = fulfillments.split(' ').filter((s) => s);
 
         return expression;
@@ -924,7 +927,7 @@ export default function Text(text, pos) {
 
       this.args = [];
       this.pArgs = [];
-      this.requirements = [];
+      this.requirements = {};
       this.fulfillments = [];
 
       return;
@@ -932,15 +935,16 @@ export default function Text(text, pos) {
 
     if (newRequirements) return;
 
-    newRequirements = [];
+    newRequirements = {};
     this.fulfillments = [];
 
     this.pArgs[0].traverse((node, path, parent) => {
       switch (node.type) {
         case 'SymbolNode':
         case 'FunctionNode':
-          if (!parent?.isAssignmentNode && !newRequirements.includes(node.name)) {
-            newRequirements.push(node.name);
+          if (!parent?.isAssignmentNode) {
+            newRequirements[node.name] ??= 0;
+            newRequirements[node.name]++;
           }
           break;
 
@@ -958,14 +962,16 @@ export default function Text(text, pos) {
       }
     });
 
-    this.requirements.forEach((r) => {
-      if (!newRequirements.includes(r)) {
+    Object.keys(this.requirements).forEach((r) => {
+      // Please do not change; `!(undefined > 0)` is true, however `undefined <= 0` is false!
+      if (!(newRequirements[r] > 0)) {
         Text.assignments.removeEventListener(r, this.handleAssignment);
       }
     });
 
-    newRequirements.forEach((r) => {
-      if (!this.requirements.includes(r)) {
+    Object.keys(newRequirements).forEach((r) => {
+      // Please do not change; `!(undefined > 0)` is true, however `undefined <= 0` is false!
+      if (newRequirements[r] > 0 && !(this.requirements[r] > 0)) {
         Text.assignments.addEventListener(r, this.handleAssignment);
       }
     });
