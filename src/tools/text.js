@@ -956,6 +956,16 @@ export default function Text(text, pos) {
 
         case 'FunctionAssignmentNode':
           this.fulfillments.push(node.name);
+          node.traverse((nestedNode, nestedPath, nestedParent) => {
+            if (
+              (nestedNode.isSymbolNode || nestedNode.isFunctionNode)
+           && !nestedParent?.isAssignmentNode
+           && node.params.includes(nestedNode.name)
+            ) {
+              newRequirements[nestedNode.name] ??= 0;
+              newRequirements[nestedNode.name]--;
+            }
+          });
           break;
 
         // no default
@@ -977,6 +987,7 @@ export default function Text(text, pos) {
     });
 
     this.requirements = newRequirements;
+    console.log(this.requirements);
   };
 
   this.draw_tree = (ctx, props) => {
