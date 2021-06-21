@@ -27,9 +27,9 @@ export const CANVAS_BG = 'white';
 export const COLORS = ['#000000', '#E74C3C', '#2980B9', '#FFA400', '#66E07A', '#cccccc'];
 
 export const FONT = {
-  SMALL: '26px Courier',
-  MENU: '30px Courier',
-  ANIM: IS_MAC ? '40px Menlo' : '40px Courier New',
+  SMALL: '26px Courier, monospace',
+  MENU: '30px Courier, monospace',
+  ANIM: `${IS_MAC ? '40px Menlo' : '40px Courier New'}, monospace`,
 };
 
 export const SCALE_FACTOR = 2; // retina
@@ -129,8 +129,5 @@ export const rtv = {
 };
 
 export const math = create(all);
-
 export const parser = math.parser();
-parser.set('frame', rtv.frame);
-
 export const date = new Date();

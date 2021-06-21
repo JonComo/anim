@@ -1,6 +1,6 @@
 {
   "name": "anim",
-  "version": "1.6.1",
+  "version": "1.6.4",
   "description": "Quick JS program for creating animations.",
   "private": true,
   "scripts": {

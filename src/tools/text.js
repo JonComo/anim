@@ -59,12 +59,14 @@ export default function Text(text, pos) {
   this.cursor_selection = 0;
   this.command = '';
   this.args = [];
-  this.cargs = []; // compiled arguments
+  this.pArgs = []; // Parsed arguments
   this.text_val = '';
   this.matrix_vals = [];
   this.near_mouse = false;
   this.size = { w: 0, h: 0 }; // pixel width and height
   this.image = null;
+  this.dirty = false;
+  this.requirements = {};
 
   this.select = () => {
     this.selected = true;
@@ -405,6 +407,7 @@ export default function Text(text, pos) {
 
     if (key === 'Enter') {
       this.selected = false;
+      this.parse_text();
       this.eval();
       if (rtv.keys.shift) {
         // create a new text below this one
@@ -429,8 +432,10 @@ export default function Text(text, pos) {
       }
     } else if (key === 'ArrowRight') {
       this.cursor += 1;
+      this.constrain_cursors();
     } else if (key === 'ArrowLeft') {
       this.cursor -= 1;
+      this.constrain_cursors();
     }
 
     if (key === 'Home') {
@@ -533,15 +538,16 @@ export default function Text(text, pos) {
       return;
     }
 
+    this.dirty = true;
     this.text_val = '';
     this.matrix_vals = [];
 
     if (this.new) {
       this.new = false;
-      this.parse_text(this.properties[rtv.frame].t);
+      this.parse_text();
     }
 
-    if (!this.cargs[0]) {
+    if (!this.pArgs[0]) {
       return;
     }
 
@@ -575,12 +581,12 @@ export default function Text(text, pos) {
     }
 
     try {
-      parser.set('text_props', i);
+      Text.setVariable('text_props', i);
 
-      const val = this.cargs[0].evaluate(parser.scope);
+      const val = this.pArgs[0].evaluate(parser.scope);
 
       // only display the value if its not an assignment or constant
-      const opType = math.parse(this.args[0]).type;
+      const opType = this.pArgs[0].type;
 
       if (!opType.includes('Assignment') && opType !== 'ConstantNode') {
         const type = typeof val;
@@ -614,6 +620,8 @@ export default function Text(text, pos) {
           this.text_val = `=${val.toString()}`;
         }
       }
+
+      this.fulfillments.forEach(Text.dispatchAssignment);
     } catch (e) {
       const trimmedStack = e.stack.substring(0,
         e.stack.search(/(at Text.eval \(|^Text\/this.eval@)/m));
@@ -635,13 +643,9 @@ export default function Text(text, pos) {
   };
 
   this.change_text = (newText) => {
-    const changed = this.properties[rtv.frame].t !== newText;
-
-    this.properties[rtv.frame].t = newText;
-    this.constrain_cursors();
-
-    if (changed) {
-      this.parse_text(newText);
+    if (this.properties[rtv.frame].t !== newText) {
+      this.properties[rtv.frame].t = newText;
+      this.constrain_cursors();
     }
   };
 
@@ -750,7 +754,7 @@ export default function Text(text, pos) {
         this.text_val = `=${roundWithKey(newVal)}`;
 
         try {
-          parser.set(varName, newVal);
+          Text.setVariable(varName, newVal);
         } catch (e) {
           console.error('slide error: ', e);
         }
@@ -788,12 +792,17 @@ export default function Text(text, pos) {
 
     if (this.near_mouse) {
       if (!this.dragged) {
-        this.select();
+        if (rtv.presenting) {
+          this.eval();
+        } else {
+          this.select();
 
-        // move cursor
-        this.cursor = this.char_index_at_x(rtv.mouse.pos.x);
-        this.cursor_selection = this.cursor;
-        this.constrain_cursors();
+          // move cursor
+          this.cursor = this.char_index_at_x(rtv.mouse.pos.x);
+          this.cursor_selection = this.cursor;
+          this.constrain_cursors();
+        }
+
         return true;
       }
     } else if (!rtv.keys.shift && this.is_selected()) {
@@ -870,38 +879,117 @@ export default function Text(text, pos) {
     return size;
   };
 
-  this.parse_text = (unparsedText) => {
-    this.command = '';
+  this.handleAssignment = () => {
+    if (!this.dirty) this.eval();
+  };
+
+  this.parse_text = () => {
+    this.command = null;
     this.args = [];
-    this.cargs = [];
+    this.pArgs = [];
 
-    let parsedText = unparsedText;
+    if (!(rtv.frame in this.properties)) {
+      this.requirements = {};
+      this.fulfillments = [];
 
-    if (parsedText && parsedText.length) {
-      parsedText = parsedText
-        .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
-        .replace(/@/g, '_anon'); // Replace @ with anonymous fn name
+      return;
     }
 
-    if (parsedText && parsedText.includes(':')) {
-      const split = parsedText.split(':');
-      this.command = split[0];
-      this.args = [split[1]];
+    this.dirty = false;
+    this.fulfillments = null;
 
-      try {
-        this.cargs = math.compile(this.args);
-      } catch (e) {
-        // report_error(e);
-      }
-    } else {
-      this.args = [parsedText];
+    let newRequirements;
 
-      try {
-        this.cargs = math.compile(this.args);
-      } catch (e) {
-        console.log('compile2 error: ', e);
-      }
+    const parsedText = this.properties[rtv.frame].t
+      .replace(/^(\w+?):(.*)$/, (match, command, arg) => {
+        this.command = command;
+        this.args[0] = arg;
+
+        return arg;
+      })
+      .replace(/([^(]*)(\|->|↦)/g, (match, parameters) => `@(${parameters})=`)
+      .replace(/@/g, '_anon') // Replace @ with anonymous fn name
+      .replace(/^{(.*?)}(.*){(.*?)}$/, (match, requirements, expression, fulfillments) => {
+        newRequirements = {};
+        requirements.split(' ').forEach((r) => {
+          if (r) newRequirements[r] = 1;
+        });
+        this.fulfillments = fulfillments.split(' ').filter((s) => s);
+
+        return expression;
+      });
+
+    this.command ??= '';
+    this.args[0] ??= parsedText;
+
+    try {
+      this.pArgs = math.parse(this.args);
+    } catch (e) {
+      console.error('Parsing error:', e);
+
+      this.args = [];
+      this.pArgs = [];
+      this.requirements = {};
+      this.fulfillments = [];
+
+      return;
     }
+
+    if (newRequirements) return;
+
+    newRequirements = {};
+    this.fulfillments = [];
+
+    this.pArgs[0].traverse((node, path, parent) => {
+      switch (node.type) {
+        case 'SymbolNode':
+        case 'FunctionNode':
+          if (!parent?.isAssignmentNode) {
+            newRequirements[node.name] ??= 0;
+            newRequirements[node.name]++;
+          }
+          break;
+
+        case 'AssignmentNode':
+          this.fulfillments.push((function extractName(object) {
+            return object.object ? extractName(object.object) : object.name;
+          })(node.object));
+          break;
+
+        case 'FunctionAssignmentNode':
+          this.fulfillments.push(node.name);
+          node.traverse((nestedNode, nestedPath, nestedParent) => {
+            if (
+              (nestedNode.isSymbolNode || nestedNode.isFunctionNode)
+           && !nestedParent?.isAssignmentNode
+           && node.params.includes(nestedNode.name)
+            ) {
+              newRequirements[nestedNode.name] ??= 0;
+              newRequirements[nestedNode.name]--;
+            }
+          });
+          break;
+
+        // no default
+      }
+    });
+
+    Object.keys(this.requirements).forEach((r) => {
+      // Please do not change; `!(undefined > 0)` is true, however `undefined <= 0` is false!
+      if (!(newRequirements[r] > 0)) {
+        Text.assignments.removeEventListener(r, this.handleAssignment);
+      }
+    });
+
+    Object.keys(newRequirements).forEach((r) => {
+      // Please do not change; `!(undefined > 0)` is true, however `undefined <= 0` is false!
+      if (newRequirements[r] > 0 && !(this.requirements[r] > 0)) {
+        Text.assignments.addEventListener(r, this.handleAssignment);
+      }
+    });
+
+    this.requirements = newRequirements;
+    console.log(this.requirements);
   };
 
   this.draw_tree = (ctx, props) => {
@@ -1043,6 +1131,8 @@ export default function Text(text, pos) {
   };
 
   this.render = (ctx) => {
+    this.dirty = false;
+
     const a = this.properties[rtv.frame];
 
     if (!a) {
@@ -1234,5 +1324,14 @@ export default function Text(text, pos) {
     return js;
   };
 
-  this.parse_text(text);
+  this.parse_text();
 }
+
+Text.assignments = new EventTarget();
+
+Text.dispatchAssignment = (name) => Text.assignments.dispatchEvent(new Event(name));
+
+Text.setVariable = (name, value) => {
+  parser.set(name, value);
+  Text.dispatchAssignment(name);
+};
