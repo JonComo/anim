@@ -40,7 +40,7 @@
   "dependencies": {
     "file-saver": "^2.0.5",
     "html-loader": "^2.1.2",
-    "markdown-loader": "^6.0.0",
+    "markdown-loader": "^8.0.0",
     "mathjs": "^9.2.0"
   }
 }
