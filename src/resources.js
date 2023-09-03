@@ -5,6 +5,13 @@ import './style.css';
 export const VERSION = packageJson.version; // Version
 const IS_MAC = navigator.platform.toUpperCase().includes('MAC'); // Running on macOS?
 
+export const MODE_KEYS = {
+  c: 'camera',
+  s: 'shape',
+  t: 'text',
+  v: 'vector',
+};
+
 // Text and image border
 export const BORDER_OPACITY = 0.2;
 
